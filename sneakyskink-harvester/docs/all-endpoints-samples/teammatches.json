@@ -1,0 +1,37 @@
+{
+  "size": [
+    461,
+    164,
+    5
+  ],
+  "matches": [
+    {
+      "uuid": "612d2960-4472-11ef-9e7e-bc24112ec32e",
+      "id": "612d2960-4472-11ef-9e7e-bc24112ec32e"
+    },
+    {
+      "uuid": "81ba00dc-3c9b-11ef-9e7e-bc24112ec32e",
+      "id": "81ba00dc-3c9b-11ef-9e7e-bc24112ec32e"
+    },
+    {
+      "uuid": "df0b2447-3635-11ef-9e7e-bc24112ec32e",
+      "id": "df0b2447-3635-11ef-9e7e-bc24112ec32e"
+    },
+    {
+      "uuid": "5049f1e8-269b-11ef-895c-bc24112ec32e",
+      "id": "5049f1e8-269b-11ef-895c-bc24112ec32e"
+    },
+    {
+      "uuid": "999e9b1f-903d-11ee-b910-02000090a64f",
+      "id": "999e9b1f-903d-11ee-b910-02000090a64f"
+    }
+  ],
+  "meta": {
+    "user": "Breakyt",
+    "game": "bb3",
+    "method": "teammatches",
+    "format": "json",
+    "services": "https://web.cyanide-studio.com/ws/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2&bb=3"
+  },
+  "promotional_content": false
+}

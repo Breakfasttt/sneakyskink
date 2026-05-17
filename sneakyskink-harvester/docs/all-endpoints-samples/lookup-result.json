@@ -1,0 +1,20 @@
+{
+  "size": [
+    2,
+    2,
+    196,
+    5
+  ],
+  "leagues": [],
+  "competitions": [],
+  "meta": {
+    "leagues": false,
+    "competitions": false,
+    "user": "Breakyt",
+    "game": "bb3",
+    "method": "lookup",
+    "format": "json",
+    "services": "https://web.cyanide-studio.com/ws/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2&bb=3"
+  },
+  "promotional_content": false
+}

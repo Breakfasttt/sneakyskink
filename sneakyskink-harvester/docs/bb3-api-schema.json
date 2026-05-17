@@ -1,0 +1,542 @@
+{
+  "size": [
+    1690,
+    16874,
+    6,
+    5,
+    5,
+    6,
+    142,
+    5
+  ],
+  "readme": [
+    "CYANIDE WEB-SERVICES",
+    "",
+    "Welcome to Cyanide's web-services entry point!",
+    "",
+    "Here, under 'services', you will find the list of all web-services your API key gives you access to.",
+    "For each service, it presents:",
+    "- the list of parameters/options, with accepted values and defaults,",
+    "- a changelog, which can give extra information on how it works.",
+    "",
+    "REQUIREMENTS",
+    "",
+    "We kindly ask for a controlled usage of it on your side. Meaning no abuse nor excessive usage of it.",
+    "Please cache the data/results on your side and do not make all the requests at the same time.",
+    "Also note that we apply daily quotas on your usage. Any request exeeding those quotas will fail.",
+    "",
+    "Your current quotas: 1000 requests per hour / 10000 requests per day",
+    "",
+    "We expect from you that",
+    "- you communicate to us the addresses of the websites, discord channels, tools, apps or",
+    "any kind of piece of software that uses our API. Thanks in advance for that.",
+    "- you communicate to us your real name, and a valid personnal email address",
+    "",
+    "Do not communicate your API key to anyone else. It's private and associated to your own use of it.",
+    "",
+    "SUPPORT",
+    "",
+    "Please note that those webservices are provided 'as-is' and that we cannot guarantee a big support on it.",
+    "You can considerate this services as “beta”. That means there might be bugs and that sometimes things get broken.",
+    "Also sometimes services are down. If you detect any missfunctionning please let us know.",
+    "",
+    "Feel free to contact us if you are experiencing problems, or have feature or improvements requests.",
+    "",
+    "NB. In order to access BB3 version of Blood Bowl webservices, don't forget to add the &bb=3 argument to URls."
+  ],
+  "services": [
+    {
+      "game": "bb3",
+      "method": "arenafinalscontenders",
+      "url": "https://web.cyanide-studio.com/ws/bb3/arenafinalscontenders/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2",
+      "args": {
+        "season": "0=last, 7, 8, 9, ..."
+      },
+      "history": [
+        "2025/07/17 : Teams Qualified for playoffs thanks to Arena"
+      ]
+    },
+    {
+      "game": "bb3",
+      "method": "coaches",
+      "url": "https://web.cyanide-studio.com/ws/bb3/coaches/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2",
+      "args": {
+        "league|league_name": "League name (default league/competiton = Official League / Open Ladder)",
+        "competition|competition_name": "Competition name (default league/competiton = Official League / Open Ladder)",
+        "platform|platform_name": "pc|playstation|xbox",
+        "limit|max": "Max amount of coach results (default = 100)",
+        "bb|opus": "Opus 1|2|3"
+      },
+      "history": [
+        "2023/05/30 : BB3 compatibility",
+        "2015/12/01 : List of league/competition's coaches/gamers"
+      ]
+    },
+    {
+      "game": "bb3",
+      "method": "competitions",
+      "url": "https://web.cyanide-studio.com/ws/bb3/competitions/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2",
+      "args": {
+        "league|league_name": "League name (default : Official League)",
+        "league|league_id": "League ID (default : Official League)",
+        "platform|platform_name": "pc|playstation|xbox",
+        "bb|opus": "Opus 1|2|3",
+        "limit|max": "Amount of results Limit",
+        "limit|competitions_limit": "Amount of competitions results Limit",
+        "limit|leagues_limit": "Amount of leagues results Limit",
+        "exact": "Exact league name match 0|1"
+      },
+      "history": [
+        "2023/06/22 : BB3 competition format enumeration: Knockout | RoundRobin | Wissen | Ladder",
+        "2023/06/22 : BB2 competition format enumeration: round_robin | single_elimination | ladder | swiss",
+        "2023/06/08 : Add league id parameter",
+        "2023/05/30 : BB3 compatibility",
+        "2021/03/31 : Add competitions_limit and leagues_limit",
+        "2018/09/07 : Optimization",
+        "2015/12/01 : List of league's competitions"
+      ]
+    },
+    {
+      "game": "bb3",
+      "method": "contests",
+      "url": "https://web.cyanide-studio.com/ws/bb3/contests/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2",
+      "args": {
+        "league|league_name": "League name (default : Official League)",
+        "league|league_id": "League ID (default = Official League)",
+        "competition|competition_name": "Competition name (default : all competitions)",
+        "competition|competition_id": "Competition ID (optional)",
+        "status|contest_status": "Scheduled|InProgress|Played|Validated (default: Sheduled)",
+        "round": "Round",
+        "platform|platform_name": "pc|playstation|xbox",
+        "bb|opus": "Opus 1|2|3",
+        "limit|max": "Limit",
+        "exact": "Exact league name match 0|1"
+      },
+      "history": [
+        "2024/10/25 : Upcoming_matches key deprecated. BB3:Optimization, 'round' key deprecated soon and splitted into 'competition_round' and 'contest_round', 'status' and 'format' keys depprecated soon, use 'contest_status' and 'competition_format'",
+        "2024/02/06 : (BB3) Contests status: update enumeration: Now having Played AND Validated",
+        "2024/02/06 : 'upcoming_matches' key will be DEPRECATED. Please start to use 'contests'",
+        "2024/01/30 : (BB3) Fix contests status",
+        "2023/06/08 : Add league id parameter (for BB3 only)",
+        "2023/06/08 : Add competition id parameter (for BB3 only)",
+        "2023/05/31 : BB3 Compatibility",
+        "2022/01/31 : BB3 Compatibility 1st draft",
+        "2018/09/07 : Optimization",
+        "2018/05/02 : Fix: some competitions where incorrectly detected as ladders, so without scheduling info",
+        "2018/05/02 : Fix: looking for scheduled matches also returned matches without scheduling information",
+        "2018/05/02 : Fix: Workaround errors when competition name contain ' character",
+        "2018/05/02 : Change: Specifying a league but no specific competition now iterates on all competitions within that league",
+        "2018/04/17 : When no opponents or winner are found, returns null instead of dummy structures",
+        "2018/04/17 : Default league/competition is now Cabalvision official as expected",
+        "2018/04/17 : Adding v2. v1 still accessible via v=1 URL parameter",
+        "2015/12/01 : List of league/competition's contests"
+      ]
+    },
+    {
+      "game": "bb3",
+      "method": "gamecount",
+      "url": "https://web.cyanide-studio.com/ws/bb3/gamecount/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2",
+      "args": {
+        "start": "Start date (YYYY-MM-DD) (default = 7 days ago)",
+        "end": "End date (YYYY-MM-DD) (default = today)"
+      },
+      "history": [
+        "2025/07/18 : Breakdown of number of game during a time duration"
+      ]
+    },
+    {
+      "game": "bb3",
+      "method": "gamestats",
+      "url": "https://web.cyanide-studio.com/ws/bb3/gamestats/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2",
+      "args": {
+        "competitionId|uuid": "Competition ID",
+        "start": "Start date (YYYY-MM-DD) (default = yesterday)",
+        "end": "End date (YYYY-MM-DD) (default = tommorrow)"
+      },
+      "history": [
+        "2025/07/18 : Game statistics"
+      ]
+    },
+    {
+      "game": "bb3",
+      "method": "halloffame",
+      "url": "https://web.cyanide-studio.com/ws/bb3/halloffame/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2",
+      "args": {
+        "bb|opus": "Opus 1|2",
+        "platform|platform_name": "pc|playstation|xbox",
+        "competition|competition_name": "Competition name (default = all competitions from given league)",
+        "league|league_name": "League name (default = Official League)",
+        "limit|max": "Max amount of results (default = 100)",
+        "exact": "Exact league name match 0|1"
+      },
+      "history": [
+        "2023/05/30 : Not compatible with BB3",
+        "2015/12/01 : League/competition's hall of fame"
+      ]
+    },
+    {
+      "game": "bb3",
+      "method": "ladder",
+      "url": "https://web.cyanide-studio.com/ws/bb3/ladder/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2",
+      "args": {
+        "bb|opus": "Opus 1|2|3",
+        "platform|platform_name": "pc|playstation|xbox",
+        "league|league_name": "League name (default : Official League)",
+        "league|league_id": "League ID (default = Official League)",
+        "competition|competition_name": "Competition name (default : Open Ladder)",
+        "competition|competition_id": "Competition ID (default : Open Ladder)",
+        "ladder_size|size|limit": "Ladder size [0,+oo[",
+        "tv_min|tvmin": "minimum team value desired",
+        "tv_max|tvmax": "maximum team value desired",
+        "concede_min|concedemin": "minimum concede rate %",
+        "concede_max|concedemax": "maximum concede rate %",
+        "match_min|matchmin": "minimum number of match",
+        "match_max|matchmax": "maximum number of match",
+        "winrate_min|winratemin": "minimum winrate %",
+        "winrate_max|winratemax": "maximum winrate %",
+        "lossrate_min|lossratemin": "minimum lossrate %",
+        "lossrate_max|lossratemax": "maximum lossrate %",
+        "drawrate_min|drawratemin": "minimum drawrate %",
+        "drawrate_max|drawratemax": "maximum drawrate %"
+      },
+      "history": [
+        "2024/08/22 : Add params for BB3",
+        "2022/01/31 : BB3 Compatibility",
+        "2018/06/04 : Convert race field to race + race_id fields",
+        "2018/06/04 : Adding v2. v1 still accessible via v=1 URL parameter",
+        "2017/12/04 : Add W/D/L information",
+        "2015/12/01 : League/competition's ladder/ranking/leaderboard"
+      ]
+    },
+    {
+      "game": "bb3",
+      "method": "league",
+      "url": "https://web.cyanide-studio.com/ws/bb3/league/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2",
+      "args": {
+        "platform|platform_name": "pc|playstation|xbox",
+        "league|league_name|name": "League name (default : Official League)",
+        "league|league_id|id": "League ID (default : Official League)",
+        "bb|opus": "Opus 1|2|3"
+      },
+      "history": [
+        "2023/06/08 : Add league id parameter",
+        "2023/05/30 : BB3 Compatibility",
+        "2018/07/01 : New league webservice",
+        "2015/12/01 : League details"
+      ]
+    },
+    {
+      "game": "bb3",
+      "method": "leagues",
+      "url": "https://web.cyanide-studio.com/ws/bb3/leagues/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2",
+      "args": {
+        "platform|platform_name": "pc|playstation|xbox",
+        "league|league_name": "League name filter (Unspecified = all leagues)",
+        "league|league_id|id": "League ID (Unspecified = all leagues)",
+        "bb|opus": "Opus 1|2|3",
+        "limit|max": "Limit",
+        "age|days": "Date last match (default = 365) (BB2 only)",
+        "teams|teams_count|min_teams_count": "Min amount of registered teams (default = 1) (BB2 only)",
+        "gamers_count": "Min amount of registered gamers (default = 1)(BB3 only)"
+      },
+      "history": [
+        "2025/02/17 : New BB3 parameter gamers_count",
+        "2023/05/30 : BB3 Compatibility",
+        "2018/07/23 : New leagues listing webservice",
+        "2015/12/01 : List of leagues"
+      ]
+    },
+    {
+      "game": "bb3",
+      "method": "lookup",
+      "url": "https://web.cyanide-studio.com/ws/bb3/lookup/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2",
+      "args": {
+        "platform|platform_name": "pc|playstation|xbox",
+        "bb|opus": "Opus 1|2|3",
+        "league|league_name": "League name",
+        "league|league_id": "League ID",
+        "order|sort": "ID|LastMatchDate|CreationDate",
+        "competition|competition_name": "Competition name",
+        "competition|competition_id": "Competition ID",
+        "team|team_name": "Team name",
+        "team|team_id": "Team ID",
+        "coach|coach_name": "Coach name",
+        "coach|coach_id": "Coach ID",
+        "exact": "Exact league name match 0|1",
+        "instruction|hint": "Competitions lookup hints (HAS_CONTESTS | NOT_LADDER | ONLY_LADDER)",
+        "fallback": "Should competitions lookup fallback to default if no corresponding competition is found ? 0|1"
+      },
+      "history": [
+        "2023/06/22 : New endpoint meant to look for teams, leagues, competitions or caoches by names or IDs"
+      ]
+    },
+    {
+      "game": "bb3",
+      "method": "match",
+      "url": "https://web.cyanide-studio.com/ws/bb3/match/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2",
+      "args": {
+        "platform|platform_name": "pc|playstation|xbox",
+        "match_id|uuid|id": "BB2 Match UUID",
+        "bb|opus": "Opus 1|2|3",
+        "rosters": "Show rosters 0|1 (Default: 1)"
+      },
+      "history": [
+        "2024/10/02 : Fix Player aggregated stats if only 1 stat",
+        "2023/07/25 : Fix away team KO and injuries stats",
+        "2023/05/31 : BB3 Compatibility",
+        "2018/04/30 : Add match contest round info",
+        "2017/07/06 : Add player number",
+        "2017/07/06 : Add casualties IDs",
+        "2017/06/29 : Add dateLastMatch for each team",
+        "2017/06/29 : Add XB1 and PS4 detailed stats",
+        "2017/06/28 : Add platform auto-detection from match UUID",
+        "2015/12/01 : Match/Game details"
+      ]
+    },
+    {
+      "game": "bb3",
+      "method": "matches",
+      "url": "https://web.cyanide-studio.com/ws/bb3/matches/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2",
+      "args": {
+        "platform|platform_name": "pc|playstation|xbox",
+        "league|league_name": "League name (default = Official League)",
+        "league|league_id": "League ID (default = Official League)",
+        "competition|competition_name": "Competition name (optional)",
+        "competition|competition_id": "Competition ID (optional)",
+        "limit|max": "Max amount of match results per league (default = 100)",
+        "start": "Start date (default = 20 days ago)",
+        "end": "End date (default = today)",
+        "bb|opus": "Opus 1|2|3",
+        "order|ordering": "Ordering started|finished",
+        "id_only": "IDs only 0|1",
+        "team_id|team": "Team ID",
+        "team_stats|stats": "Show team statistics (default = 1)"
+      },
+      "history": [
+        "2023/07/25 : Fix away team KO and injuries stats",
+        "2023/06/22 : Add team_stats param to opt-out statistics",
+        "2023/06/08 : Add league id parameter",
+        "2023/06/08 : Add competition id parameter",
+        "2023/05/31 : BB3 Compatibility",
+        "2018/04/30 : Add match contest round info",
+        "2015/12/01 : List of league/competition's matches/games"
+      ]
+    },
+    {
+      "game": "bb3",
+      "method": "player",
+      "url": "https://web.cyanide-studio.com/ws/bb3/player/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2",
+      "args": {
+        "platform|platform_name": "pc|playstation|xbox",
+        "player|id": "Player ID",
+        "player|name": "Player Name (Skipped if ID is specified)",
+        "bb|opus": "Opus 1|2|3"
+      },
+      "history": [
+        "2023/05/31 : BB3 Compatibility",
+        "2018/08/29 : Add suspended_next_match field",
+        "2015/12/01 : Team player details"
+      ]
+    },
+    {
+      "game": "bb3",
+      "method": "rss",
+      "url": "https://web.cyanide-studio.com/ws/bb3/rss/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2",
+      "args": [],
+      "history": [
+        "2015/12/01 : BLood Bowl RSS feed"
+      ]
+    },
+    {
+      "game": "bb3",
+      "method": "rules",
+      "url": "https://web.cyanide-studio.com/ws/bb3/rules/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2",
+      "args": {
+        "platform|platform_name": "pc|playstation|xbox",
+        "bb|opus": "Opus 3",
+        "rule|rules|ruleset": "Ruleset name (skills, ...)"
+      },
+      "history": [
+        "2023/11/17 : BB3 only new service, that shows misc rules related information (skills list, ...)"
+      ]
+    },
+    {
+      "game": "bb3",
+      "method": "sprintranking",
+      "url": "https://web.cyanide-studio.com/ws/bb3/sprintranking/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2",
+      "args": {
+        "competition_id": "Competition id",
+        "competition_name": "Competition name",
+        "match_threshold": "Match threshold (currently only 20)"
+      },
+      "history": [
+        "2024/12/16 : SprintRanking creation"
+      ]
+    },
+    {
+      "game": "bb3",
+      "method": "stats",
+      "url": "https://web.cyanide-studio.com/ws/bb3/stats/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2",
+      "args": {
+        "stats|stat": "Requested stats list (comma separated)",
+        "bb|opus": "Opus 1|2|3"
+      },
+      "history": [
+        "2023/05/31 : BB3 Compatibility",
+        "2015/12/01 : Shows misc statistics"
+      ]
+    },
+    {
+      "game": "bb3",
+      "method": "team",
+      "url": "https://web.cyanide-studio.com/ws/bb3/team/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2",
+      "args": {
+        "platform|platform_name": "pc|playstation|xbox",
+        "team|id": "Team ID",
+        "team|name": "Team Name (Skipped if ID is specified)",
+        "order|sort": "ID|LastMatchDate|CreationDate",
+        "bb|opus": "Opus 1|2|3",
+        "coach": "Retrieve teams's coach info 0|1 (Default: 1)",
+        "roster": "Retrieve teams's roster 0|1 (Default: 1)",
+        "stats|statistics": "player stats 0|1 (Default: 0)",
+        "skills": "player skills 0|1 (Default: 1)",
+        "casualties": "player casualties 0|1 (Default: 1)"
+      },
+      "history": [
+        "2024/02/07 : [BB3] Add rerolls, apothecary, dedicated_fans and cheerleaders",
+        "2023/06/08 : [BB2] Add cards, coach and roster filter parameters",
+        "2023/05/31 : BB3 Compatibility",
+        "2018/10/22 : Add order parameter",
+        "2018/08/29 : Add suspended_next_match field",
+        "2018/08/07 : Add casualties IDs",
+        "2015/12/01 : League/competition's team details"
+      ]
+    },
+    {
+      "game": "bb3",
+      "method": "teammatches",
+      "url": "https://web.cyanide-studio.com/ws/bb3/teammatches/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2",
+      "args": {
+        "platform|platform_name": "pc|playstation|xbox",
+        "limit": "Max amount of match results per league (default = 100)",
+        "start": "Start date (default = 1 hour ago)",
+        "end": "End date (default = today)",
+        "bb|opus": "Opus 1|2|3",
+        "order|ordering": "Ordering started|finished",
+        "team_id|team": "Team ID"
+      },
+      "history": [
+        "2023/05/31 : BB3 Compatibility",
+        "2015/12/01 : List of a team's matches/games"
+      ]
+    },
+    {
+      "game": "bb3",
+      "method": "teams",
+      "url": "https://web.cyanide-studio.com/ws/bb3/teams/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2",
+      "args": {
+        "league|league_name": "League name (default = Official League)",
+        "league|league_id": "League ID (default : Official League)",
+        "competition|competition_name": "Competition name (default = all competitions from given league)",
+        "competition|competition_id": "Competition ID (default = all competitions from given league)",
+        "platform|platform_name": "pc|playstation|xbox",
+        "limit|max": "Max amount of team results (default = 100)",
+        "bb|opus": "Opus 1|2|3",
+        "sensitive|case_sensitive": "Case-sensitive names matching",
+        "race": "Retrieve teams's race info 0|1 (Default: 1)",
+        "logo": "Retrieve teams's logo 0|1 (Default: 1)",
+        "last_match": "Retrieve teams's last match info 0|1 (Default: 1)"
+      },
+      "history": [
+        "2024/02/07 : [BB3] Add rerolls, apothecary, dedicated_fans and cheerleaders",
+        "2023/07/05 : [BB3] You can now use OFFSET,LIMIT for the limit parameter",
+        "2023/06/22 : [BB3] Races enumeration format: human | dwarf | skaven | woodElf | etc.",
+        "2023/06/08 : Add team name, team id and team order parameters",
+        "2023/06/08 : Add race, logo and match filter parameters",
+        "2023/06/08 : Add competition id parameter",
+        "2023/05/31 : BB3 Compatibility",
+        "2017/06/29 : Add dateLastMatch for each team",
+        "2015/12/01 : List of league/competition's teams"
+      ]
+    },
+    {
+      "game": "bb3",
+      "method": "top",
+      "url": "https://web.cyanide-studio.com/ws/bb3/top/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2",
+      "args": {
+        "bb|opus": "Opus 1|2|3",
+        "platform|platform_name": "pc|playstation|xbox",
+        "league|league_name": "League name (default : Official League)",
+        "league|league_id": "League ID (default = Official League)",
+        "competition|competition_name": "Competition name (default : Open Ladder)",
+        "competition|competition_id": "Competition ID (default : Open Ladder)",
+        "top|top_size|size|limit": "Top size [0,+oo["
+      },
+      "history": [
+        "2023/09/01 : BB3 only. For each faction, lists the top teams"
+      ]
+    },
+    {
+      "game": "cya",
+      "method": "status",
+      "url": "https://web.cyanide-studio.com/ws/cya/status/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2",
+      "args": [],
+      "history": []
+    },
+    {
+      "game": "cya",
+      "method": "welcome",
+      "url": "https://web.cyanide-studio.com/ws/cya/welcome/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2",
+      "args": {
+        "env": "Environment",
+        "lang|language": "Language",
+        "platform": "Platform",
+        "region": "Region",
+        "accept_promo|promo": "Accept promotional content ?",
+        "limit": "Limit amount of received news"
+      },
+      "history": []
+    },
+    {
+      "game": "pcm",
+      "method": "rss",
+      "url": "https://web.cyanide-studio.com/ws/pcm/rss/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2",
+      "args": [],
+      "history": []
+    },
+    {
+      "game": "pcm",
+      "method": "tournaments",
+      "url": "https://web.cyanide-studio.com/ws/pcm/tournaments/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2",
+      "args": [],
+      "history": []
+    },
+    {
+      "game": "tdf",
+      "method": "liveraceleaderboard",
+      "url": "https://web.cyanide-studio.com/ws/tdf/liveraceleaderboard/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2",
+      "args": {
+        "opus|year|yy|y": "Tour de France year",
+        "leaderboard": "Leaderboard (LATEST | YYYY-MM-DD HH:MM:SS | race_name)",
+        "downhill|descent": "Downhill Leaderboard 0|1",
+        "lang|language": "Language filter"
+      },
+      "history": [
+        "2025/06/26 : Add leaderboard_time",
+        "2025/06/16 : Rename score to leaderboard_record",
+        "2022/04/15 : Live race leaderboard first draft"
+      ]
+    }
+  ],
+  "games": 641179,
+  "gamers": 30443,
+  "teams": 89216,
+  "competitions": 195285,
+  "meta": {
+    "user": "Breakyt",
+    "method": "ws",
+    "format": "json",
+    "services": "https://web.cyanide-studio.com/ws/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2&bb=3"
+  },
+  "promotional_content": false
+}

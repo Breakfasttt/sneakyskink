@@ -1,0 +1,38 @@
+{
+  "folders": [
+    {
+      "name": "🦎 SNEAKYSKINK - HARVESTER",
+      "path": "./SneakySkink-harvester"
+    },
+    {
+      "name": "🚀 SNEAKYSKINK - API",
+      "path": "./SneakySkink-api"
+    },
+    {
+      "name": "💻 SNEAKYSKINK - WEB APP",
+      "path": "./SneakySkink-web"
+    },
+    {
+      "name": "🤖 SNEAKYSKINK - DISCORD BOT",
+      "path": "./SneakySkink-discord"
+    },
+    {
+      "name": "🎮 SNEAKYSKINK - TWITCH BOT",
+      "path": "./SneakySkink-twitch"
+    },
+    {
+      "path": "sneakyskink-bdd"
+    },
+    {
+      "path": "sneakyskink-doc"
+    }
+  ],
+  "settings": {
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/build": true
+    }
+  }
+}

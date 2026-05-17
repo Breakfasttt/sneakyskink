@@ -1,0 +1,26 @@
+{
+  "name": "sneakyskink-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Monorepo global pour l'écosystème SneakySkink - Blood Bowl 3 Ingestion & REST API",
+  "workspaces": [
+    "sneakyskink-doc",
+    "sneakyskink-bdd",
+    "sneakyskink-api-client",
+    "SneakySkink-harvester",
+    "SneakySkink-api",
+    "SneakySkink-web",
+    "SneakySkink-discord",
+    "SneakySkink-twitch"
+  ],
+  "scripts": {
+    "install:all": "npm install",
+    "build:all": "npm run build --workspaces --if-present",
+    "lint:all": "npm run lint --workspaces --if-present"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3"
+  },
+  "author": "SneakySkink Authors",
+  "license": "MIT"
+}

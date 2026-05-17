@@ -1,0 +1,226 @@
+{
+  "size": [
+    3177,
+    231,
+    159,
+    5
+  ],
+  "ranking": [
+    {
+      "team": {
+        "division": "GRANDMASTER",
+        "rank": 1,
+        "name": "Buttz",
+        "id": "4b6cd45a-f251-11ee-895c-bc24112ec32e",
+        "tv": 1580,
+        "score": 2267,
+        "race_id": 4,
+        "race": "orc",
+        "logo": "Logo_Orc_15",
+        "w/d/l": "38/6/6"
+      },
+      "coach": {
+        "name": "DocMaXX",
+        "id": "a4649573-b6bf-11ee-a745-02000090a64f",
+        "lang": "english",
+        "country": null
+      }
+    },
+    {
+      "team": {
+        "division": "GRANDMASTER",
+        "rank": 2,
+        "name": "Lumberjacks Local No. 9",
+        "id": "759d638b-e0d6-11ee-895c-bc24112ec32e",
+        "tv": 1500,
+        "score": 2264,
+        "race_id": 2,
+        "race": "dwarf",
+        "logo": "Logo_ImperialNobility_03",
+        "w/d/l": "38/7/2"
+      },
+      "coach": {
+        "name": "Bort",
+        "id": "a0ab1fbc-c5ed-11ed-b762-020000d1a054",
+        "lang": "english",
+        "country": null
+      }
+    },
+    {
+      "team": {
+        "division": "GRANDMASTER",
+        "rank": 3,
+        "name": "Yipiyayyey",
+        "id": "191f852f-07aa-11ef-895c-bc24112ec32e",
+        "tv": 1575,
+        "score": 2222,
+        "race_id": 2,
+        "race": "dwarf",
+        "logo": "Logo_Dwarf_08",
+        "w/d/l": "35/9/7"
+      },
+      "coach": {
+        "name": "LEGOLAS_1974",
+        "id": "b03c8043-b38c-11ed-b762-020000d1a054",
+        "lang": "english",
+        "country": null
+      }
+    },
+    {
+      "team": {
+        "division": "GRANDMASTER",
+        "rank": 4,
+        "name": "Stumpers (SaS)",
+        "id": "5eae00e5-e1e2-11ee-895c-bc24112ec32e",
+        "tv": 1580,
+        "score": 2211,
+        "race_id": 2,
+        "race": "dwarf",
+        "logo": "Logo_Season_01_Top_014",
+        "w/d/l": "27/8/3"
+      },
+      "coach": {
+        "name": "Toe",
+        "id": "50c70703-3a7d-11ee-b762-020000d1a054",
+        "lang": "english",
+        "country": null
+      }
+    },
+    {
+      "team": {
+        "division": "GRANDMASTER",
+        "rank": 5,
+        "name": "Little people (SaS)",
+        "id": "bc82997d-f25b-11ee-895c-bc24112ec32e",
+        "tv": 1600,
+        "score": 2205,
+        "race_id": 2,
+        "race": "dwarf",
+        "logo": "Logo_Dwarf_08",
+        "w/d/l": "30/10/7"
+      },
+      "coach": {
+        "name": "Toe",
+        "id": "50c70703-3a7d-11ee-b762-020000d1a054",
+        "lang": "english",
+        "country": null
+      }
+    },
+    {
+      "team": {
+        "division": "GRANDMASTER",
+        "rank": 6,
+        "name": "GREEN MUSHROOMS",
+        "id": "14213308-f1ff-11ee-895c-bc24112ec32e",
+        "tv": 1850,
+        "score": 2203,
+        "race_id": 2,
+        "race": "dwarf",
+        "logo": "Logo_Season_03_Top_002",
+        "w/d/l": "36/9/5"
+      },
+      "coach": {
+        "name": "BUBBA",
+        "id": "88606e06-b359-11ed-b762-020000d1a054",
+        "lang": "english",
+        "country": null
+      }
+    },
+    {
+      "team": {
+        "division": "GRANDMASTER",
+        "rank": 7,
+        "name": "Min2daMax",
+        "id": "974bbd3d-e09e-11ee-895c-bc24112ec32e",
+        "tv": 1355,
+        "score": 2197,
+        "race_id": 2,
+        "race": "dwarf",
+        "logo": "Logo_Season_04_Top_007",
+        "w/d/l": "24/4/2"
+      },
+      "coach": {
+        "name": "Dr. Killinger",
+        "id": "82bfe12d-bcb8-11ed-b762-020000d1a054",
+        "lang": "english",
+        "country": null
+      }
+    },
+    {
+      "team": {
+        "division": "GRANDMASTER",
+        "rank": 8,
+        "name": "Grrrrr",
+        "id": "50bb49af-00e2-11ef-895c-bc24112ec32e",
+        "tv": 1510,
+        "score": 2189,
+        "race_id": 8,
+        "race": "chaosChosen",
+        "logo": "Logo_Season_02_Top_002",
+        "w/d/l": "32/7/5"
+      },
+      "coach": {
+        "name": "Edwardlover",
+        "id": "55603849-b36f-11ed-b762-020000d1a054",
+        "lang": "english",
+        "country": null
+      }
+    },
+    {
+      "team": {
+        "division": "GRANDMASTER",
+        "rank": 9,
+        "name": "Born Slippery",
+        "id": "8017aed3-eae9-11ee-895c-bc24112ec32e",
+        "tv": 1480,
+        "score": 2177,
+        "race_id": 10,
+        "race": "shamblingUndead",
+        "logo": "Logo_Undead_12",
+        "w/d/l": "28/6/5"
+      },
+      "coach": {
+        "name": "Nicholai Hel",
+        "id": "9d85ad5a-d931-11ed-b762-020000d1a054",
+        "lang": "english",
+        "country": null
+      }
+    },
+    {
+      "team": {
+        "division": "GRANDMASTER",
+        "rank": 10,
+        "name": "Muh und Crew 2 ",
+        "id": "09184341-fd8a-11ee-895c-bc24112ec32e",
+        "tv": 1550,
+        "score": 2167,
+        "race_id": 8,
+        "race": "chaosChosen",
+        "logo": "Logo_ChaosChosen_08",
+        "w/d/l": "60/14/27"
+      },
+      "coach": {
+        "name": "Sumpflager",
+        "id": "d835ccce-b377-11ed-b762-020000d1a054",
+        "lang": "english",
+        "country": null
+      }
+    }
+  ],
+  "ladder": {
+    "league": "Official league",
+    "league_id": "50000000-0000-0000-0000-000000000025",
+    "competition": "official_ladder_season_04",
+    "competition_id": "50000000-0000-0000-0000-000000000052",
+    "id": "50000000-0000-0000-0000-000000000052",
+    "size": 10
+  },
+  "meta": {
+    "user": "Breakyt",
+    "game": "bb3",
+    "method": "ladder",
+    "format": "json",
+    "services": "https://web.cyanide-studio.com/ws/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2&bb=3"
+  },
+  "promotional_content": false
+}

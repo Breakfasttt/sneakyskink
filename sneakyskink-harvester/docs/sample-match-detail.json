@@ -1,0 +1,1458 @@
+{
+  "size": [
+    15608,
+    38,
+    231,
+    256,
+    332,
+    174,
+    5
+  ],
+  "match": {
+    "id": "667f7b21-51de-11f1-a124-bc2411305479",
+    "started": "2026-05-17 10:51:47",
+    "finished": "2026-05-17 11:04:14",
+    "idleague": "00000000-0000-0000-0000-000000000025",
+    "leaguename": "Official league",
+    "idcompetition": "4e24c5e3-3347-11f1-903a-d8bbc1d7001d",
+    "competitionname": "OPEN_LADDER_SEASON_11",
+    "stadium": null,
+    "round": 1,
+    "platform": "pc",
+    "coaches": [
+      {
+        "idcoach": "ddf0e15a-7d9e-11ee-af36-020000a4d571",
+        "coachname": "Matt"
+      },
+      {
+        "idcoach": "f61fa7de-5be5-11f0-a124-bc2411305479",
+        "coachname": "Gyrotrap"
+      }
+    ],
+    "teams": [
+      {
+        "idteamlisting": "32a9b1ce-51db-11f1-a124-bc2411305479",
+        "idraces": 5,
+        "teamname": "Isal Sorna Saurus",
+        "teamlogo": "Logo_Skaven_18",
+        "value": 960,
+        "score": 0,
+        "inflictedpasses": 0,
+        "inflictedcatches": 0,
+        "inflictedinterceptions": 0,
+        "inflictedtouchdowns": 0,
+        "inflictedcasualties": 1,
+        "inflictedtackles": 1,
+        "inflictedko": 0,
+        "inflictedinjuries": 1,
+        "inflicteddead": 0,
+        "inflictedmetersrunning": 0,
+        "inflictedmeterspassing": 0,
+        "inflictedpushouts": 0,
+        "sustainedexpulsions": 0,
+        "sustainedcasualties": 1,
+        "sustainedko": 2,
+        "sustainedinjuries": 5,
+        "sustaineddead": 0,
+        "roster": [
+          {
+            "id": "32ac3afd-51db-11f1-a124-bc2411305479",
+            "number": 1,
+            "type": "lizardman_kroxigor",
+            "name": "Omopotek 'Blood for Blood'",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 2,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 6,
+              "st": 5,
+              "ag": 5,
+              "pa": null,
+              "av": 10
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 6,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 5,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 5,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": null,
+                "bonuses": null,
+                "maluses": null
+              },
+              "av": {
+                "value": 10,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "spp_gained": 2,
+              "blitz_done": 2,
+              "casualties_inflicted": 1,
+              "injuries_inflicted": 1,
+              "blocks_succeeded": 2,
+              "armour_breaks": 1
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "prehensile tail",
+                "thick skull",
+                "loner (4+)",
+                "mighty blow (+1)",
+                "bone head"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "32ae2224-51db-11f1-a124-bc2411305479",
+            "number": 2,
+            "type": "lizardman_saurusBlocker",
+            "name": "Omopotek 'The rampart of Hexoatl'",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 6,
+              "st": 4,
+              "ag": 5,
+              "pa": 6,
+              "av": 10
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 6,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 5,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 6,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 10,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "yards_rushing": 2,
+              "rush_try": 2,
+              "rush_success": 2
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": []
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "32b0454d-51db-11f1-a124-bc2411305479",
+            "number": 3,
+            "type": "lizardman_saurusBlocker",
+            "name": "Borytlatix 'Earthquake'",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 6,
+              "st": 4,
+              "ag": 5,
+              "pa": 6,
+              "av": 10
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 6,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 5,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 6,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 10,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "blocks_succeeded": 1
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": []
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "32b21d1b-51db-11f1-a124-bc2411305479",
+            "number": 4,
+            "type": "lizardman_saurusBlocker",
+            "name": "Molpateq 'The alligator'",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 6,
+              "st": 4,
+              "ag": 5,
+              "pa": 6,
+              "av": 10
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 6,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 5,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 6,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 10,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "blocks_sustained": 1,
+              "ko_sustained": 1,
+              "injuries_sustained": 1
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": []
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "32b57726-51db-11f1-a124-bc2411305479",
+            "number": 5,
+            "type": "lizardman_saurusBlocker",
+            "name": "Molpateq 'Lounge lizard'",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 6,
+              "st": 4,
+              "ag": 5,
+              "pa": 6,
+              "av": 10
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 6,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 5,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 6,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 10,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": [],
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": []
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "32b76a5b-51db-11f1-a124-bc2411305479",
+            "number": 6,
+            "type": "lizardman_saurusBlocker",
+            "name": "Conquatoq 'Lounge lizard'",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 6,
+              "st": 4,
+              "ag": 5,
+              "pa": 6,
+              "av": 10
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 6,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 5,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 6,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 10,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": [],
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": []
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "32b93a83-51db-11f1-a124-bc2411305479",
+            "number": 7,
+            "type": "lizardman_saurusBlocker",
+            "name": "Geyotoepl 'Flytrap'",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 6,
+              "st": 4,
+              "ag": 5,
+              "pa": 6,
+              "av": 10
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 6,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 5,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 6,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 10,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "blocks_sustained": 1,
+              "ko_sustained": 1,
+              "injuries_sustained": 1
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": []
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "32bae217-51db-11f1-a124-bc2411305479",
+            "number": 8,
+            "type": "lizardman_skinkRunner",
+            "name": "Molpateq 'The mysterious'",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 8,
+              "st": 2,
+              "ag": 3,
+              "pa": 4,
+              "av": 8
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 8,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 2,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 8,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "blocks_sustained": 2,
+              "casualties_sustained": 1,
+              "injuries_sustained": 1
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "stunty",
+                "dodge"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": [
+                "smashed_knee"
+              ]
+            }
+          },
+          {
+            "id": "32bcb66c-51db-11f1-a124-bc2411305479",
+            "number": 9,
+            "type": "lizardman_skinkRunner",
+            "name": "Tencquaq 'The Hunter'",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 8,
+              "st": 2,
+              "ag": 3,
+              "pa": 4,
+              "av": 8
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 8,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 2,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 8,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "dodge_try": 1,
+              "blocks_sustained": 2,
+              "dodge_success": 1
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "stunty",
+                "dodge"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "32be7fec-51db-11f1-a124-bc2411305479",
+            "number": 10,
+            "type": "lizardman_skinkRunner",
+            "name": "Tencquaq 'Weakling'",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 8,
+              "st": 2,
+              "ag": 3,
+              "pa": 4,
+              "av": 8
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 8,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 2,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 8,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "dodge_try": 1,
+              "injuries_sustained": 1
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "stunty",
+                "dodge"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "32c03a04-51db-11f1-a124-bc2411305479",
+            "number": 11,
+            "type": "lizardman_skinkRunner",
+            "name": "Hugat’loa 'Grass eater'",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 8,
+              "st": 2,
+              "ag": 3,
+              "pa": 4,
+              "av": 8
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 8,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 2,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 8,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "blocks_sustained": 1,
+              "injuries_sustained": 1
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "stunty",
+                "dodge"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          }
+        ]
+      },
+      {
+        "idteamlisting": "e3dc3937-51c3-11f1-a124-bc2411305479",
+        "idraces": 1,
+        "teamname": "Sleepwalker",
+        "teamlogo": "Logo_Human_14",
+        "value": 990,
+        "score": 1,
+        "inflictedpasses": 1,
+        "inflictedcatches": 1,
+        "inflictedinterceptions": 0,
+        "inflictedtouchdowns": 0,
+        "inflictedcasualties": 1,
+        "inflictedtackles": 1,
+        "inflictedko": 2,
+        "inflictedinjuries": 4,
+        "inflicteddead": 0,
+        "inflictedmetersrunning": 17,
+        "inflictedmeterspassing": 2,
+        "inflictedpushouts": 0,
+        "sustainedexpulsions": 0,
+        "sustainedcasualties": 1,
+        "sustainedko": 1,
+        "sustainedinjuries": 2,
+        "sustaineddead": 0,
+        "roster": [
+          {
+            "id": "fd359f64-51c3-11f1-a124-bc2411305479",
+            "number": 1,
+            "type": "human_ogre",
+            "name": "Kaa 'The dazzler'",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 5,
+              "st": 5,
+              "ag": 4,
+              "pa": 5,
+              "av": 10
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 5,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 5,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 5,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 10,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "ko_inflicted": 1,
+              "blocks_succeeded": 2,
+              "armour_breaks": 2,
+              "injuries_inflicted": 2,
+              "stun_inflicted": 1
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "throw team-mate",
+                "thick skull",
+                "loner (4+)",
+                "mighty blow (+1)",
+                "bone head"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "fd674ab9-51c3-11f1-a124-bc2411305479",
+            "number": 2,
+            "type": "human_humanThrower",
+            "name": "Warin 'The Invisible'",
+            "level": 1,
+            "xp": 5,
+            "xp_gain": 1,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 6,
+              "st": 3,
+              "ag": 3,
+              "pa": 2,
+              "av": 9
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 6,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 2,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 9,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "spp_gained": 1,
+              "quick_pass_try": 1,
+              "quick_pass_success": 1,
+              "pass_try": 1,
+              "pass_success": 1,
+              "pass_reception_success": 1,
+              "yards_running": 1,
+              "yards_passing": 2,
+              "pick_up_try": 1,
+              "pick_up_success": 1
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "sure hands",
+                "pass"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "fd6c560d-51c3-11f1-a124-bc2411305479",
+            "number": 3,
+            "type": "human_humanCatcher",
+            "name": "Geoffroi 'Jaw of steel'",
+            "level": 1,
+            "xp": 3,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 8,
+              "st": 2,
+              "ag": 3,
+              "pa": 5,
+              "av": 8
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 8,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 2,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 5,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 8,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "dodge_try": 1,
+              "dodge_success": 1
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "catch",
+                "dodge"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "fd716bff-51c3-11f1-a124-bc2411305479",
+            "number": 4,
+            "type": "human_humanCatcher",
+            "name": "Werner 'Nutcracker'",
+            "level": 1,
+            "xp": 3,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 8,
+              "st": 2,
+              "ag": 3,
+              "pa": 5,
+              "av": 8
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 8,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 2,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 5,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 8,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "catch_up_ball_try": 1,
+              "catch_up_ball_success": 1,
+              "pass_reception_try": 1,
+              "yards_running": 16
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "catch",
+                "dodge"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "fd99c729-51c3-11f1-a124-bc2411305479",
+            "number": 5,
+            "type": "human_humanBlitzer",
+            "name": "Markus 'The child of Marienburg'",
+            "level": 1,
+            "xp": 3,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 7,
+              "st": 3,
+              "ag": 3,
+              "pa": 4,
+              "av": 9
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 7,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 9,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "blitz_done": 2,
+              "blocks_succeeded": 3,
+              "armour_breaks": 1,
+              "injuries_inflicted": 1,
+              "ko_inflicted": 1
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "block"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "fd9f22db-51c3-11f1-a124-bc2411305479",
+            "number": 6,
+            "type": "human_humanBlitzer",
+            "name": "Engilram 'Good night'",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 7,
+              "st": 3,
+              "ag": 3,
+              "pa": 4,
+              "av": 9
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 7,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 9,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "dodge_try": 1,
+              "ko_sustained": 1,
+              "injuries_sustained": 1
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "block"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "fdc04586-51c3-11f1-a124-bc2411305479",
+            "number": 7,
+            "type": "human_humanBlitzer",
+            "name": "Volkmar 'Flytrap'",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 7,
+              "st": 3,
+              "ag": 3,
+              "pa": 4,
+              "av": 9
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 7,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 9,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "blitz_done": 1,
+              "blocks_succeeded": 1
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "block"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "fdc7f7ab-51c3-11f1-a124-bc2411305479",
+            "number": 8,
+            "type": "human_humanBlitzer",
+            "name": "Werner 'The Groveller'",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 4,
+            "matchplayed": 1,
+            "mvp": true,
+            "attributes": {
+              "ma": 7,
+              "st": 3,
+              "ag": 3,
+              "pa": 4,
+              "av": 9
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 7,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 9,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "spp_gained": 4,
+              "blocks_sustained": 1
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "block"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "fdcd005c-51c3-11f1-a124-bc2411305479",
+            "number": 9,
+            "type": "human_humanLineman",
+            "name": "Ralph 'The Norscan wolf'",
+            "level": 1,
+            "xp": 2,
+            "xp_gain": 2,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 6,
+              "st": 3,
+              "ag": 3,
+              "pa": 4,
+              "av": 9
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 6,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 9,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "spp_gained": 2,
+              "casualties_inflicted": 1,
+              "injuries_inflicted": 1,
+              "blocks_succeeded": 1,
+              "blocks_sustained": 1,
+              "armour_breaks": 1
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": []
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "fdd263e5-51c3-11f1-a124-bc2411305479",
+            "number": 10,
+            "type": "human_humanLineman",
+            "name": "Vincent 'The Impostor'",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 6,
+              "st": 3,
+              "ag": 3,
+              "pa": 4,
+              "av": 9
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 6,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 9,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "blocks_sustained": 1,
+              "casualties_sustained": 1,
+              "injuries_sustained": 1
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": []
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": [
+                "badly_hurt"
+              ]
+            }
+          },
+          {
+            "id": "fdf502ac-51c3-11f1-a124-bc2411305479",
+            "number": 11,
+            "type": "human_humanLineman",
+            "name": "Jules 'The Fool'",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 6,
+              "st": 3,
+              "ag": 3,
+              "pa": 4,
+              "av": 9
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 6,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 9,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": [],
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": []
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "uuid": "667f7b21-51de-11f1-a124-bc2411305479",
+  "coaches": [
+    {
+      "name": "Matt",
+      "created": "2023-11-07 18:52:58",
+      "id": "ddf0e15a-7d9e-11ee-af36-020000a4d571",
+      "lastlang": "english"
+    },
+    {
+      "name": "Gyrotrap",
+      "created": "2025-07-08 10:26:08",
+      "id": "f61fa7de-5be5-11f0-a124-bc2411305479",
+      "lastlang": "english"
+    }
+  ],
+  "teams": [
+    {
+      "name": "Isal Sorna Saurus",
+      "value": 900,
+      "cash": 40000,
+      "created": "2026-05-17 10:28:51",
+      "id": "32a9b1ce-51db-11f1-a124-bc2411305479"
+    },
+    {
+      "name": "Sleepwalker",
+      "value": 990,
+      "cash": 160000,
+      "created": "2026-05-17 07:42:00",
+      "id": "e3dc3937-51c3-11f1-a124-bc2411305479"
+    }
+  ],
+  "urls": {
+    "images": {
+      "logos": "https://images.cyanide-studio.com/bb3/logos/",
+      "races": "https://images.cyanide-studio.com/bb3/races/",
+      "portraits": "https://images.cyanide-studio.com/bb3/portraits/",
+      "skills": "https://images.cyanide-studio.com/bb3/skillicons/",
+      "stadiums": "https://images.cyanide-studio.com/bb3/stadiums/"
+    }
+  },
+  "meta": {
+    "platform": "pc",
+    "user": "Breakyt",
+    "game": "bb3",
+    "method": "match",
+    "format": "json",
+    "services": "https://web.cyanide-studio.com/ws/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2&bb=3"
+  },
+  "promotional_content": false
+}

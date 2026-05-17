@@ -1,0 +1,51 @@
+{
+  "project": {
+    "name": "SneakySkink-harvester",
+    "type": "Standalone Ingestion Daemon",
+    "language": "TypeScript",
+    "runtime": "Node.js"
+  },
+  "coreTechStack": {
+    "database": {
+      "orm": "Prisma (via sneakyskink-bdd package)",
+      "provider": "PostgreSQL"
+    },
+    "cachingAndQueueing": {
+      "broker": "Redis",
+      "library": "BullMQ"
+    },
+    "networking": {
+      "client": "Axios"
+    },
+    "logging": {
+      "library": "Pino"
+    }
+  },
+  "architecturalPatterns": [
+    {
+      "name": "Database Schema Sharing (SSOT)",
+      "purpose": "Isolate schema.prisma, PostgreSQL migrations, and compile the Prisma Client within a shared package ('sneakyskink-bdd') to prevent duplicate schemas across all microservices."
+    },
+    {
+      "name": "Adapter Pattern",
+      "purpose": "Decouple game versions (BB3, WBB) from the internal database schema by parsing external JSON data into standard domain interfaces before database operations."
+    },
+    {
+      "name": "Token Bucket / Cooldown Key Rotation",
+      "purpose": "Distribute traffic dynamically across multiple BB3 API keys, keeping track of calls per minute per key, putting keys in quarantined cooldown upon HTTP 429 errors."
+    },
+    {
+      "name": "Priority Queue-based Scraping",
+      "purpose": "Structure harvesting tasks into Priority 1 (Live/End Match), Priority 2 (Regular League Update), and Priority 3 (Historical Archive Ingestion) using BullMQ."
+    },
+    {
+      "name": "Exponential Backoff & Recovery",
+      "purpose": "Pause all scraping queues and retry with exponentially increasing delays when hitting server-wide downtime or network failures (HTTP 500/503)."
+    }
+  ],
+  "codeGuidelines": {
+    "typescript": "Strict typing, no use of 'any', explicit return types for services and functions.",
+    "logging": "Structured logging only via the Pino instance in src/utils/logger.ts, avoiding console.log.",
+    "database": "Database schema changes must only happen in the shared sneakyskink-bdd repository, avoiding local schema duplicates. Harvester uses client exports directly from 'sneakyskink-bdd'."
+  }
+}

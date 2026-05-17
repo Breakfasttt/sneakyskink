@@ -1,0 +1,619 @@
+{
+  "size": [
+    297,
+    78,
+    7020,
+    266,
+    157,
+    5
+  ],
+  "team": {
+    "id": "041d05d2-4256-11f1-a124-bc2411305479",
+    "idcoach": "168ab89c-b3a0-11ed-8d38-020000a4d571",
+    "idraces": 14,
+    "name": "E1",
+    "value": 1445,
+    "cash": 215000,
+    "created": "2026-04-27 16:27:42",
+    "cheerleaders": 0,
+    "assistantcoaches": 0,
+    "popularity": 5,
+    "rerolls": 3,
+    "apothecary": 1,
+    "logo": "Logo_ElvenUnion_02",
+    "cards": []
+  },
+  "coach": {
+    "id": 17138,
+    "name": "Flaxtrue",
+    "created": "2023-02-23 17:32:47",
+    "lastlang": null
+  },
+  "roster": [
+    {
+      "id": "0ef75f9e-4256-11f1-a124-bc2411305479",
+      "name": "Edyllian 'Liber necris'",
+      "idraces": 14,
+      "number": 1,
+      "value": 135,
+      "xp": 5,
+      "attributes": {
+        "pa": 3,
+        "ma": 7,
+        "st": 3,
+        "ag": 2,
+        "av": 9
+      },
+      "attributes_ex": {
+        "default": {
+          "ma": 7,
+          "st": 3,
+          "ag": 2,
+          "av": 9,
+          "pa": 3
+        },
+        "bonus": [],
+        "malus": []
+      },
+      "type": "elvenUnion_elfBlitzer",
+      "level": 2,
+      "casualties_state_id": [],
+      "casualties_state": [],
+      "suspended_next_match": false,
+      "skills": [
+        "block",
+        "sidestep",
+        "dodge"
+      ],
+      "statistics": {
+        "": {
+          "inflictedcasualties": 0,
+          "inflictedinjuries": 2,
+          "inflictedko": 1,
+          "sustainedcasualties": 0,
+          "sustainedko": 0,
+          "sustainedinjuries": 1
+        }
+      }
+    },
+    {
+      "id": "c05fb802-44cc-11f1-a124-bc2411305479",
+      "name": "Delya’Hylyss 'The Hunter'",
+      "idraces": 14,
+      "number": 2,
+      "value": 115,
+      "xp": 3,
+      "attributes": {
+        "pa": 3,
+        "ma": 7,
+        "st": 3,
+        "ag": 2,
+        "av": 9
+      },
+      "attributes_ex": {
+        "default": {
+          "ma": 7,
+          "st": 3,
+          "ag": 2,
+          "av": 9,
+          "pa": 3
+        },
+        "bonus": [],
+        "malus": []
+      },
+      "type": "elvenUnion_elfBlitzer",
+      "level": 1,
+      "casualties_state_id": [],
+      "casualties_state": [],
+      "suspended_next_match": false,
+      "skills": [
+        "block",
+        "sidestep"
+      ],
+      "statistics": {
+        "": {
+          "inflictedcasualties": 0,
+          "inflictedinjuries": 0,
+          "inflictedko": 0,
+          "sustainedcasualties": 1,
+          "sustainedko": 1,
+          "sustainedinjuries": 2
+        }
+      }
+    },
+    {
+      "id": "0f1603f1-4256-11f1-a124-bc2411305479",
+      "name": "Lothren 'Last Dance'",
+      "idraces": 14,
+      "number": 3,
+      "value": 135,
+      "xp": 0,
+      "attributes": {
+        "pa": 2,
+        "ma": 6,
+        "st": 3,
+        "ag": 2,
+        "av": 8
+      },
+      "attributes_ex": {
+        "default": {
+          "ma": 6,
+          "st": 3,
+          "ag": 2,
+          "av": 8,
+          "pa": 2
+        },
+        "bonus": [],
+        "malus": []
+      },
+      "type": "elvenUnion_elfThrower",
+      "level": 4,
+      "casualties_state_id": [],
+      "casualties_state": [],
+      "suspended_next_match": false,
+      "skills": [
+        "pass",
+        "block",
+        "leader",
+        "dodge"
+      ],
+      "statistics": {
+        "": {
+          "inflictedcasualties": 0,
+          "inflictedinjuries": 0,
+          "inflictedko": 0,
+          "sustainedcasualties": 0,
+          "sustainedko": 0,
+          "sustainedinjuries": 0
+        }
+      }
+    },
+    {
+      "id": "0f259852-4256-11f1-a124-bc2411305479",
+      "name": "Ionemath 'Black moon'",
+      "idraces": 14,
+      "number": 4,
+      "value": 160,
+      "xp": 5,
+      "attributes": {
+        "pa": 4,
+        "ma": 8,
+        "st": 3,
+        "ag": 2,
+        "av": 8
+      },
+      "attributes_ex": {
+        "default": {
+          "ma": 8,
+          "st": 3,
+          "ag": 2,
+          "av": 8,
+          "pa": 4
+        },
+        "bonus": [],
+        "malus": []
+      },
+      "type": "elvenUnion_elfCatcher",
+      "level": 4,
+      "casualties_state_id": [],
+      "casualties_state": [],
+      "suspended_next_match": false,
+      "skills": [
+        "catch",
+        "nerves of steel",
+        "dodge",
+        "block",
+        "sidestep"
+      ],
+      "statistics": {
+        "": {
+          "inflictedcasualties": 0,
+          "inflictedinjuries": 0,
+          "inflictedko": 0,
+          "sustainedcasualties": 0,
+          "sustainedko": 1,
+          "sustainedinjuries": 1
+        }
+      }
+    },
+    {
+      "id": "8faa20a9-44b6-11f1-a124-bc2411305479",
+      "name": "Firiell 'Blood for Blood'",
+      "idraces": 14,
+      "number": 5,
+      "value": 140,
+      "xp": 9,
+      "attributes": {
+        "pa": 4,
+        "ma": 8,
+        "st": 3,
+        "ag": 2,
+        "av": 8
+      },
+      "attributes_ex": {
+        "default": {
+          "ma": 8,
+          "st": 3,
+          "ag": 2,
+          "av": 8,
+          "pa": 4
+        },
+        "bonus": [],
+        "malus": []
+      },
+      "type": "elvenUnion_elfCatcher",
+      "level": 3,
+      "casualties_state_id": [],
+      "casualties_state": [],
+      "suspended_next_match": false,
+      "skills": [
+        "catch",
+        "nerves of steel",
+        "dodge",
+        "block"
+      ],
+      "statistics": {
+        "": {
+          "inflictedcasualties": 0,
+          "inflictedinjuries": 0,
+          "inflictedko": 0,
+          "sustainedcasualties": 0,
+          "sustainedko": 1,
+          "sustainedinjuries": 1
+        }
+      }
+    },
+    {
+      "id": "69d70b2e-4581-11f1-a124-bc2411305479",
+      "name": "Daelyndall 'Sneak'",
+      "idraces": 14,
+      "number": 6,
+      "value": 120,
+      "xp": 7,
+      "attributes": {
+        "pa": 4,
+        "ma": 8,
+        "st": 3,
+        "ag": 2,
+        "av": 8
+      },
+      "attributes_ex": {
+        "default": {
+          "ma": 8,
+          "st": 3,
+          "ag": 2,
+          "av": 8,
+          "pa": 4
+        },
+        "bonus": [],
+        "malus": []
+      },
+      "type": "elvenUnion_elfCatcher",
+      "level": 2,
+      "casualties_state_id": [],
+      "casualties_state": [],
+      "suspended_next_match": false,
+      "skills": [
+        "catch",
+        "nerves of steel",
+        "block"
+      ],
+      "statistics": {
+        "": {
+          "inflictedcasualties": 0,
+          "inflictedinjuries": 0,
+          "inflictedko": 0,
+          "sustainedcasualties": 0,
+          "sustainedko": 1,
+          "sustainedinjuries": 2
+        }
+      }
+    },
+    {
+      "id": "64cf8867-509c-11f1-a124-bc2411305479",
+      "name": "Ceynydor 'The tenderness of Cathay'",
+      "idraces": 14,
+      "number": 7,
+      "value": 60,
+      "xp": 0,
+      "attributes": {
+        "pa": 4,
+        "ma": 6,
+        "st": 3,
+        "ag": 2,
+        "av": 8
+      },
+      "attributes_ex": {
+        "default": {
+          "ma": 6,
+          "st": 3,
+          "ag": 2,
+          "av": 8,
+          "pa": 4
+        },
+        "bonus": [],
+        "malus": []
+      },
+      "type": "elvenUnion_elfLineman",
+      "level": 1,
+      "casualties_state_id": [],
+      "casualties_state": [],
+      "suspended_next_match": false,
+      "skills": []
+    },
+    {
+      "id": "03e0442e-4ca1-11f1-a124-bc2411305479",
+      "name": "Eliandr 'Golden Tooth'",
+      "idraces": 14,
+      "number": 8,
+      "value": 80,
+      "xp": 0,
+      "attributes": {
+        "pa": 4,
+        "ma": 6,
+        "st": 3,
+        "ag": 2,
+        "av": 8
+      },
+      "attributes_ex": {
+        "default": {
+          "ma": 6,
+          "st": 3,
+          "ag": 2,
+          "av": 8,
+          "pa": 4
+        },
+        "bonus": [],
+        "malus": []
+      },
+      "type": "elvenUnion_elfLineman",
+      "level": 2,
+      "casualties_state_id": [],
+      "casualties_state": [],
+      "suspended_next_match": false,
+      "skills": [
+        "kick"
+      ],
+      "statistics": {
+        "": {
+          "inflictedcasualties": 0,
+          "inflictedinjuries": 0,
+          "inflictedko": 0,
+          "sustainedcasualties": 0,
+          "sustainedko": 0,
+          "sustainedinjuries": 0
+        }
+      }
+    },
+    {
+      "id": "8fc3aa91-465b-11f1-a124-bc2411305479",
+      "name": "Illykahym 'The tenderness of Cathay'",
+      "idraces": 14,
+      "number": 9,
+      "value": 60,
+      "xp": 4,
+      "attributes": {
+        "pa": 4,
+        "ma": 6,
+        "st": 3,
+        "ag": 2,
+        "av": 8
+      },
+      "attributes_ex": {
+        "default": {
+          "ma": 6,
+          "st": 3,
+          "ag": 2,
+          "av": 8,
+          "pa": 4
+        },
+        "bonus": [],
+        "malus": []
+      },
+      "type": "elvenUnion_elfLineman",
+      "level": 1,
+      "casualties_state_id": [],
+      "casualties_state": [],
+      "suspended_next_match": false,
+      "skills": [],
+      "statistics": {
+        "": {
+          "inflictedcasualties": 0,
+          "inflictedinjuries": 0,
+          "inflictedko": 0,
+          "sustainedcasualties": 0,
+          "sustainedko": 0,
+          "sustainedinjuries": 1
+        }
+      }
+    },
+    {
+      "id": "0f817109-4256-11f1-a124-bc2411305479",
+      "name": "Moranion 'The Invisible'",
+      "idraces": 14,
+      "number": 10,
+      "value": 60,
+      "xp": 0,
+      "attributes": {
+        "pa": 4,
+        "ma": 6,
+        "st": 3,
+        "ag": 2,
+        "av": 8
+      },
+      "attributes_ex": {
+        "default": {
+          "ma": 6,
+          "st": 3,
+          "ag": 2,
+          "av": 8,
+          "pa": 4
+        },
+        "bonus": [],
+        "malus": []
+      },
+      "type": "elvenUnion_elfLineman",
+      "level": 1,
+      "casualties_state_id": [],
+      "casualties_state": [],
+      "suspended_next_match": false,
+      "skills": [],
+      "statistics": {
+        "": {
+          "inflictedcasualties": 0,
+          "inflictedinjuries": 0,
+          "inflictedko": 0,
+          "sustainedcasualties": 1,
+          "sustainedko": 1,
+          "sustainedinjuries": 3
+        }
+      }
+    },
+    {
+      "id": "9d3d6ebd-465b-11f1-a124-bc2411305479",
+      "name": "Ceyl-Thakeya 'The irresistible'",
+      "idraces": 14,
+      "number": 11,
+      "value": 60,
+      "xp": 0,
+      "attributes": {
+        "pa": 4,
+        "ma": 6,
+        "st": 3,
+        "ag": 2,
+        "av": 8
+      },
+      "attributes_ex": {
+        "default": {
+          "ma": 6,
+          "st": 3,
+          "ag": 2,
+          "av": 8,
+          "pa": 4
+        },
+        "bonus": [],
+        "malus": []
+      },
+      "type": "elvenUnion_elfLineman",
+      "level": 1,
+      "casualties_state_id": [],
+      "casualties_state": [],
+      "suspended_next_match": false,
+      "skills": [],
+      "statistics": {
+        "": {
+          "inflictedcasualties": 0,
+          "inflictedinjuries": 0,
+          "inflictedko": 0,
+          "sustainedcasualties": 0,
+          "sustainedko": 0,
+          "sustainedinjuries": 3
+        }
+      }
+    },
+    {
+      "id": "ca4a943f-4592-11f1-a124-bc2411305479",
+      "name": "Genamen 'Viper'",
+      "idraces": 14,
+      "number": 12,
+      "value": 60,
+      "xp": 4,
+      "attributes": {
+        "pa": 4,
+        "ma": 6,
+        "st": 3,
+        "ag": 2,
+        "av": 8
+      },
+      "attributes_ex": {
+        "default": {
+          "ma": 6,
+          "st": 3,
+          "ag": 2,
+          "av": 8,
+          "pa": 4
+        },
+        "bonus": [],
+        "malus": []
+      },
+      "type": "elvenUnion_elfLineman",
+      "level": 1,
+      "casualties_state_id": [
+        3
+      ],
+      "casualties_state": [
+        "serious_injury"
+      ],
+      "suspended_next_match": false,
+      "skills": [],
+      "statistics": {
+        "": {
+          "inflictedcasualties": 0,
+          "inflictedinjuries": 0,
+          "inflictedko": 0,
+          "sustainedcasualties": 1,
+          "sustainedko": 0,
+          "sustainedinjuries": 2
+        }
+      }
+    },
+    {
+      "id": "8e9754e5-508e-11f1-a124-bc2411305479",
+      "name": "Moranion 'Very Long Legs'",
+      "idraces": 14,
+      "number": 13,
+      "value": 60,
+      "xp": 0,
+      "attributes": {
+        "pa": 4,
+        "ma": 6,
+        "st": 3,
+        "ag": 2,
+        "av": 8
+      },
+      "attributes_ex": {
+        "default": {
+          "ma": 6,
+          "st": 3,
+          "ag": 2,
+          "av": 8,
+          "pa": 4
+        },
+        "bonus": [],
+        "malus": []
+      },
+      "type": "elvenUnion_elfLineman",
+      "level": 1,
+      "casualties_state_id": [],
+      "casualties_state": [],
+      "suspended_next_match": false,
+      "skills": [],
+      "statistics": {
+        "": {
+          "inflictedcasualties": 0,
+          "inflictedinjuries": 0,
+          "inflictedko": 0,
+          "sustainedcasualties": 0,
+          "sustainedko": 0,
+          "sustainedinjuries": 0
+        }
+      }
+    }
+  ],
+  "urls": {
+    "images": {
+      "logos": "https://images.cyanide-studio.com/bb3/logos/",
+      "races": "https://images.cyanide-studio.com/bb3/races/",
+      "portraits": "https://images.cyanide-studio.com/bb3/portraits/",
+      "skills": "https://images.cyanide-studio.com/bb3/skillicons/"
+    }
+  },
+  "meta": {
+    "user": "Breakyt",
+    "game": "bb3",
+    "method": "team",
+    "format": "json",
+    "services": "https://web.cyanide-studio.com/ws/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2&bb=3"
+  },
+  "promotional_content": false
+}

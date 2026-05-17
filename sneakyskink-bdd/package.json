@@ -1,0 +1,34 @@
+{
+  "name": "sneakyskink-bdd",
+  "version": "1.0.0",
+  "description": "Dépôt partagé pour le schéma de base de données PostgreSQL et le client Prisma SneakySkink",
+  "type": "module",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "scripts": {
+    "build": "prisma generate && tsc",
+    "prisma:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:pull": "prisma db pull"
+  },
+  "keywords": [
+    "blood-bowl-3",
+    "database",
+    "prisma",
+    "schema"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "pg": "^8.20.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.8.0",
+    "@types/pg": "^8.20.0",
+    "dotenv": "^17.4.2",
+    "prisma": "^7.8.0",
+    "typescript": "^6.0.3"
+  }
+}

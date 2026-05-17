@@ -1,0 +1,153 @@
+{
+  "size": [
+    2354,
+    178,
+    332,
+    16,
+    180,
+    5
+  ],
+  "competitions": [
+    {
+      "id": "50000000-0000-0000-0000-000000000052",
+      "name": "official_ladder_season_04",
+      "date_created": "2024-03-12 09:00:00",
+      "format": "Ladder",
+      "status": 4,
+      "status_name": "Finished",
+      "rounds_count": null,
+      "round": null,
+      "turn_duration": 120,
+      "time_bonus_duration": 450,
+      "teams_max": null,
+      "teams_count": null,
+      "league": {
+        "id": "50000000-0000-0000-0000-000000000025",
+        "name": "Official league",
+        "date_created": "2023-06-22 10:36:39",
+        "official": 1,
+        "logo": "Logo_BlackOrc_01",
+        "registered_teams_count": null
+      }
+    },
+    {
+      "id": "50000000-0000-0000-0000-000000000062",
+      "name": "official_ladder_season_05",
+      "date_created": "2024-03-12 09:00:00",
+      "format": "Ladder",
+      "status": 4,
+      "status_name": "Finished",
+      "rounds_count": null,
+      "round": null,
+      "turn_duration": 120,
+      "time_bonus_duration": 450,
+      "teams_max": null,
+      "teams_count": null,
+      "league": {
+        "id": "50000000-0000-0000-0000-000000000025",
+        "name": "Official league",
+        "date_created": "2023-06-22 10:36:39",
+        "official": 1,
+        "logo": "Logo_BlackOrc_01",
+        "registered_teams_count": null
+      }
+    },
+    {
+      "id": "50000000-0000-0000-0000-000000000042",
+      "name": "official_ladder_season_03",
+      "date_created": "2023-11-14 10:20:57",
+      "format": "Ladder",
+      "status": 4,
+      "status_name": "Finished",
+      "rounds_count": null,
+      "round": null,
+      "turn_duration": 120,
+      "time_bonus_duration": 450,
+      "teams_max": null,
+      "teams_count": null,
+      "league": {
+        "id": "50000000-0000-0000-0000-000000000025",
+        "name": "Official league",
+        "date_created": "2023-06-22 10:36:39",
+        "official": 1,
+        "logo": "Logo_BlackOrc_01",
+        "registered_teams_count": null
+      }
+    },
+    {
+      "id": "51000000-0000-0000-0000-000000000032",
+      "name": "OPEN_LADDER",
+      "date_created": "2023-09-11 09:11:23",
+      "format": "Ladder",
+      "status": 3,
+      "status_name": "InProgress",
+      "rounds_count": null,
+      "round": null,
+      "turn_duration": 120,
+      "time_bonus_duration": 450,
+      "teams_max": null,
+      "teams_count": null,
+      "league": {
+        "id": "50000000-0000-0000-0000-000000000025",
+        "name": "Official league",
+        "date_created": "2023-06-22 10:36:39",
+        "official": 1,
+        "logo": "Logo_BlackOrc_01",
+        "registered_teams_count": null
+      }
+    },
+    {
+      "id": "50000000-0000-0000-0000-000000000032",
+      "name": "official_ladder_season_02",
+      "date_created": "2023-08-30 10:10:08",
+      "format": "Ladder",
+      "status": 4,
+      "status_name": "Finished",
+      "rounds_count": null,
+      "round": null,
+      "turn_duration": 120,
+      "time_bonus_duration": 450,
+      "teams_max": null,
+      "teams_count": null,
+      "league": {
+        "id": "50000000-0000-0000-0000-000000000025",
+        "name": "Official league",
+        "date_created": "2023-06-22 10:36:39",
+        "official": 1,
+        "logo": "Logo_BlackOrc_01",
+        "registered_teams_count": null
+      }
+    }
+  ],
+  "leagues": [
+    {
+      "id": "50000000-0000-0000-0000-000000000025",
+      "name": "Official league",
+      "date_created": "2023-06-22 10:36:39",
+      "official": 1,
+      "logo": "Logo_BlackOrc_01",
+      "registered_teams_count": null
+    }
+  ],
+  "urls": {
+    "images": {
+      "logos": "https://images.cyanide-studio.com/bb3/logos/",
+      "races": "https://images.cyanide-studio.com/bb3/races/",
+      "portraits": "https://images.cyanide-studio.com/bb3/portraits/",
+      "skills": "https://images.cyanide-studio.com/bb3/skillicons/",
+      "stadiums": "https://images.cyanide-studio.com/bb3/stadiums/"
+    }
+  },
+  "context": {
+    "leagues": null
+  },
+  "meta": {
+    "league": false,
+    "user": "Breakyt",
+    "game": "bb3",
+    "method": "competitions",
+    "format": "json",
+    "services": "https://web.cyanide-studio.com/ws/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2&bb=3"
+  },
+  "promotional_content": false
+}

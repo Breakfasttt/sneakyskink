@@ -1,0 +1,891 @@
+{
+  "size": [
+    31102,
+    159,
+    5
+  ],
+  "games": [
+    {
+      "codename": "chef",
+      "title": "Chef Life",
+      "name": "Chef Life",
+      "service_statuses": {
+        "game_server_database": true,
+        "game_server_address_directory": true
+      },
+      "status": {
+        "ok": true,
+        "services": {
+          "game_server_database": true,
+          "game_server_address_directory": true
+        }
+      },
+      "news": [
+        {
+          "title": "Welcome!",
+          "message": "Enjoy playing Chef Life: A Restaurant Simulator!"
+        },
+        {
+          "title": "Stay tuned",
+          "message": "News will be shown in this panel."
+        },
+        {
+          "title": "Join us on Discord",
+          "message": "Share your progress with us on https://discord.gg/aKywVxcAQT"
+        },
+        {
+          "title": "The Al Forno pack is now available!",
+          "message": "Add pizzas to your menu and decorate your restaurant with new content"
+        },
+        {
+          "title": "New free DLC available!",
+          "message": "Create your own recipes from thousands of possible combinations with the free COOKING LAB DLC."
+        },
+        {
+          "title": "New free DLC available!",
+          "message": "Create your own recipes from thousands of possible combinations with the free COOKING LAB DLC."
+        },
+        {
+          "title": "New free DLC available!",
+          "message": "Create your own recipes from thousands of possible combinations with the free COOKING LAB DLC."
+        },
+        {
+          "title": "New free DLC available!",
+          "message": "Create your own recipes from thousands of possible combinations with the free COOKING LAB DLC."
+        },
+        {
+          "title": "New free DLC available!",
+          "message": "Create your own recipes from thousands of possible combinations with the free COOKING LAB DLC."
+        },
+        {
+          "title": "New free DLC available!",
+          "message": "Create your own recipes from thousands of possible combinations with the free COOKING LAB DLC."
+        },
+        {
+          "title": "New free DLC available!",
+          "message": "Create your own recipes from thousands of possible combinations with the free COOKING LAB DLC."
+        },
+        {
+          "title": "New DLC available now!",
+          "message": "Explore Japanese gastronomy with the TOKYO DELIGHT pack"
+        }
+      ],
+      "social_links": []
+    },
+    {
+      "codename": "bb3",
+      "title": "Blood Bowl III",
+      "name": "Blood Bowl III",
+      "service_statuses": {
+        "game_server_database": true,
+        "game_server_address_directory": true
+      },
+      "status": {
+        "ok": true,
+        "platforms": [
+          {
+            "codename": "pc",
+            "title": "Steam & Epic",
+            "ok": true,
+            "regions": [],
+            "services": {
+              "game_server_database": true
+            }
+          },
+          {
+            "codename": "microsoft",
+            "title": "Xbox",
+            "ok": true,
+            "regions": [],
+            "services": []
+          },
+          {
+            "codename": "sony",
+            "title": "Playstation",
+            "ok": true,
+            "regions": [
+              {
+                "codename": "europe",
+                "title": "Europe",
+                "ok": true,
+                "services": []
+              },
+              {
+                "codename": "asia",
+                "title": "Asia",
+                "ok": true,
+                "services": []
+              },
+              {
+                "codename": "north-america",
+                "title": "America",
+                "ok": true,
+                "services": []
+              }
+            ],
+            "services": []
+          }
+        ],
+        "services": {
+          "game_server_database": true,
+          "game_server_address_directory": true
+        }
+      },
+      "news": [
+        {
+          "title": "Play of the Month - Participate on Discord",
+          "message": "https://discord.gg/bloodbowl3"
+        },
+        {
+          "title": "Discover the Super League: the Spring season is live!",
+          "message": "https://youtube.com/playlist?list=PLF7TYdtPEaNQMBgmoX_-nmu8Aeaa5WTa1&si=AonXqCdtYwbdQ3Bv"
+        },
+        {
+          "title": "Blood Bowl 3 Tutorials & Guides by cKnoor with lineups, skills and tips.",
+          "message": "https://www.youtube.com/watch?v=QO1wVp9dLvs&list=PLSJ6kwwJv4NoQZcg9mFZNJTisrFPh62Gz"
+        },
+        {
+          "title": "Discord Chat Facilitator: Learn how to link your account!",
+          "message": "https://nacon.me/BB3ChatFacilitator"
+        },
+        {
+          "title": "Race Guides for every team in Blood Bowl 3 by Andy Davo",
+          "message": "https://www.youtube.com/playlist?list=PL_h_E_IlwqtesCMYz0D4C1_hys7psyegu"
+        },
+        {
+          "title": "Join the community on the official Blood Bowl 3 Discord server",
+          "message": "https://discord.gg/bloodbowl3"
+        },
+        {
+          "title": "Official Discord competitions server open Join to learn about Warhammer Blood Bowl circuit",
+          "message": "https://discord.gg/Na3mtxaWGX"
+        },
+        {
+          "title": "Weekend Clash #3 (16-17 May). Registration now open, sign up by 14 May.",
+          "message": "https://discord.gg/HmKy9VuRSm"
+        }
+      ],
+      "social_links": [
+        "https://twitter.com/BloodBowl_Game",
+        "https://www.facebook.com/bloodbowlgame/",
+        "https://discord.gg/hqDMZYp"
+      ],
+      "maintenance": {
+        "pc": []
+      }
+    },
+    {
+      "codename": "tdf25",
+      "title": "Tour de France 25",
+      "name": "Tour de France 25",
+      "service_statuses": {
+        "game_server_address_directory": true
+      },
+      "status": {
+        "ok": true,
+        "services": {
+          "game_server_address_directory": true
+        }
+      },
+      "news": [
+        {
+          "title": "NEW",
+          "message": "The Panini Tour de France 2025 collection is now available! A unique album to know everything!"
+        },
+        {
+          "title": "NEW",
+          "message": "Discover your favorite riders in the new Panini covers of the Tour de France 2025!"
+        },
+        {
+          "title": "NEW",
+          "message": "Want to know everything about the Tour de France 2025? Discover the TDF Panini album, a unique collection!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "The first race of the season is available in TDF25's Club Tour. Don't miss the start with <style type=sb color=White_Light>Uno-X Mobility</style>!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "<style type=sb color=White_Light>RedBull - BORA</style>! 3, 2, 1 Go! A new race is available in TDF25's Club Tour!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "The Club Tour descent has been updated. Come test your descender skills with <style type=sb color=White_Light>K.Vauquelin</style> right now in TDF25."
+        },
+        {
+          "title": "Club Tour",
+          "message": "New route and new challenge for <style type=sb color=White_Light>Soudal Quick-Step</style> and the Club Tour. Check them out right now in TDF25!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "<style type=sb color=White_Light>M.Skjelmose</style> is waiting for you to hurtle down the new Club Tour descent!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "Club Tour updated! A new route is online with <style type=sb color=White_Light>Groupama - FDJ</style>. Good luck!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "New descent with <style type=sb color=White_Light>T.Benoot</style> available in Club Tour."
+        },
+        {
+          "title": "Club Tour",
+          "message": "It's the last Club Tour race for this month. It's also the last chance to score points with <style type=sb color=White_Light>INEOS Grenadiers</style> for TDF25's monthly ranking."
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "New mountain pass to descend from in TDF25's Club Tour! Who'll be the fastest with <style type=sb color=White_Light>R.Bardet</style>?"
+        },
+        {
+          "title": "Club Tour",
+          "message": "New month, new start and new leaderboard! Find <style type=sb color=White_Light>Intermarché - Wanty</style> in the new race in TDF25's Club Tour."
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "The new Club Tour descent is starting right now for <style type=sb color=White_Light>M.Pedersen</style>. 3, 2, 1 Go!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Will you be the fastest in the new Club Tour descent? Test your skills right now in TDF25 with <style type=sb color=White_Light>M.Van Der Poel</style>!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "<style type=sb color=White_Light>Visma | LAB</style> is ready! New race is available in TDF25's Club Tour!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Club Tour is updating. Discover the new descent with <style type=sb color=White_Light>P.Roglic</style> right now in TDF25!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "We're off on a new challenge with <style type=sb color=White_Light>TotalEnergies</style> in Club Tour! Discover the new route right now in TDF25."
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "A new mountain pass to descend from, as fast as possible, with <style type=sb color=White_Light>J.Philipsen</style> is available in TDF25's Club Tour. Ready? Go!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "Discover Club Tour's new <style type=sb color=White_Light>Bahrain - Victorious</style> challenge, now available in TDF25!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Here we go for a new Club Tour descent! Flat out with <style type=sb color=White_Light>J.Vingegaard</style>!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "<style type=sb color=White_Light>T.Pogacar</style> is waiting for you to hurtle down the new Club Tour descent!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "Club Tour updated! A new route is online with <style type=sb color=White_Light>Decathlon AG2R</style>. Good luck!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "New descent with <style type=sb color=White_Light>R.Evenepoel</style> available in Club Tour."
+        },
+        {
+          "title": "Club Tour",
+          "message": "A new race with <style type=sb color=White_Light>UAE Team Emirates</style> is available in Club Tour!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "New mountain pass to descend from in TDF25's Club Tour! Who'll be the fastest with <style type=sb color=White_Light>B.Girmay</style>?"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "It's time to take up the <style type=sb color=White_Light>W.Van Aert</style> challenge in TDF25's Club Tour with a new descent!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "Last race of the month with <style type=sb color=White_Light>Movistar</style> for TDF25's Club Tour! Who will finish on top of the monthly leaderboard?"
+        },
+        {
+          "title": "Club Tour",
+          "message": "New month, new start and new leaderboard! Find <style type=sb color=White_Light>XDS - Astana</style> in the new race in TDF25's Club Tour."
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Club Tour welcomes a new descent with <style type=sb color=White_Light>E.Mas</style>. Discover it right now in TDF25!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "Club Tour is updating. Discover the new race with <style type=sb color=White_Light>Jayco AlUla</style> right now in TDF25!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Nose to the handlebars with <style type=sb color=White_Light>S.Küng</style> for the new Club Tour descent. Available right now in TDF25's Club Tour!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "A new mountain pass to descend from, as fast as possible, with <style type=sb color=White_Light>M.Hirschi</style> is available in TDF25's Club Tour. Ready? Go!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "Discover Club Tour's new <style type=sb color=White_Light>Lidl - Trek</style> challenge, now available in TDF25!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Here we go for a new Club Tour descent! Flat out with <style type=sb color=White_Light>J.Hindley</style>!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "<style type=sb color=White_Light>T.Merlier</style> is waiting for you to hurtle down the new Club Tour descent!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "Club Tour updated! A new route is online with <style type=sb color=White_Light>Picnic PostNL</style>. Good luck!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "New descent with <style type=sb color=White_Light>J.Almeida</style> available in Club Tour."
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "A new descent with <style type=sb color=White_Light>J.Milan</style> is waiting for you in TDF25's Club Tour!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "A new race is waiting for you in TDF25's Club Tour! Take control with <style type=sb color=White_Light>Soudal Quick-Step</style>."
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "It's time to take up the <style type=sb color=White_Light>A.Vlasov</style> challenge in TDF25's Club Tour with a new descent!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "The new Club Tour descent is starting right now for <style type=sb color=White_Light>T.Pidcock</style>. 3, 2, 1 Go!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "Club Tour welcomes <style type=sb color=White_Light>Cofidis</style> for TDF25's first race of the month! It's an opportunity to go to the top of the leaderboard!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Club Tour welcomes a new descent with <style type=sb color=White_Light>J.Tarling</style>. Discover it right now in TDF25!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "Club Tour is updating. Discover the new race with <style type=sb color=White_Light>Arkéa - B&B Hotels</style> right now in TDF25!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "We're off on a new challenge with <style type=sb color=White_Light>TotalEnergies</style> in Club Tour! Discover the new route right now in TDF25."
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "A new mountain pass to descend from, as fast as possible, with <style type=sb color=White_Light>D.Groenewegen</style> is available in TDF25's Club Tour. Ready? Go!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "Discover Club Tour's new <style type=sb color=White_Light>EF - EasyPost</style> challenge, now available in TDF25!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Here we go for a new Club Tour descent! Flat out with <style type=sb color=White_Light>R.Carapaz</style>!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "New challenge available with <style type=sb color=White_Light>Lotto</style> for the Club Tour."
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Ready to give it your all on the new Club Tour descent? <style type=sb color=White_Light>F.Gall</style> is waiting for you to take up the challenge!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "Last race of the month with <style type=sb color=White_Light>Arkéa - B&B Hotels</style> for TDF25's Club Tour! Who will finish on top of the monthly leaderboard?"
+        },
+        {
+          "title": "Club Tour",
+          "message": "New month, new start and new leaderboard! Find <style type=sb color=White_Light>Tudor</style> in the new race in TDF25's Club Tour."
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "New mountain pass to descend from in TDF25's Club Tour! Who'll be the fastest with <style type=sb color=White_Light>M.Matthews</style>?"
+        },
+        {
+          "title": "Club Tour",
+          "message": "The route of the Club Tour race has been updated. Discover it with <style type=sb color=White_Light>Groupama - FDJ</style> right now in TDF25."
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "The new Club Tour descent is starting right now for <style type=sb color=White_Light>J.Ayuso</style>. 3, 2, 1 Go!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "Join the new Club Tour race and try to finish on top of the online ranking with <style type=sb color=White_Light>UAE Team Emirates</style>!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "<style type=sb color=White_Light>Israël - Premier Tech</style> is ready! New race is available in TDF25's Club Tour!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Club Tour is updating. Discover the new descent with <style type=sb color=White_Light>A.De Lie</style> right now in TDF25!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "We're off on a new challenge with <style type=sb color=White_Light>Lotto</style> in Club Tour! Discover the new route right now in TDF25."
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "A new mountain pass to descend from, as fast as possible, with <style type=sb color=White_Light>N.Politt</style> is available in TDF25's Club Tour. Ready? Go!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "Discover Club Tour's new <style type=sb color=White_Light>INEOS Grenadiers</style> challenge, now available in TDF25!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Here we go for a new Club Tour descent! Flat out with <style type=sb color=White_Light>J.Alaphilippe</style>!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "<style type=sb color=White_Light>P.Latour</style> is waiting for you to hurtle down the new Club Tour descent!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "New month, new start and new leaderboard! Find <style type=sb color=White_Light>XDS - Astana</style> in the new race in TDF25's Club Tour."
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "New descent with <style type=sb color=White_Light>S.Yates</style> available in Club Tour."
+        },
+        {
+          "title": "Club Tour",
+          "message": "A new race with <style type=sb color=White_Light>Jayco AlUla</style> is available in Club Tour!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "New mountain pass to descend from in TDF25's Club Tour! Who'll be the fastest with <style type=sb color=White_Light>K.Groves</style>?"
+        },
+        {
+          "title": "Club Tour",
+          "message": "The route of the Club Tour race has been updated. Discover it with <style type=sb color=White_Light>Arkéa - B&B Hotels</style> right now in TDF25."
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "The new Club Tour descent is starting right now for <style type=sb color=White_Light>S.Kuss</style>. 3, 2, 1 Go!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "Join the new Club Tour race and try to finish on top of the online ranking with <style type=sb color=White_Light>Uno-X Mobility</style>!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Club Tour welcomes a new descent with <style type=sb color=White_Light>M.Mohoric</style>. Discover it right now in TDF25!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "New month, new start and new leaderboard! Find <style type=sb color=White_Light>Decathlon AG2R</style> in the new race in TDF25's Club Tour."
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Nose to the handlebars with <style type=sb color=White_Light>P.Sivakov</style> for the new Club Tour descent. Available right now in TDF25's Club Tour!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "<style type=sb color=White_Light>Jayco AlUla</style>! 3, 2, 1 Go! A new race is available in TDF25's Club Tour!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "Discover Club Tour's new <style type=sb color=White_Light>Lotto</style> challenge, now available in TDF25!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Here we go for a new Club Tour descent! Flat out with <style type=sb color=White_Light>B.Cosnefroy</style>!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "New challenge available with <style type=sb color=White_Light>Lidl - Trek</style> for the Club Tour."
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Ready to give it your all on the new Club Tour descent? <style type=sb color=White_Light>A.Aranburu</style> is waiting for you to take up the challenge!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "We reset the counters to 0 with <style type=sb color=White_Light>Movistar</style> and a new race in Club Tour!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "A new descent with <style type=sb color=White_Light>J.Vine</style> is waiting for you in TDF25's Club Tour!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "A new race is waiting for you in TDF25's Club Tour! Take control with <style type=sb color=White_Light>RedBull - BORA</style>."
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "It's time to take up the <style type=sb color=White_Light>T.Nys</style> challenge in TDF25's Club Tour with a new descent!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "A new Club Tour race with <style type=sb color=White_Light>Kern Pharma</style> has begun. Discover it right now in TDF25!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Will you be the fastest in the new Club Tour descent? Test your skills right now in TDF25 with <style type=sb color=White_Light>D.Martínez</style>!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "<style type=sb color=White_Light>Cofidis</style> is ready! New race is available in TDF25's Club Tour!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Club Tour is updating. Discover the new descent with <style type=sb color=White_Light>E.Bernal</style> right now in TDF25!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "We're off on a new challenge with <style type=sb color=White_Light>EF - EasyPost</style> in Club Tour! Discover the new route right now in TDF25."
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "A new mountain pass to descend from, as fast as possible, with <style type=sb color=White_Light>F.Gaviria</style> is available in TDF25's Club Tour. Ready? Go!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "Discover Club Tour's new <style type=sb color=White_Light>Soudal Quick-Step</style> challenge, now available in TDF25!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "New route and new challenge for <style type=sb color=White_Light>Visma | LAB</style> and the Club Tour. Check them out right now in TDF25!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "<style type=sb color=White_Light>S.Kruijswijk</style> is waiting for you to hurtle down the new Club Tour descent!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "Club Tour updated! A new route is online with <style type=sb color=White_Light>Picnic PostNL</style>. Good luck!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "New descent with <style type=sb color=White_Light>M.Kwiatkowski</style> available in Club Tour."
+        },
+        {
+          "title": "Club Tour",
+          "message": "Club Tour welcomes <style type=sb color=White_Light>Bahrain - Victorious</style> for TDF25's first race of the month! It's an opportunity to go to the top of the leaderboard!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "New mountain pass to descend from in TDF25's Club Tour! Who'll be the fastest with <style type=sb color=White_Light>P.Bilbao</style>?"
+        },
+        {
+          "title": "Club Tour",
+          "message": "The route of the Club Tour race has been updated. Discover it with <style type=sb color=White_Light>Caja Rural</style> right now in TDF25."
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "The new Club Tour descent is starting right now for <style type=sb color=White_Light>B.McNulty</style>. 3, 2, 1 Go!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "Join the new Club Tour race and try to finish on top of the online ranking with <style type=sb color=White_Light>Israël - Premier Tech</style>!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Club Tour welcomes a new descent with <style type=sb color=White_Light>V.Madouas</style>. Discover it right now in TDF25!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "Club Tour is updating. Discover the new race with <style type=sb color=White_Light>Q36.5</style> right now in TDF25!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Nose to the handlebars with <style type=sb color=White_Light>L.Martinez</style> for the new Club Tour descent. Available right now in TDF25's Club Tour!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "Club Tour welcomes <style type=sb color=White_Light>Polti VisitMalta</style> for TDF25's first race of the month! It's an opportunity to go to the top of the leaderboard!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "The Club Tour descent has been updated. Come test your descender skills with <style type=sb color=White_Light>M.Van Gils</style> right now in TDF25."
+        },
+        {
+          "title": "Club Tour",
+          "message": "New route and new challenge for <style type=sb color=White_Light>Visma | LAB</style> and the Club Tour. Check them out right now in TDF25!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "New challenge available with <style type=sb color=White_Light>UAE Team Emirates</style> for the Club Tour."
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Ready to give it your all on the new Club Tour descent? <style type=sb color=White_Light>C.Laporte</style> is waiting for you to take up the challenge!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "We reset the counters to 0 with <style type=sb color=White_Light>Alpecin-Deceuninck</style> and a new race in Club Tour!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "A new descent with <style type=sb color=White_Light>J.Meeus</style> is waiting for you in TDF25's Club Tour!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "A new race is waiting for you in TDF25's Club Tour! Take control with <style type=sb color=White_Light>Intermarché - Wanty</style>."
+        },
+        {
+          "title": "Club Tour",
+          "message": "The route of the Club Tour race has been updated. Discover it with <style type=sb color=White_Light>Soudal Quick-Step</style> right now in TDF25."
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "The new Club Tour descent is starting right now for <style type=sb color=White_Light>T.Pidcock</style>. 3, 2, 1 Go!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "New month, new start and new leaderboard! Find <style type=sb color=White_Light>Lidl - Trek</style> in the new race in TDF25's Club Tour."
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Club Tour welcomes a new descent with <style type=sb color=White_Light>D.McLay</style>. Discover it right now in TDF25!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "Club Tour is updating. Discover the new race with <style type=sb color=White_Light>Visma | LAB</style> right now in TDF25!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "We're off on a new challenge with <style type=sb color=White_Light>Picnic PostNL</style> in Club Tour! Discover the new route right now in TDF25."
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "A new mountain pass to descend from, as fast as possible, with <style type=sb color=White_Light>C.Venturini</style> is available in TDF25's Club Tour. Ready? Go!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "Discover Club Tour's new <style type=sb color=White_Light>Groupama - FDJ</style> challenge, now available in TDF25!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Here we go for a new Club Tour descent! Flat out with <style type=sb color=White_Light>P.Bauhaus</style>!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "New challenge available with <style type=sb color=White_Light>Decathlon AG2R</style> for the Club Tour."
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Ready to give it your all on the new Club Tour descent? <style type=sb color=White_Light>D.Gaudu</style> is waiting for you to take up the challenge!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "We reset the counters to 0 with <style type=sb color=White_Light>RedBull - BORA</style> and a new race in Club Tour!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "A new race with <style type=sb color=White_Light>EF - EasyPost</style> is available in Club Tour!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "New mountain pass to descend from in TDF25's Club Tour! Who'll be the fastest with <style type=sb color=White_Light>R.Cavagna</style>?"
+        },
+        {
+          "title": "Club Tour",
+          "message": "The last race of the month for the Club Tour leaderboard is available with <style type=sb color=White_Light>Alpecin-Deceuninck</style>!"
+        },
+        {
+          "title": "Club Tour",
+          "message": "The final 25 Club Tour competition begins with <style type=sb color=White_Light>UAE Team Emirates</style>. It's the last chance to overturn the rankings before TDF26, with a max of points up for grabs!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Downhill flat out! For this last month of competition, you'll have a new descent every day. And it starts now with <style type=sb color=White_Light>T.Pogacar</style> in the spotlight!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Club Tour welcomes a new descent with <style type=sb color=White_Light>J.Vingegaard</style>. Discover it right now in TDF25!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Club Tour is updating. Discover the new descent with <style type=sb color=White_Light>J.Milan</style> right now in TDF25!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Nose to the handlebars with <style type=sb color=White_Light>R.Evenepoel</style> for the new Club Tour descent. Available right now in TDF25's Club Tour!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "A new mountain pass to descend from, as fast as possible, with <style type=sb color=White_Light>P.Roglic</style> is available in TDF25's Club Tour. Ready? Go!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "The Club Tour descent has been updated. Come test your descender skills with <style type=sb color=White_Light>W.Van Aert</style> right now in TDF25."
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Here we go for a new Club Tour descent! Flat out with <style type=sb color=White_Light>J.Philipsen</style>!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "<style type=sb color=White_Light>M.Pedersen</style> is waiting for you to hurtle down the new Club Tour descent!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Ready to give it your all on the new Club Tour descent? <style type=sb color=White_Light>T.Merlier</style> is waiting for you to take up the challenge!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "New descent with <style type=sb color=White_Light>M.Van Der Poel</style> available in Club Tour."
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "A new descent with <style type=sb color=White_Light>J.Almeida</style> is waiting for you in TDF25's Club Tour!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "New mountain pass to descend from in TDF25's Club Tour! Who'll be the fastest with <style type=sb color=White_Light>O.Kooij</style>?"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "It's time to take up the <style type=sb color=White_Light>E.Mas</style> challenge in TDF25's Club Tour with a new descent!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "The new Club Tour descent is starting right now for <style type=sb color=White_Light>A.Yates</style>. 3, 2, 1 Go!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Will you be the fastest in the new Club Tour descent? Test your skills right now in TDF25 with <style type=sb color=White_Light>F.Ganna</style>!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Club Tour welcomes a new descent with <style type=sb color=White_Light>B.Girmay</style>. Discover it right now in TDF25!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Club Tour is updating. Discover the new descent with <style type=sb color=White_Light>M.Landa</style> right now in TDF25!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Nose to the handlebars with <style type=sb color=White_Light>M.Jorgenson</style> for the new Club Tour descent. Available right now in TDF25's Club Tour!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "A new mountain pass to descend from, as fast as possible, with <style type=sb color=White_Light>G.Thomas</style> is available in TDF's Club Tour. Ready? Go!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "The Club Tour descent has been updated. Come test your descender skills with <style type=sb color=White_Light>S.Küng</style> right now in TDF."
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Here we go for a new Club Tour descent! Flat out with <style type=sb color=White_Light>M.Hirschi</style>!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "<style type=sb color=White_Light>B.O'Connor</style> is waiting for you to hurtle down the new Club Tour descent!"
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Ready to give it your all on the new Club Tour descent? <style type=sb color=White_Light>C.Rodriguez</style> is waiting for you to take up the challenge!"
+        },
+        {
+          "title": "SERVER MAINTENANCE",
+          "message": "A server maintenance is scheduled for next Monday. Club Tour mode will be unavailable for a few minutes."
+        },
+        {
+          "title": "Downhill challenge",
+          "message": "Club Tour welcomes a new descent with <style type=sb color=White_Light>T.Pogacar</style>. Discover it right now in TDF25!"
+        }
+      ],
+      "social_links": []
+    },
+    {
+      "codename": "pcm25",
+      "title": "Pro Cycling Manager 25",
+      "name": "Pro Cycling Manager 25",
+      "service_statuses": [],
+      "status": {
+        "ok": true,
+        "services": []
+      },
+      "news": [],
+      "social_links": []
+    },
+    {
+      "codename": "tdf24",
+      "title": "Tour de France 24",
+      "name": "Tour de France 24",
+      "service_statuses": {
+        "game_server_database": true,
+        "game_server_address_directory": true
+      },
+      "status": {
+        "ok": true,
+        "services": {
+          "game_server_database": true,
+          "game_server_address_directory": true
+        }
+      },
+      "news": [
+        {
+          "title": "Server update",
+          "message": "The Club Tour will be offline the 26th of june at 10am till 11am to update our server"
+        }
+      ],
+      "social_links": []
+    },
+    {
+      "codename": "pcm24",
+      "title": "Pro Cycling Manager 24",
+      "name": "Pro Cycling Manager 24",
+      "service_statuses": {
+        "game_server_database": true
+      },
+      "status": {
+        "ok": true,
+        "services": {
+          "game_server_database": true
+        }
+      },
+      "news": [],
+      "social_links": []
+    },
+    {
+      "codename": "sh2",
+      "title": "Space Hulk: Tactics",
+      "name": "Space Hulk: Tactics",
+      "service_statuses": {
+        "game_server_database": true
+      },
+      "status": {
+        "ok": true,
+        "services": {
+          "game_server_database": true
+        }
+      },
+      "news": [],
+      "social_links": []
+    },
+    {
+      "codename": "bb2",
+      "title": "Blood Bowl II",
+      "name": "Blood Bowl II",
+      "service_statuses": [],
+      "status": {
+        "ok": true,
+        "services": []
+      },
+      "news": [
+        {
+          "title": "Breaking news!",
+          "message": "The Blood Bowl 2 community is organizing a World Cup starting June 1st. Register with a 1000 TV base team via this form:\nhttps://docs.google.com/forms/d/1TwqV2vc7YYeTibCxpPMQ8psZshw2GMzzubUvOlYnsXU/edit#responses\nThe event starts with qualifiers, then a final stage. Coordination via the Champions Cup Discord:\nhttps://discord.gg/Yk92euEuYJ\nThe Ranked Ladder season remains available on Cabalvision for casual play."
+        }
+      ],
+      "social_links": []
+    }
+  ],
+  "meta": {
+    "user": "Breakyt",
+    "game": "cya",
+    "method": "status",
+    "format": "json",
+    "services": "https://web.cyanide-studio.com/ws/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2&bb=3"
+  },
+  "promotional_content": false
+}

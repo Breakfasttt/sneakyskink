@@ -1,0 +1,41 @@
+{
+  "size": [
+    41,
+    24,
+    20,
+    2,
+    332,
+    76,
+    161,
+    5
+  ],
+  "round_key_WILL_BE_DEPRECATED": "Use competition_round and contest_round",
+  "format_key_WILL_BE_DEPRECATED": "Use competition_format",
+  "status_key_WILL_BE_DEPRECATED": "Use contest_status",
+  "contests": [],
+  "urls": {
+    "images": {
+      "logos": "https://images.cyanide-studio.com/bb3/logos/",
+      "races": "https://images.cyanide-studio.com/bb3/races/",
+      "portraits": "https://images.cyanide-studio.com/bb3/portraits/",
+      "skills": "https://images.cyanide-studio.com/bb3/skillicons/",
+      "stadiums": "https://images.cyanide-studio.com/bb3/stadiums/"
+    }
+  },
+  "context": {
+    "leagues": [
+      "Official league"
+    ],
+    "competitions": [
+      "official_ladder_season_04"
+    ]
+  },
+  "meta": {
+    "user": "Breakyt",
+    "game": "bb3",
+    "method": "contests",
+    "format": "json",
+    "services": "https://web.cyanide-studio.com/ws/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2&bb=3"
+  },
+  "promotional_content": false
+}

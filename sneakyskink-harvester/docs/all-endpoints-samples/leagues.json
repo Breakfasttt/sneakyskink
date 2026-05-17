@@ -1,0 +1,47 @@
+{
+  "size": [
+    1173,
+    160,
+    5
+  ],
+  "leagues": [
+    {
+      "id": "50000000-0000-0000-0000-000000000025",
+      "name": "Official league",
+      "gamer_count": 7249,
+      "api_league": "https://web.cyanide-studio.com/ws/bb3/league/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2&id=50000000-0000-0000-0000-000000000025"
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000025",
+      "name": "Official league",
+      "gamer_count": 58769,
+      "api_league": "https://web.cyanide-studio.com/ws/bb3/league/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2&id=00000000-0000-0000-0000-000000000025"
+    },
+    {
+      "id": "30000000-0000-0000-0000-000000000025",
+      "name": "Official league",
+      "gamer_count": 2608,
+      "api_league": "https://web.cyanide-studio.com/ws/bb3/league/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2&id=30000000-0000-0000-0000-000000000025"
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000015",
+      "name": "Official league",
+      "gamer_count": 7971,
+      "api_league": "https://web.cyanide-studio.com/ws/bb3/league/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2&id=00000000-0000-0000-0000-000000000015"
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000005",
+      "name": "Official league",
+      "gamer_count": 14240,
+      "api_league": "https://web.cyanide-studio.com/ws/bb3/league/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2&id=00000000-0000-0000-0000-000000000005"
+    }
+  ],
+  "meta": {
+    "user": "Breakyt",
+    "game": "bb3",
+    "method": "leagues",
+    "format": "json",
+    "services": "https://web.cyanide-studio.com/ws/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2&bb=3"
+  },
+  "promotional_content": false
+}

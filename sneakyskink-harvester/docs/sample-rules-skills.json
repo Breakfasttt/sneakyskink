@@ -1,0 +1,551 @@
+{
+  "size": [
+    6641,
+    266,
+    158,
+    5
+  ],
+  "skills": [
+    {
+      "category": "agility",
+      "codename": "catch",
+      "icon": null
+    },
+    {
+      "category": "agility",
+      "codename": "dodge",
+      "icon": null
+    },
+    {
+      "category": "agility",
+      "codename": "sprint",
+      "icon": null
+    },
+    {
+      "category": "agility",
+      "codename": "leap",
+      "icon": null
+    },
+    {
+      "category": "agility",
+      "codename": "sneaky git",
+      "icon": null
+    },
+    {
+      "category": "agility",
+      "codename": "diving catch",
+      "icon": null
+    },
+    {
+      "category": "agility",
+      "codename": "diving tackle",
+      "icon": null
+    },
+    {
+      "category": "agility",
+      "codename": "jump up",
+      "icon": null
+    },
+    {
+      "category": "agility",
+      "codename": "sidestep",
+      "icon": null
+    },
+    {
+      "category": "agility",
+      "codename": "sure feet",
+      "icon": null
+    },
+    {
+      "category": "agility",
+      "codename": "defensive",
+      "icon": null
+    },
+    {
+      "category": "agility",
+      "codename": "safe pair of hands",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "hit and run",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "drunkard",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "pick-me-up",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "always hungry",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "regeneration",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "take root",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "chainsaw",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "bone head",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "loner (4+)",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "no hands",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "really stupid",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "right stuff",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "secret weapon",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "stunty",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "throw team-mate",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "unchannelled fury",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "ball and chain",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "stab",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "hypnotic gaze",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "bombardier",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "decay",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "titchy",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "animal savagery",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "animosity (all team-mates)",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "timmm-ber",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "pogo stick",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "projectile vomit",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "animosity (all dwarf and halfling team-mates)",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "animosity (all dwarf and human team-mates)",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "animosity (orc Linemen)",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "animosity (big un blockers)",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "animosity (underworld goblin linemen)",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "bloodlust (2+)",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "bloodlust (3+)",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "breathe fire",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "blood greed",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "kick team-mate",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "loner (3+)",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "mighty blow (+2)",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "swarming",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "swoop",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "loner (2+)",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "plague ridden",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "dirty player (+2)",
+      "icon": null
+    },
+    {
+      "category": "extraordinary",
+      "codename": "loner (5+)",
+      "icon": null
+    },
+    {
+      "category": "general",
+      "codename": "strip ball",
+      "icon": null
+    },
+    {
+      "category": "general",
+      "codename": "dauntless",
+      "icon": null
+    },
+    {
+      "category": "general",
+      "codename": "dirty player (+1)",
+      "icon": null
+    },
+    {
+      "category": "general",
+      "codename": "block",
+      "icon": null
+    },
+    {
+      "category": "general",
+      "codename": "fend",
+      "icon": null
+    },
+    {
+      "category": "general",
+      "codename": "frenzy",
+      "icon": null
+    },
+    {
+      "category": "general",
+      "codename": "pro",
+      "icon": null
+    },
+    {
+      "category": "general",
+      "codename": "shadowing",
+      "icon": null
+    },
+    {
+      "category": "general",
+      "codename": "tackle",
+      "icon": null
+    },
+    {
+      "category": "general",
+      "codename": "sure hands",
+      "icon": null
+    },
+    {
+      "category": "general",
+      "codename": "wrestle",
+      "icon": null
+    },
+    {
+      "category": "general",
+      "codename": "kick",
+      "icon": null
+    },
+    {
+      "category": "mutation",
+      "codename": "foul appearance",
+      "icon": null
+    },
+    {
+      "category": "mutation",
+      "codename": "extra arms",
+      "icon": null
+    },
+    {
+      "category": "mutation",
+      "codename": "horns",
+      "icon": null
+    },
+    {
+      "category": "mutation",
+      "codename": "two heads",
+      "icon": null
+    },
+    {
+      "category": "mutation",
+      "codename": "very long legs",
+      "icon": null
+    },
+    {
+      "category": "mutation",
+      "codename": "disturbing presence",
+      "icon": null
+    },
+    {
+      "category": "mutation",
+      "codename": "prehensile tail",
+      "icon": null
+    },
+    {
+      "category": "mutation",
+      "codename": "tentacles",
+      "icon": null
+    },
+    {
+      "category": "mutation",
+      "codename": "big hand",
+      "icon": null
+    },
+    {
+      "category": "mutation",
+      "codename": "claws",
+      "icon": null
+    },
+    {
+      "category": "mutation",
+      "codename": "iron hard skin",
+      "icon": null
+    },
+    {
+      "category": "mutation",
+      "codename": "monstrous mouth",
+      "icon": null
+    },
+    {
+      "category": "passing",
+      "codename": "leader",
+      "icon": null
+    },
+    {
+      "category": "passing",
+      "codename": "accurate",
+      "icon": null
+    },
+    {
+      "category": "passing",
+      "codename": "dumpoff",
+      "icon": null
+    },
+    {
+      "category": "passing",
+      "codename": "hail mary pass",
+      "icon": null
+    },
+    {
+      "category": "passing",
+      "codename": "nerves of steel",
+      "icon": null
+    },
+    {
+      "category": "passing",
+      "codename": "pass",
+      "icon": null
+    },
+    {
+      "category": "passing",
+      "codename": "safe pass",
+      "icon": null
+    },
+    {
+      "category": "passing",
+      "codename": "cannoneer",
+      "icon": null
+    },
+    {
+      "category": "passing",
+      "codename": "running pass",
+      "icon": null
+    },
+    {
+      "category": "passing",
+      "codename": "cloud burster",
+      "icon": null
+    },
+    {
+      "category": "passing",
+      "codename": "on the ball",
+      "icon": null
+    },
+    {
+      "category": "passing",
+      "codename": "fumblerooskie",
+      "icon": null
+    },
+    {
+      "category": "strength",
+      "codename": "mighty blow (+1)",
+      "icon": null
+    },
+    {
+      "category": "strength",
+      "codename": "stand firm",
+      "icon": null
+    },
+    {
+      "category": "strength",
+      "codename": "break tackle",
+      "icon": null
+    },
+    {
+      "category": "strength",
+      "codename": "grab",
+      "icon": null
+    },
+    {
+      "category": "strength",
+      "codename": "guard",
+      "icon": null
+    },
+    {
+      "category": "strength",
+      "codename": "juggernaut",
+      "icon": null
+    },
+    {
+      "category": "strength",
+      "codename": "strong arm",
+      "icon": null
+    },
+    {
+      "category": "strength",
+      "codename": "thick skull",
+      "icon": null
+    },
+    {
+      "category": "strength",
+      "codename": "multiple block",
+      "icon": null
+    },
+    {
+      "category": "strength",
+      "codename": "arm bar",
+      "icon": null
+    },
+    {
+      "category": "strength",
+      "codename": "brawler",
+      "icon": null
+    },
+    {
+      "category": "strength",
+      "codename": "pile driver",
+      "icon": null
+    }
+  ],
+  "urls": {
+    "images": {
+      "logos": "https://images.cyanide-studio.com/bb3/logos/",
+      "races": "https://images.cyanide-studio.com/bb3/races/",
+      "portraits": "https://images.cyanide-studio.com/bb3/portraits/",
+      "skills": "https://images.cyanide-studio.com/bb3/skillicons/"
+    }
+  },
+  "meta": {
+    "user": "Breakyt",
+    "game": "bb3",
+    "method": "rules",
+    "format": "json",
+    "services": "https://web.cyanide-studio.com/ws/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2&bb=3"
+  },
+  "promotional_content": false
+}

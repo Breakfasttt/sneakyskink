@@ -1,0 +1,69 @@
+{
+  "size": [
+    562,
+    266,
+    159,
+    5
+  ],
+  "player": {
+    "id": "09c14728-6dfb-11ee-ba07-02000090a64f",
+    "name": "Grulkas Casse-croûte",
+    "idraces": 8,
+    "number": 1,
+    "value": 240,
+    "xp": 10,
+    "attributes": {
+      "ma": 5,
+      "st": 5,
+      "ag": 4,
+      "av": 10,
+      "pa": 5
+    },
+    "type": "chaosChosen_ogre",
+    "level": 5,
+    "casualties_state_id": [
+      3
+    ],
+    "casualties_state": [
+      "GroinStrain"
+    ],
+    "suspended_next_match": false,
+    "skills": [
+      "bone head",
+      "loner (4+)",
+      "mighty blow (+1)",
+      "thick skull",
+      "throw team-mate",
+      "block",
+      "claws",
+      "guard",
+      "grab"
+    ],
+    "statistics": {
+      "": {
+        "inflictedcasualties": 0,
+        "inflictedinjuries": 0,
+        "inflictedko": 0,
+        "sustainedcasualties": 0,
+        "sustainedko": 0,
+        "sustainedinjuries": 0
+      }
+    }
+  },
+  "urls": {
+    "images": {
+      "logos": "https://images.cyanide-studio.com/bb3/logos/",
+      "races": "https://images.cyanide-studio.com/bb3/races/",
+      "portraits": "https://images.cyanide-studio.com/bb3/portraits/",
+      "skills": "https://images.cyanide-studio.com/bb3/skillicons/"
+    }
+  },
+  "meta": {
+    "user": "Breakyt",
+    "game": "bb3",
+    "method": "player",
+    "format": "json",
+    "services": "https://web.cyanide-studio.com/ws/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2&bb=3"
+  },
+  "promotional_content": false
+}
