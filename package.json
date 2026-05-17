@@ -4,7 +4,6 @@
   "private": true,
   "description": "Monorepo global pour l'écosystème SneakySkink - Blood Bowl 3 Ingestion & REST API",
   "workspaces": [
-    "sneakyskink-doc",
     "sneakyskink-bdd",
     "sneakyskink-api-client",
     "SneakySkink-harvester",

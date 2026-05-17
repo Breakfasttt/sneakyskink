@@ -19,7 +19,6 @@ L'écosystème SneakySkink est divisé en plusieurs packages spécialisés :
 | **`SneakySkink-web`** | Interface utilisateur premium (Glassmorphism & Neon Glows) pour explorer les ligues, coachs et statistiques. | React, Vite, Material UI (MUI) |
 | **`SneakySkink-discord`** | Bot Discord fournissant des commandes interactives, des alertes de matchs et des statistiques en direct. | Discord.js, Node.js |
 | **`SneakySkink-twitch`** | Service d'intégration pour les overlays de streaming en direct et la détection d'activité Twitch. | Twitch API, WebSockets |
-| **`sneakyskink-doc`** | Documentation centrale du projet (ce dépôt de documentation et guides pour IA). | Markdown |
 
 ---
 
