@@ -5,6 +5,8 @@ import { theme } from './theme';
 import { Layout } from './components/Layout';
 import { Dashboard } from './pages/Dashboard';
 import { Leagues } from './pages/Leagues';
+import { LeagueDetail } from './pages/LeagueDetail';
+import { CompetitionsList } from './pages/CompetitionsList';
 import { Competitions } from './pages/Competitions';
 import { MatchDetail } from './pages/MatchDetail';
 import { Search } from './pages/Search';
@@ -21,6 +23,8 @@ function App() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/leagues" element={<Leagues />} />
+            <Route path="/leagues/:id" element={<LeagueDetail />} />
+            <Route path="/competitions" element={<CompetitionsList />} />
             <Route path="/competitions/:id" element={<Competitions />} />
             <Route path="/matches/:id" element={<MatchDetail />} />
             <Route path="/search" element={<Search />} />

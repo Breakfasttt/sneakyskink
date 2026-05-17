@@ -106,7 +106,7 @@ export class TeamParser {
     const popularity = teamRaw.popularity || 0;
     const rerolls = teamRaw.rerolls || 0;
     const apothecary = teamRaw.apothecary || 0;
-    const coachId = teamRaw.idcoach;
+    const coachId = teamRaw.idcoach?.toString();
 
     if (!coachId) {
       throw new Error(`Impossible de parser l'équipe ${id} (${name}) : aucun coachId associé.`);
@@ -171,9 +171,17 @@ export class TeamParser {
 
     // Compétences et blessures
     const activeCasualties = raw.casualties_state || [];
-    // Puisque le roster ne distingue pas inné et acquis, on met toutes les compétences initiales dans innateSkills
-    const innateSkills = raw.skills || [];
-    const acquiredSkills: string[] = [];
+    
+    // Gérer les deux formats possibles de skills (Array ou Object)
+    let innateSkills: string[] = [];
+    let acquiredSkills: string[] = [];
+    
+    if (Array.isArray(raw.skills)) {
+      innateSkills = raw.skills;
+    } else if (raw.skills && typeof raw.skills === 'object') {
+      innateSkills = (raw.skills as any).InnateSkills || [];
+      acquiredSkills = (raw.skills as any).AcquiredSkills || [];
+    }
 
     const createData: Prisma.PlayerCreateInput = {
       id,

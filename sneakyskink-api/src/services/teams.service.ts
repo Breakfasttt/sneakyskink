@@ -87,6 +87,9 @@ export class TeamsService {
         players: includePlayers
           ? {
               orderBy: { number: 'asc' },
+              include: {
+                stats: true,
+              },
             }
           : false,
         _count: {

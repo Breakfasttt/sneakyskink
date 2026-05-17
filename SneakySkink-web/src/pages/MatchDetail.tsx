@@ -30,7 +30,7 @@ import {
   CancelPresentation as ForfeitIcon,
   CompareArrows as VSIcon,
 } from '@mui/icons-material';
-import axios from 'axios';
+import { api } from '../api';
 import { getRaceInfo } from '../utils/raceHelper';
 
 interface PlayerStatRow {
@@ -104,8 +104,8 @@ export const MatchDetail: React.FC = () => {
     const fetchMatchDetails = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(`http://localhost:3001/matches/${id}`);
-        setMatch(res.data);
+        const response = await api.getMatch(id);
+        setMatch((response as any).data || response);
       } catch (err) {
         console.error('Failed to load match details', err);
       } finally {

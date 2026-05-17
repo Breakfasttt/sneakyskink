@@ -116,8 +116,8 @@ export class MatchParser {
       throw new Error(`Impossible de parser le match ${id}: structure d'équipes incomplète.`);
     }
 
-    const homeCoachId = raw.coaches[0]?.idcoach || null;
-    const awayCoachId = raw.coaches[1]?.idcoach || null;
+    const homeCoachId = raw.coaches[0]?.idcoach?.toString() || null;
+    const awayCoachId = raw.coaches[1]?.idcoach?.toString() || null;
 
     const homeScore = homeTeamRaw.score ?? 0;
     const awayScore = awayTeamRaw.score ?? 0;

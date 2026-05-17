@@ -11,7 +11,10 @@ export class MatchesService {
     limit: number = 20,
     offset: number = 0
   ) {
-    const andConditions: any[] = [];
+    const andConditions: any[] = [
+      { homeCoachId: { not: null } },
+      { awayCoachId: { not: null } }
+    ];
 
     if (leagueId) andConditions.push({ leagueId });
     if (competitionId) andConditions.push({ competitionId });
@@ -29,7 +32,7 @@ export class MatchesService {
       });
     }
 
-    const where = andConditions.length > 0 ? { AND: andConditions } : {};
+    const where = { AND: andConditions };
 
     const [total, matches] = await Promise.all([
       prisma.match.count({ where }),

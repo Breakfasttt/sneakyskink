@@ -46,7 +46,7 @@ export const harvesterWorker = new Worker<JobData>(
 /**
  * 1. Traitement de la récupération d'un Coach
  */
-async function handleFetchCoach(coachId: string) {
+export async function handleFetchCoach(coachId: string) {
   logger.info(`🔍 [Fetch] Récupération du coach ${coachId}...`);
   
   // Appeler l'API de Cyanide
@@ -68,7 +68,7 @@ async function handleFetchCoach(coachId: string) {
 /**
  * 2. Traitement de la récupération d'une Ligue
  */
-async function handleFetchLeague(leagueId: string) {
+export async function handleFetchLeague(leagueId: string) {
   logger.info(`🔍 [Fetch] Récupération des détails de la ligue ${leagueId}...`);
   
   // A. Récupérer et sauvegarder les détails de la ligue
@@ -116,7 +116,7 @@ async function handleFetchLeague(leagueId: string) {
 
     // Détecter si le coach de l'équipe existe déjà en base de données.
     // Si c'est un nouveau coach, on enfile un job pour charger son profil complet de manière asynchrone.
-    const coachId = detailResponse.team.idcoach;
+    const coachId = detailResponse.team.idcoach?.toString();
     if (coachId) {
       const coachExists = await prisma.coach.findUnique({
         where: { id: coachId },
@@ -153,12 +153,22 @@ async function handleFetchLeague(leagueId: string) {
 /**
  * 3. Traitement de la récupération d'une Compétition (Matchs / Contests)
  */
-async function handleFetchCompetition(competitionId: string) {
+export async function handleFetchCompetition(competitionId: string) {
   logger.info(`🔍 [Fetch] Récupération des matchs pour la compétition ${competitionId}...`);
 
   // Récupérer la liste des matchs (contests)
   const response = await bb3ApiClient.get('/contests', { competition: competitionId });
-  const contests = response.contests || [];
+  let contests = response.contests || [];
+  
+  if (contests.length === 0) {
+    logger.info(`ℹ️ [Fetch] Aucun contest planifié trouvé. Tentative de récupération via /matches...`);
+    const matchesResponse = await bb3ApiClient.get('/matches', { competition_id: competitionId });
+    const matchesList = matchesResponse.matches || [];
+    contests = matchesList.map((m: any) => ({
+      ...m,
+      match_id: m.id || m.uuid
+    }));
+  }
   
   logger.info(`📊 [Fetch] ${contests.length} matchs trouvés dans la compétition.`);
 
@@ -192,7 +202,7 @@ async function handleFetchCompetition(competitionId: string) {
     // Si c'est un nouveau coach, on enfile un job pour charger son profil complet de manière asynchrone.
     const rawMatch = matchDetailResponse.match;
     for (const coach of rawMatch.coaches || []) {
-      const coachId = coach.idcoach;
+      const coachId = coach.idcoach?.toString();
       if (coachId) {
         const coachExists = await prisma.coach.findUnique({
           where: { id: coachId },

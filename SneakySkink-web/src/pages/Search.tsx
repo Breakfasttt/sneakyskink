@@ -15,6 +15,7 @@ import {
   Avatar,
   CardActionArea,
   InputAdornment,
+  Paper,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -23,7 +24,7 @@ import {
   SportsEsports as MatchIcon,
   Launch as LaunchIcon,
 } from '@mui/icons-material';
-import axios from 'axios';
+import { api } from '../api';
 import { getRaceInfo } from '../utils/raceHelper';
 
 interface CoachItem {
@@ -72,12 +73,12 @@ export const Search: React.FC = () => {
     try {
       if (tabValue === 0) {
         // Search coaches
-        const res = await axios.get(`http://localhost:3001/coaches?search=${query}&limit=30`);
-        setCoaches(res.data.data || []);
+        const res = await api.getCoaches({ search: query, limit: 30 });
+        setCoaches((res as any).data || []);
       } else {
         // Search teams
-        const res = await axios.get(`http://localhost:3001/teams?search=${query}&limit=30`);
-        setTeams(res.data.data || []);
+        const res = await api.getTeams({ search: query, limit: 30 } as any);
+        setTeams((res as any).data || []);
       }
     } catch (err) {
       console.error('Failed to load search results', err);

@@ -15,6 +15,7 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
+  Divider,
 } from '@mui/material';
 import {
   CloudSync as SyncIcon,
@@ -23,7 +24,7 @@ import {
   HourglassEmpty as QueueIcon,
   DoneAll as DoneIcon,
 } from '@mui/icons-material';
-import axios from 'axios';
+import { api } from '../api';
 
 export const SyncManager: React.FC = () => {
   const [queue, setQueue] = useState<{ active: number; waiting: number; completed?: number } | null>(null);
@@ -40,8 +41,8 @@ export const SyncManager: React.FC = () => {
 
   const fetchQueue = async () => {
     try {
-      const res = await axios.get('http://localhost:3001/sync/queue');
-      setQueue(res.data);
+      const data = await api.getSyncQueue();
+      setQueue(data);
     } catch (err) {
       console.error('Failed to load queue status', err);
     } finally {
@@ -62,10 +63,10 @@ export const SyncManager: React.FC = () => {
 
     setSyncingCoach(true);
     try {
-      const res = await axios.post(`http://localhost:3001/sync/coach/${coachId.trim()}`);
+      const res = await api.syncCoach(coachId.trim());
       setNotification({
         open: true,
-        message: `Coach synchronisé avec succès ! Job BullMQ en cours... (ID: ${res.data.jobId})`,
+        message: `Coach synchronisé avec succès ! Job BullMQ en cours... (ID: ${res.jobId})`,
         severity: 'success',
       });
       setCoachId('');
@@ -88,10 +89,10 @@ export const SyncManager: React.FC = () => {
 
     setSyncingLeague(true);
     try {
-      const res = await axios.post(`http://localhost:3001/sync/league/${leagueId.trim()}`);
+      const res = await api.syncLeague(leagueId.trim());
       setNotification({
         open: true,
-        message: `Ligue en cours de synchronisation globale ! Tous les matchs et compétitions vont être importés. (ID: ${res.data.jobId})`,
+        message: `Ligue en cours de synchronisation globale ! Tous les matchs et compétitions vont être importés. (ID: ${res.jobId})`,
         severity: 'success',
       });
       setLeagueId('');

@@ -27,12 +27,12 @@ export class StatsService {
       },
     });
 
-    // Récupérer tous les matchs impliquant ce coach
+    // Récupérer tous les matchs impliquant ce coach (sans IA)
     const matches = await prisma.match.findMany({
       where: {
         OR: [
-          { homeCoachId: coachId },
-          { awayCoachId: coachId },
+          { homeCoachId: coachId, awayCoachId: { not: null } },
+          { awayCoachId: coachId, homeCoachId: { not: null } },
         ],
       },
       select: {
@@ -51,11 +51,15 @@ export class StatsService {
       },
     });
 
-    // Récupérer la somme des statistiques de tous les joueurs de ce coach
+    // Récupérer la somme des statistiques de tous les joueurs de ce coach (matchs officiels humains)
     const playerStatsSum = await prisma.playerMatchStats.aggregate({
       where: {
         player: {
           team: { coachId },
+        },
+        match: {
+          homeCoachId: { not: null },
+          awayCoachId: { not: null },
         },
       },
       _sum: {
@@ -225,7 +229,11 @@ export class StatsService {
     }
 
     const matches = await prisma.match.findMany({
-      where: { competitionId },
+      where: {
+        competitionId,
+        homeCoachId: { not: null },
+        awayCoachId: { not: null }
+      },
       select: {
         id: true,
         homeScore: true,
@@ -237,7 +245,11 @@ export class StatsService {
 
     const playerStatsSum = await prisma.playerMatchStats.aggregate({
       where: {
-        match: { competitionId },
+        match: {
+          competitionId,
+          homeCoachId: { not: null },
+          awayCoachId: { not: null }
+        },
       },
       _sum: {
         touchdowns: true,
@@ -323,19 +335,50 @@ export class StatsService {
     }
 
     const matches = await prisma.match.findMany({
-      where: { leagueId },
+      where: {
+        leagueId,
+        homeCoachId: { not: null },
+        awayCoachId: { not: null }
+      },
       select: {
         id: true,
         homeScore: true,
         awayScore: true,
         homeStats: true,
         awayStats: true,
+        startedAt: true,
+        homeCoachId: true,
+        awayCoachId: true,
       },
     });
 
+    // Calculer les coachs uniques et la dernière activité
+    const uniqueCoaches = new Set<string>();
+    let lastActivity: Date | null = null;
+
+    let forfeits = 0;
+    for (const m of matches) {
+      if (m.homeCoachId) uniqueCoaches.add(m.homeCoachId);
+      if (m.awayCoachId) uniqueCoaches.add(m.awayCoachId);
+
+      if (!lastActivity || m.startedAt > lastActivity) {
+        lastActivity = m.startedAt;
+      }
+
+      const homeConceded = m.homeStats && typeof m.homeStats === 'object' && (m.homeStats as any).conceded === true;
+      const awayConceded = m.awayStats && typeof m.awayStats === 'object' && (m.awayStats as any).conceded === true;
+      if (homeConceded || awayConceded) {
+        forfeits++;
+      }
+    }
+
     const playerStatsSum = await prisma.playerMatchStats.aggregate({
       where: {
-        match: { leagueId },
+        match: {
+          leagueId,
+          homeCoachId: { not: null },
+          awayCoachId: { not: null }
+        },
       },
       _sum: {
         touchdowns: true,
@@ -359,15 +402,6 @@ export class StatsService {
       },
     });
 
-    let forfeits = 0;
-    for (const m of matches) {
-      const homeConceded = m.homeStats && typeof m.homeStats === 'object' && (m.homeStats as any).conceded === true;
-      const awayConceded = m.awayStats && typeof m.awayStats === 'object' && (m.awayStats as any).conceded === true;
-      if (homeConceded || awayConceded) {
-        forfeits++;
-      }
-    }
-
     return {
       league: {
         id: league.id,
@@ -377,6 +411,8 @@ export class StatsService {
       summary: {
         totalMatches: matches.length,
         forfeits,
+        coachesCount: uniqueCoaches.size,
+        lastActivity,
       },
       performance: (() => {
         const sums = playerStatsSum._sum || {};
@@ -404,7 +440,10 @@ export class StatsService {
    * Récupère les statistiques globales (avec option filtrage compétitions officielles)
    */
   static async getGlobalStats(isOfficial: boolean = false) {
-    const where: any = {};
+    const where: any = {
+      homeCoachId: { not: null },
+      awayCoachId: { not: null }
+    };
 
     if (isOfficial) {
       where.league = {
@@ -499,8 +538,12 @@ export class StatsService {
    * Récupère la chronologie et l'activité horaire et journalière des matchs
    */
   static async getActivityStats() {
-    // Récupérer toutes les dates de début des matchs pour calculs temporels
+    // Récupérer toutes les dates de début des matchs pour calculs temporels (sans IA)
     const matches = await prisma.match.findMany({
+      where: {
+        homeCoachId: { not: null },
+        awayCoachId: { not: null }
+      },
       select: { startedAt: true },
     });
 

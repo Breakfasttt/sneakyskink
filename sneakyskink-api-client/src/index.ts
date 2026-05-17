@@ -116,8 +116,8 @@ export class SneakySkinkApiClient {
   /**
    * 👥 Récupère la liste globale de tous les coachs
    */
-  public async getCoaches(): Promise<Coach[]> {
-    const res = await this.client.get('/coaches');
+  public async getCoaches(params?: { search?: string; limit?: number }): Promise<Coach[]> {
+    const res = await this.client.get('/coaches', { params });
     return res.data;
   }
 
@@ -125,7 +125,7 @@ export class SneakySkinkApiClient {
    * 👥 Récupère un coach avec la liste de ses équipes
    */
   public async getCoach(id: string): Promise<Coach & { teams: Team[] }> {
-    const res = await this.client.get(`/coaches/${id}`);
+    const res = await this.client.get(`/coaches/${id}`, { params: { includeTeams: true } });
     return res.data;
   }
 

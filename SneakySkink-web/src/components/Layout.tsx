@@ -19,6 +19,7 @@ import {
   useMediaQuery,
   useTheme,
   Button,
+  Tooltip,
 } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
@@ -28,7 +29,7 @@ import {
   OnlinePrediction as OnlineIcon,
   Layers as QueueIcon,
 } from '@mui/icons-material';
-import axios from 'axios';
+import { api } from '../api';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -41,20 +42,23 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const [queueCount, setQueueCount] = useState<number>(0);
-  const [apiOnline, setApiOnline] = useState<boolean>(true);
+  const [harvesterRunning, setHarvesterRunning] = useState<boolean>(true);
+  const [cyanideOnline, setCyanideOnline] = useState<boolean>(true);
 
   // Poll the sync queue status every 10 seconds to show in the header badge
   useEffect(() => {
     const fetchQueueStatus = async () => {
       try {
-        const res = await axios.get('http://localhost:3001/sync/queue');
-        const active = res.data?.active || 0;
-        const waiting = res.data?.waiting || 0;
+        const data = await api.getSyncQueue();
+        const active = data.active || 0;
+        const waiting = data.waiting || 0;
         setQueueCount(active + waiting);
-        setApiOnline(true);
+        setHarvesterRunning((data as any).harvesterRunning ?? false);
+        setCyanideOnline((data as any).cyanideOnline ?? false);
       } catch (err) {
         console.error('API is offline or unreachable', err);
-        setApiOnline(false);
+        setHarvesterRunning(false);
+        setCyanideOnline(false);
       }
     };
 
@@ -117,57 +121,74 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             <Typography variant="h5" component="div" sx={{ fontFamily: 'Outfit', fontWeight: 900, display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <span style={{ color: '#00E676' }}>🦎</span> SNEAKY<span style={{ color: '#00E676' }}>SKINK</span>
             </Typography>
-            <Paper
-              elevation={0}
-              sx={{
-                px: 1,
-                py: 0.25,
-                bgcolor: 'rgba(0, 230, 118, 0.1)',
-                border: '1px solid rgba(0, 230, 118, 0.3)',
-                borderRadius: 2,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.5,
-              }}
-            >
-              <Box
-                sx={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  bgcolor: apiOnline ? '#00E676' : '#FF3D00',
-                  boxShadow: apiOnline ? '0 0 8px #00E676' : '0 0 8px #FF3D00',
-                }}
-              />
-              <Typography variant="caption" sx={{ color: apiOnline ? '#00E676' : '#FF3D00', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                {apiOnline ? 'Online' : 'Offline'}
-              </Typography>
-            </Paper>
           </Box>
 
-          {/* Desktop Navigation Links */}
-          {!isMobile && (
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              {navigationItems.map((item, idx) => (
-                <Button
-                  key={item.label}
-                  onClick={() => handleNavChange(idx)}
-                  variant={navIndex === idx ? 'contained' : 'text'}
-                  color={navIndex === idx ? 'primary' : 'inherit'}
-                  startIcon={item.icon}
+          {/* Discreet Status Indicators (top right) */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Tooltip title={`Harvester Daemon: ${harvesterRunning ? 'Actif' : 'Hors ligne'}`}>
+              <Paper
+                elevation={0}
+                sx={{
+                  px: 1.5,
+                  py: 0.5,
+                  bgcolor: harvesterRunning ? 'rgba(0, 230, 118, 0.08)' : 'rgba(239, 68, 68, 0.08)',
+                  border: harvesterRunning ? '1px solid rgba(0, 230, 118, 0.2)' : '1px solid rgba(239, 68, 68, 0.2)',
+                  borderRadius: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.75,
+                }}
+              >
+                <Box
                   sx={{
-                    borderRadius: 3,
-                    px: 2,
-                    py: 1,
-                    color: navIndex === idx ? '#0F172A' : '#94A3B8',
-                    fontWeight: 700,
+                    width: 6,
+                    height: 6,
+                    borderRadius: '50%',
+                    bgcolor: harvesterRunning ? '#00E676' : '#EF4444',
+                    boxShadow: harvesterRunning ? '0 0 6px #00E676' : '0 0 6px #EF4444',
+                    '@keyframes pulse': {
+                      '0%': { opacity: 0.4 },
+                      '50%': { opacity: 1 },
+                      '100%': { opacity: 0.4 },
+                    },
+                    animation: harvesterRunning ? 'pulse 2s infinite ease-in-out' : 'none',
                   }}
-                >
-                  {item.label}
-                </Button>
-              ))}
-            </Box>
-          )}
+                />
+                <Typography variant="caption" sx={{ color: harvesterRunning ? '#00E676' : '#EF4444', fontWeight: 800, fontSize: '0.65rem', letterSpacing: '0.05em' }}>
+                  HARVESTER
+                </Typography>
+              </Paper>
+            </Tooltip>
+
+            <Tooltip title={`API Cyanide: ${cyanideOnline ? 'Disponible' : 'Indisponible'}`}>
+              <Paper
+                elevation={0}
+                sx={{
+                  px: 1.5,
+                  py: 0.5,
+                  bgcolor: cyanideOnline ? 'rgba(0, 230, 118, 0.08)' : 'rgba(239, 68, 68, 0.08)',
+                  border: cyanideOnline ? '1px solid rgba(0, 230, 118, 0.2)' : '1px solid rgba(239, 68, 68, 0.2)',
+                  borderRadius: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.75,
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: '50%',
+                    bgcolor: cyanideOnline ? '#00E676' : '#EF4444',
+                    boxShadow: cyanideOnline ? '0 0 6px #00E676' : '0 0 6px #EF4444',
+                  }}
+                />
+                <Typography variant="caption" sx={{ color: cyanideOnline ? '#00E676' : '#EF4444', fontWeight: 800, fontSize: '0.65rem', letterSpacing: '0.05em' }}>
+                  CYANIDE
+                </Typography>
+              </Paper>
+            </Tooltip>
+          </Box>
 
           {/* Small Queue Indicator for Mobile */}
           {isMobile && queueCount > 0 && (
