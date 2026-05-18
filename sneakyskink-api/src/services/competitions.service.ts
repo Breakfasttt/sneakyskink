@@ -62,7 +62,7 @@ export class CompetitionsService {
     };
   }
 
-  static async getCompetitionById(id: string, includeMatches: boolean = false) {
+  static async getCompetitionById(id: string, includeMatches: boolean = true) {
     const competition = await prisma.competition.findUnique({
       where: { id },
       include: {
@@ -77,6 +77,8 @@ export class CompetitionsService {
               include: {
                 homeTeam: { select: { name: true, logo: true } },
                 awayTeam: { select: { name: true, logo: true } },
+                homeCoach: { select: { name: true } },
+                awayCoach: { select: { name: true } },
               },
             }
           : false,

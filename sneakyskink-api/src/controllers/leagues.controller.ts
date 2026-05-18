@@ -20,7 +20,7 @@ export class LeaguesController {
   static async getById(req: Request, res: Response, next: NextFunction) {
     try {
       const id = req.params.id as string;
-      const includeCompetitions = req.query.includeCompetitions === 'true';
+      const includeCompetitions = req.query.includeCompetitions !== 'false';
 
       const result = await LeaguesService.getLeagueById(id, includeCompetitions);
       res.json({ success: true, data: result });

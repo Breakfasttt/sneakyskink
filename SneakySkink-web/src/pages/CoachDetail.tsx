@@ -96,7 +96,7 @@ export const CoachDetail: React.FC = () => {
         ]);
 
         setProfile((profileRes as any).data);
-        setStats(statsRes);
+        setStats((statsRes as any).data);
         setRecentMatches((matchesRes as any).data || []);
       } catch (err) {
         console.error('Failed to load coach details', err);

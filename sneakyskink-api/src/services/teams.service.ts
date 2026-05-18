@@ -74,7 +74,7 @@ export class TeamsService {
     };
   }
 
-  static async getTeamById(id: string, includePlayers: boolean = false) {
+  static async getTeamById(id: string, includePlayers: boolean = true) {
     const team = await prisma.team.findUnique({
       where: { id },
       include: {

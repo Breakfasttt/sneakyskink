@@ -27,7 +27,7 @@ export class CompetitionsController {
   static async getById(req: Request, res: Response, next: NextFunction) {
     try {
       const id = req.params.id as string;
-      const includeMatches = req.query.includeMatches === 'true';
+      const includeMatches = req.query.includeMatches !== 'false';
 
       const result = await CompetitionsService.getCompetitionById(id, includeMatches);
       res.json({ success: true, data: result });

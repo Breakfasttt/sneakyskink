@@ -153,7 +153,7 @@ export const Competitions: React.FC = () => {
         ]);
 
         setCompDetail((detailData as any).data);
-        setCompStats(statsData);
+        setCompStats((statsData as any).data);
       } catch (err) {
         console.error('Failed to load competition details', err);
       } finally {

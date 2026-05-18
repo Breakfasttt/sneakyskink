@@ -88,11 +88,11 @@ export const LeagueDetail: React.FC = () => {
         
         // 1. Fetch league with its competitions
         const leagueRes = await api.getLeague(id);
-        setLeague(leagueRes as any);
+        setLeague((leagueRes as any).data);
 
         // 2. Fetch league statistics (coach count & last activity)
         const statsRes = await api.getLeagueStats(id);
-        setStats(statsRes);
+        setStats((statsRes as any).data);
 
         // 3. Fetch 5 most recent matches
         const matchesRes = await api.getMatches({ leagueId: id, limit: 5 } as any);

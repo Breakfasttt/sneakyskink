@@ -47,7 +47,7 @@ export class LeaguesService {
     };
   }
 
-  static async getLeagueById(id: string, includeCompetitions: boolean = false) {
+  static async getLeagueById(id: string, includeCompetitions: boolean = true) {
     const league = await prisma.league.findUnique({
       where: { id },
       include: {

@@ -22,7 +22,7 @@ export class TeamsController {
   static async getById(req: Request, res: Response, next: NextFunction) {
     try {
       const id = req.params.id as string;
-      const includePlayers = req.query.includePlayers === 'true';
+      const includePlayers = req.query.includePlayers !== 'false';
 
       const result = await TeamsService.getTeamById(id, includePlayers);
       res.json({ success: true, data: result });
