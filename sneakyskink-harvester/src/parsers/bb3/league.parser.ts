@@ -39,7 +39,7 @@ export class LeagueParser {
    */
   static parseLeague(raw: RawLeague): Prisma.LeagueUpsertArgs {
     const id = raw.id;
-    const name = raw.name || 'Ligue sans nom';
+    const name = raw.name !== undefined && raw.name !== null ? raw.name.toString() : 'Ligue sans nom';
     const logo = raw.logo || null;
     const gamerCount = raw.gamer_count ?? raw.team_count ?? 0;
 
@@ -67,7 +67,7 @@ export class LeagueParser {
    */
   static parseCompetition(raw: RawCompetition, defaultLeagueId?: string): Prisma.CompetitionUpsertArgs {
     const id = raw.id;
-    const name = raw.name || 'Compétition sans nom';
+    const name = raw.name !== undefined && raw.name !== null ? raw.name.toString() : 'Compétition sans nom';
     const format = raw.format || 'Ladder';
     const status = raw.status_name || 'InProgress';
     const round = raw.round || null;

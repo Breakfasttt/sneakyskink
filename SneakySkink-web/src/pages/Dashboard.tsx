@@ -235,8 +235,8 @@ export const Dashboard: React.FC = () => {
           
           {/* Coach Search */}
           <Grid item xs={12} md={4}>
-            <form onSubmit={handleCoachSearchSubmit} style={{ height: '100%' }}>
-              <Box sx={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
+            <form onSubmit={handleCoachSearchSubmit} style={{ height: '100%', width: '100%' }}>
+              <Box sx={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100%', width: '100%', justifyContent: 'space-between' }}>
                 <Box>
                   <Typography variant="subtitle2" sx={{ color: '#94A3B8', fontWeight: 800, mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
                     <CoachIcon sx={{ color: '#00E676', fontSize: 18 }} /> Rechercher un Coach
@@ -319,8 +319,8 @@ export const Dashboard: React.FC = () => {
 
           {/* League Search */}
           <Grid item xs={12} md={4}>
-            <form onSubmit={handleLeagueSearchSubmit} style={{ height: '100%' }}>
-              <Box sx={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
+            <form onSubmit={handleLeagueSearchSubmit} style={{ height: '100%', width: '100%' }}>
+              <Box sx={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100%', width: '100%', justifyContent: 'space-between' }}>
                 <Box>
                   <Typography variant="subtitle2" sx={{ color: '#94A3B8', fontWeight: 800, mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
                     <TrophyIcon sx={{ color: '#00E676', fontSize: 18 }} /> Rechercher une Ligue
@@ -403,8 +403,8 @@ export const Dashboard: React.FC = () => {
 
           {/* Competition Search */}
           <Grid item xs={12} md={4}>
-            <form onSubmit={handleCompSearchSubmit} style={{ height: '100%' }}>
-              <Box sx={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
+            <form onSubmit={handleCompSearchSubmit} style={{ height: '100%', width: '100%' }}>
+              <Box sx={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100%', width: '100%', justifyContent: 'space-between' }}>
                 <Box>
                   <Typography variant="subtitle2" sx={{ color: '#94A3B8', fontWeight: 800, mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
                     <CompIcon sx={{ color: '#00E676', fontSize: 18 }} /> Rechercher une Compétition

@@ -1,5 +1,6 @@
 import { prisma } from '../lib/prisma.js';
 import { ApiError } from '../middlewares/error.middleware.js';
+import { harvesterQueue } from '../lib/queue.js';
 
 export class LeaguesService {
   static async getAllLeagues(active?: boolean, limit: number = 20, offset: number = 0) {
@@ -81,5 +82,41 @@ export class LeaguesService {
       matchesCount: league._count.matches,
       competitions: includeCompetitions ? league.competitions : undefined,
     };
+  }
+
+  static async searchCyanideLeagues(query: string) {
+    if (!query || query.trim().length === 0) {
+      return { data: [] };
+    }
+
+    try {
+      const job = await harvesterQueue.add(
+        `search-leagues-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        { type: 'search-leagues', id: query },
+        { priority: 1 } // Haute priorité
+      );
+
+      // Attendre la complétion du job par le harvester
+      let attempts = 0;
+      const maxAttempts = 150; // 15 secondes max
+      
+      while (attempts < maxAttempts) {
+        const state = await job.getState();
+        if (state === 'completed') {
+          const finishedJob = await harvesterQueue.getJob(job.id!);
+          return { data: finishedJob?.returnvalue || [] };
+        }
+        if (state === 'failed') {
+          const finishedJob = await harvesterQueue.getJob(job.id!);
+          throw new Error(finishedJob?.failedReason || "La recherche de ligues sur Cyanide a échoué.");
+        }
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
+      }
+
+      throw new Error("La recherche de ligues sur Cyanide a expiré.");
+    } catch (error: any) {
+      throw new ApiError(500, `Erreur lors de la recherche déléguée au Harvester : ${error.message}`);
+    }
   }
 }

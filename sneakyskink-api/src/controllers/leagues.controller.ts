@@ -17,6 +17,20 @@ export class LeaguesController {
     }
   }
 
+  static async searchCyanide(req: Request, res: Response, next: NextFunction) {
+    try {
+      const query = req.query.query as string;
+      if (!query) {
+        return res.status(400).json({ success: false, message: "Le paramètre 'query' est obligatoire." });
+      }
+
+      const result = await LeaguesService.searchCyanideLeagues(query);
+      res.json({ success: true, ...result });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async getById(req: Request, res: Response, next: NextFunction) {
     try {
       const id = req.params.id as string;

@@ -22,3 +22,5 @@ async function startServer() {
 }
 
 startServer();
+
+// Triggering reload to parse new .env configuration - Delegating BB3 search to Harvester

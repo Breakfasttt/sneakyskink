@@ -82,3 +82,5 @@ process.on('SIGINT', () => shutdown('SIGINT'));
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 
 bootstrap();
+
+// Triggering reload for Delta match synchronization

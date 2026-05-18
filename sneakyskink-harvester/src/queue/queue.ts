@@ -4,7 +4,7 @@ import { logger } from '../utils/logger.js';
 
 export const QUEUE_NAME = 'harvester-queue';
 
-export type JobType = 'fetch-league' | 'fetch-competition' | 'fetch-coach';
+export type JobType = 'fetch-league' | 'fetch-competition' | 'fetch-coach' | 'search-leagues';
 
 export interface JobData {
   type: JobType;

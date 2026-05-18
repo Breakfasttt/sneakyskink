@@ -4,7 +4,7 @@
     {
       "label": "⚡ Start Harvester",
       "type": "shell",
-      "command": "npm run dev:harvester",
+      "command": "chcp 65001 >$null; npm run dev:harvester",
       "problemMatcher": [],
       "presentation": {
         "echo": true,
@@ -12,14 +12,13 @@
         "focus": false,
         "panel": "dedicated",
         "showReuseMessage": true,
-        "clear": false,
-        "group": "sneakyskink-dev"
+        "clear": false
       }
     },
     {
       "label": "⚡ Start API",
       "type": "shell",
-      "command": "npm run dev:api",
+      "command": "chcp 65001 >$null; npm run dev:api",
       "problemMatcher": [],
       "presentation": {
         "echo": true,
@@ -27,14 +26,13 @@
         "focus": false,
         "panel": "dedicated",
         "showReuseMessage": true,
-        "clear": false,
-        "group": "sneakyskink-dev"
+        "clear": false
       }
     },
     {
       "label": "⚡ Start Web",
       "type": "shell",
-      "command": "npm run dev:web",
+      "command": "chcp 65001 >$null; npm run dev:web",
       "problemMatcher": [],
       "presentation": {
         "echo": true,
@@ -42,8 +40,7 @@
         "focus": false,
         "panel": "dedicated",
         "showReuseMessage": true,
-        "clear": false,
-        "group": "sneakyskink-dev"
+        "clear": false
       }
     },
     {

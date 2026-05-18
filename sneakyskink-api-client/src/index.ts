@@ -74,6 +74,14 @@ export class SneakySkinkApiClient {
   }
 
   /**
+   * 📡 Cherche des ligues directement sur l'API de Cyanide (non encore importées)
+   */
+  public async searchCyanideLeagues(query: string): Promise<any> {
+    const res = await this.client.get('/leagues/cyanide/search', { params: { query } });
+    return res.data;
+  }
+
+  /**
    * 🏆 Récupère les détails complets d'une ligue spécifique
    */
   public async getLeague(id: string): Promise<League & { competitions: Competition[] }> {

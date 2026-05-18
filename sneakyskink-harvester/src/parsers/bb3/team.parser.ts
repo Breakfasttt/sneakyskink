@@ -60,7 +60,7 @@ export class TeamParser {
       throw new Error(`Impossible de parser le coach: aucun ID fourni.`);
     }
 
-    const name = raw.name || 'Coach Anonyme';
+    const name = raw.name !== undefined && raw.name !== null ? raw.name.toString() : 'Coach Anonyme';
     const lastLang = raw.lastlang || null;
     const country = raw.country || null;
     const twitch = raw.twitch || null;
@@ -96,7 +96,7 @@ export class TeamParser {
   static parseTeam(raw: RawTeamDetail): Prisma.TeamUpsertArgs {
     const teamRaw = raw.team;
     const id = teamRaw.id;
-    const name = teamRaw.name || 'Équipe sans nom';
+    const name = teamRaw.name !== undefined && teamRaw.name !== null ? teamRaw.name.toString() : 'Équipe sans nom';
     const raceId = teamRaw.idraces;
     const logo = teamRaw.logo || null;
     const value = teamRaw.value || 0;
@@ -154,7 +154,7 @@ export class TeamParser {
    */
   static parsePlayer(raw: RawPlayer, teamId: string): Prisma.PlayerUpsertArgs {
     const id = raw.id;
-    const name = raw.name || 'Joueur sans nom';
+    const name = raw.name !== undefined && raw.name !== null ? raw.name.toString() : 'Joueur sans nom';
     const number = raw.number;
     const value = raw.value || 0;
     const xp = raw.xp || 0;

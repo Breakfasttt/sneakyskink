@@ -1,0 +1,7 @@
+{
+  "terminal.integrated.env.windows": {
+    "LANG": "fr_FR.UTF-8",
+    "LC_ALL": "fr_FR.UTF-8"
+  },
+  "terminal.integrated.defaultProfile.windows": "PowerShell"
+}

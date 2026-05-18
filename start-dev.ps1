@@ -5,14 +5,14 @@ Write-Host "🦎 Démarrage de l'écosystème SneakySkink en local..." -Foregrou
 
 # Lancer le Harvester
 Write-Host "-> Lancement du Harvester..." -ForegroundColor Yellow
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "npm run dev:harvester"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "[Console]::InputEncoding = [Console]::OutputEncoding = $OutputEncoding = [System.Text.Encoding]::UTF8; chcp 65001 >$null; npm run dev:harvester"
 
 # Lancer l'API
 Write-Host "-> Lancement de l'API REST..." -ForegroundColor Yellow
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "npm run dev:api"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "[Console]::InputEncoding = [Console]::OutputEncoding = $OutputEncoding = [System.Text.Encoding]::UTF8; chcp 65001 >$null; npm run dev:api"
 
 # Lancer le Site Web
 Write-Host "-> Lancement de l'interface Web..." -ForegroundColor Yellow
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "npm run dev:web"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "[Console]::InputEncoding = [Console]::OutputEncoding = $OutputEncoding = [System.Text.Encoding]::UTF8; chcp 65001 >$null; npm run dev:web"
 
 Write-Host "✅ Les 3 terminaux ont été démarrés avec succès !" -ForegroundColor Green

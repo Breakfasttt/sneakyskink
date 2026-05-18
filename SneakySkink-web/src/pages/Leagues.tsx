@@ -19,6 +19,14 @@ import {
   CardActionArea,
   Divider,
   Paper,
+  Snackbar,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  LinearProgress,
 } from '@mui/material';
 import {
   EmojiEvents as TrophyIcon,
@@ -27,6 +35,7 @@ import {
   Layers as CompIcon,
   SportsEsports as MatchIcon,
   Star as StarIcon,
+  CloudDownload as ImportIcon,
 } from '@mui/icons-material';
 import { api } from '../api';
 
@@ -52,6 +61,107 @@ export const Leagues: React.FC = () => {
   const [search, setSearch] = useState<string>(searchParams.get('search') || '');
   const [sortBy, setSortBy] = useState<string>('activity'); // 'activity' | 'alpha'
   const [filterState, setFilterState] = useState<string>('active'); // 'active' | 'all' | 'inactive'
+
+  // Cyanide live search states
+  const [cyanideLeagues, setCyanideLeagues] = useState<any[]>([]);
+  const [searchingCyanide, setSearchingCyanide] = useState<boolean>(false);
+  const [hasSearchedCyanide, setHasSearchedCyanide] = useState<boolean>(false);
+
+  // Import flow states
+  const [importingLeagueId, setImportingLeagueId] = useState<string | null>(null);
+  const [importingLeagueName, setImportingLeagueName] = useState<string>('');
+  const [importProgress, setImportProgress] = useState<string>('En attente du Harvester...');
+  const [importError, setImportError] = useState<string | null>(null);
+
+  // Notification state
+  const [notification, setNotification] = useState<{ open: boolean; message: string; severity: 'success' | 'error' } | null>(null);
+
+  // Clear Cyanide results on search query change
+  useEffect(() => {
+    setCyanideLeagues([]);
+    setHasSearchedCyanide(false);
+  }, [search]);
+
+  const handleSearchCyanide = async () => {
+    if (!search.trim()) return;
+    setSearchingCyanide(true);
+    setHasSearchedCyanide(true);
+    setImportError(null);
+    try {
+      const res = await api.searchCyanideLeagues(search.trim());
+      setCyanideLeagues(res.data || []);
+    } catch (err: any) {
+      console.error(err);
+      setNotification({
+        open: true,
+        message: "Erreur lors de la recherche sur l'API de Cyanide.",
+        severity: 'error',
+      });
+    } finally {
+      setSearchingCyanide(false);
+    }
+  };
+
+  const handleImportLeague = async (leagueId: string, leagueName: string) => {
+    setImportingLeagueId(leagueId);
+    setImportingLeagueName(leagueName);
+    setImportProgress("Planification du job d'aspiration...");
+    setImportError(null);
+
+    try {
+      // 1. Déclencher le siphonnage
+      await api.syncLeague(leagueId);
+      setImportProgress("Lancement du siphonnage (Rosters et matchs)...");
+
+      // 2. Commencer à poller l'API pour voir quand la ligue est créée en BDD locale
+      let attempts = 0;
+      const maxAttempts = 60; // 90 secondes max
+      
+      const pollInterval = setInterval(async () => {
+        attempts++;
+        if (attempts > maxAttempts) {
+          clearInterval(pollInterval);
+          setImportError("Le siphonnage a pris trop de temps. La ligue est en cours de traitement en tâche de fond, vous pourrez y accéder dans quelques minutes.");
+          setImportingLeagueId(null);
+          return;
+        }
+
+        try {
+          // Essayer de récupérer les détails de la ligue en BDD locale
+          const leagueDetails = await api.getLeague(leagueId);
+          
+          if (leagueDetails && leagueDetails.id === leagueId) {
+            clearInterval(pollInterval);
+            setImportProgress("Importation réussie avec succès !");
+            
+            // Notification et redirection
+            setNotification({
+              open: true,
+              message: `Ligue "${leagueName}" importée avec succès !`,
+              severity: 'success',
+            });
+            
+            // Attendre un tout petit peu pour que l'utilisateur voit la transition
+            setTimeout(() => {
+              setImportingLeagueId(null);
+              navigate(`/leagues/${leagueId}`);
+            }, 1000);
+          }
+        } catch (err) {
+          // L'API renverra un code 404 tant que la ligue n'est pas insérée en base de données.
+          // C'est attendu.
+          if (attempts % 4 === 0) {
+            setImportProgress(`Aspiration en cours... Roster d'équipes en cours d'analyse (Tentative ${attempts}/${maxAttempts})...`);
+          }
+        }
+      }, 1500);
+
+    } catch (err: any) {
+      console.error(err);
+      setImportError(err.message || "Impossible de planifier l'importation de cette ligue.");
+      setImportingLeagueId(null);
+    }
+  };
 
   useEffect(() => {
     const fetchLeagues = async () => {
@@ -201,10 +311,27 @@ export const Leagues: React.FC = () => {
 
       {/* 📦 Leagues Grid */}
       {filteredLeagues.length === 0 ? (
-        <Paper className="glass-panel" sx={{ p: 6, textAlign: 'center', borderRadius: 4 }}>
-          <Typography variant="h6" sx={{ color: '#94A3B8' }}>
-            Aucune ligue ne correspond à vos critères de recherche.
+        <Paper className="glass-panel" sx={{ p: 6, textAlign: 'center', borderRadius: 4, bgcolor: '#151D30' }}>
+          <Typography variant="h6" sx={{ color: '#94A3B8', mb: search.trim() ? 3 : 0 }}>
+            Aucune ligue ne correspond à vos critères de recherche localement.
           </Typography>
+          {search.trim() && (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleSearchCyanide}
+              disabled={searchingCyanide}
+              startIcon={searchingCyanide ? <CircularProgress size={16} color="inherit" /> : <SearchIcon />}
+              sx={{ 
+                fontWeight: 700, 
+                borderRadius: 3,
+                backgroundImage: 'linear-gradient(135deg, #00E676 0%, #00B0FF 100%)',
+                boxShadow: '0 4px 12px rgba(0, 230, 118, 0.25)',
+              }}
+            >
+              {searchingCyanide ? 'Recherche sur Blood Bowl 3...' : 'Rechercher sur Blood Bowl 3 (Cyanide)'}
+            </Button>
+          )}
         </Paper>
       ) : (
         <Grid container spacing={3}>
@@ -331,6 +458,198 @@ export const Leagues: React.FC = () => {
             );
           })}
         </Grid>
+      )}
+
+      {/* 📡 Résultats trouvés sur Blood Bowl 3 (Cyanide) */}
+      {hasSearchedCyanide && (
+        <Box sx={{ mt: 6, mb: 4 }}>
+          <Typography variant="h5" sx={{ fontFamily: 'Outfit', fontWeight: 800, mb: 3, display: 'flex', alignItems: 'center', gap: 1, color: '#A78BFA' }}>
+            📡 Résultats trouvés sur Blood Bowl 3 (Cyanide)
+          </Typography>
+          
+          {searchingCyanide ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
+              <CircularProgress color="secondary" />
+            </Box>
+          ) : cyanideLeagues.length === 0 ? (
+            <Paper sx={{ p: 4, textAlign: 'center', bgcolor: 'rgba(255,255,255,0.02)', borderRadius: 4 }}>
+              <Typography variant="body1" sx={{ color: '#94A3B8' }}>
+                Aucune ligue correspondante trouvée sur les serveurs de Blood Bowl 3. Vérifiez l'orthographe exacte.
+              </Typography>
+            </Paper>
+          ) : (
+            <Grid container spacing={3}>
+              {cyanideLeagues.map((cLeague) => (
+                <Grid item xs={12} sm={6} md={4} key={cLeague.id}>
+                  <Card 
+                    sx={{ 
+                      height: '100%', 
+                      borderRadius: 4, 
+                      border: cLeague.imported 
+                        ? '1px solid rgba(0, 230, 118, 0.2) !important' 
+                        : '1px solid rgba(167, 139, 250, 0.2) !important',
+                      position: 'relative',
+                      bgcolor: 'rgba(15, 23, 42, 0.6)',
+                    }}
+                  >
+                    <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', height: '100%' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2.5 }}>
+                        <Avatar 
+                          src={cLeague.logo || undefined}
+                          sx={{ 
+                            width: 52, 
+                            height: 52, 
+                            bgcolor: 'rgba(255,255,255,0.03)',
+                            border: '1px solid rgba(255,255,255,0.08)'
+                          }}
+                        >
+                          <TrophyIcon sx={{ color: '#A78BFA' }} />
+                        </Avatar>
+                        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                          <Typography 
+                            variant="h6" 
+                            sx={{ 
+                              fontFamily: 'Outfit', 
+                              fontWeight: 800, 
+                              lineHeight: 1.2, 
+                              color: '#F8FAFC',
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis'
+                            }}
+                          >
+                            {cLeague.name}
+                          </Typography>
+                          <Typography variant="caption" sx={{ color: '#64748B', display: 'block' }}>
+                            UUID : {cLeague.id.substring(0, 8)}...
+                          </Typography>
+                        </Box>
+                      </Box>
+                      
+                      <Divider sx={{ my: 1.5, borderColor: 'rgba(255,255,255,0.04)' }} />
+                      
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 'auto', pt: 1 }}>
+                        <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 700 }}>
+                          {cLeague.gamerCount} coachs
+                        </Typography>
+                        
+                        {cLeague.imported ? (
+                          <Button 
+                            variant="outlined" 
+                            color="success" 
+                            size="small"
+                            onClick={() => navigate(`/leagues/${cLeague.id}`)}
+                            sx={{ fontWeight: 700, borderRadius: 2 }}
+                          >
+                            Voir la Ligue
+                          </Button>
+                        ) : (
+                          <Button 
+                            variant="contained" 
+                            color="secondary" 
+                            size="small"
+                            startIcon={<ImportIcon />}
+                            onClick={() => handleImportLeague(cLeague.id, cLeague.name)}
+                            sx={{ 
+                              fontWeight: 700, 
+                              borderRadius: 2,
+                              backgroundImage: 'linear-gradient(135deg, #A78BFA 0%, #7C3AED 100%)',
+                              boxShadow: '0 4px 12px rgba(124, 58, 237, 0.25)',
+                            }}
+                          >
+                            Importer
+                          </Button>
+                        )}
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          )}
+        </Box>
+      )}
+
+      {/* dialog loader */}
+      <Dialog
+        open={Boolean(importingLeagueId) || Boolean(importError)}
+        onClose={importError ? () => setImportError(null) : undefined}
+        PaperProps={{
+          sx: {
+            borderRadius: 4,
+            bgcolor: '#0B0F19',
+            border: importError ? '1px solid rgba(239, 68, 68, 0.2)' : '1px solid rgba(167, 139, 250, 0.15)',
+            p: 2,
+            maxWidth: '450px',
+            width: '100%',
+          }
+        }}
+      >
+        {importError ? (
+          <>
+            <DialogTitle sx={{ fontFamily: 'Outfit', fontWeight: 900, fontSize: '1.4rem', textAlign: 'center', pb: 1, color: '#EF4444' }}>
+              ⚠️ Échec du Siphonnage Direct
+            </DialogTitle>
+            <DialogContent sx={{ textAlign: 'center', py: 2 }}>
+              <Typography variant="body1" sx={{ color: '#94A3B8', mb: 3 }}>
+                {importError}
+              </Typography>
+            </DialogContent>
+            <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
+              <Button 
+                variant="contained" 
+                color="error" 
+                onClick={() => setImportError(null)}
+                sx={{ borderRadius: 3, fontWeight: 700 }}
+              >
+                Fermer
+              </Button>
+            </DialogActions>
+          </>
+        ) : (
+          <>
+            <DialogTitle sx={{ fontFamily: 'Outfit', fontWeight: 900, fontSize: '1.4rem', textAlign: 'center', pb: 1 }}>
+              📥 Siphonnage de Ligue en Cours
+            </DialogTitle>
+            <DialogContent sx={{ textAlign: 'center', py: 3 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+                <CircularProgress color="secondary" size={60} thickness={5} />
+              </Box>
+              <Typography variant="h6" sx={{ fontFamily: 'Outfit', fontWeight: 800, mb: 1, color: '#F8FAFC' }}>
+                {importingLeagueName}
+              </Typography>
+              <DialogContentText sx={{ color: '#94A3B8', fontWeight: 500, fontSize: '0.95rem' }}>
+                {importProgress}
+              </DialogContentText>
+              <LinearProgress 
+                color="secondary" 
+                sx={{ 
+                  mt: 4, 
+                  borderRadius: 2, 
+                  height: 6, 
+                  bgcolor: 'rgba(255,255,255,0.03)',
+                  '& .MuiLinearProgress-bar': {
+                    borderRadius: 2,
+                  }
+                }} 
+              />
+            </DialogContent>
+          </>
+        )}
+      </Dialog>
+
+      {/* Notification Toast */}
+      {notification && (
+        <Snackbar
+          open={notification.open}
+          autoHideDuration={6000}
+          onClose={() => setNotification(null)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        >
+          <Alert onClose={() => setNotification(null)} severity={notification.severity} sx={{ width: '100%', borderRadius: 3, fontWeight: 600 }}>
+            {notification.message}
+          </Alert>
+        </Snackbar>
       )}
 
     </Box>

@@ -28,6 +28,9 @@ export const harvesterWorker = new Worker<JobData>(
           await handleFetchCompetition(id);
           break;
 
+        case 'search-leagues':
+          return await handleSearchLeagues(id);
+
         default:
           throw new Error(`Type de job non supporté : ${type}`);
       }
@@ -156,19 +159,32 @@ export async function handleFetchLeague(leagueId: string) {
 export async function handleFetchCompetition(competitionId: string) {
   logger.info(`🔍 [Fetch] Récupération des matchs pour la compétition ${competitionId}...`);
 
-  // Récupérer la liste des matchs (contests)
-  const response = await bb3ApiClient.get('/contests', { competition: competitionId });
-  let contests = response.contests || [];
+  // 1. Chercher le dernier match importé pour cette compétition (Delta Sync)
+  const lastMatch = await prisma.match.findFirst({
+    where: { competitionId },
+    orderBy: { startedAt: 'desc' },
+    select: { startedAt: true }
+  });
+
+  const params: any = { competition_id: competitionId, limit: 100 };
   
-  if (contests.length === 0) {
-    logger.info(`ℹ️ [Fetch] Aucun contest planifié trouvé. Tentative de récupération via /matches...`);
-    const matchesResponse = await bb3ApiClient.get('/matches', { competition_id: competitionId });
-    const matchesList = matchesResponse.matches || [];
-    contests = matchesList.map((m: any) => ({
-      ...m,
-      match_id: m.id || m.uuid
-    }));
+  if (lastMatch?.startedAt) {
+    // L'API `/matches` accepte le format YYYY-MM-DD
+    params.start = lastMatch.startedAt.toISOString().split('T')[0];
+    logger.info(`📅 [Fetch] Dernier match trouvé le ${params.start}. Mode Delta activé.`);
+  } else {
+    logger.info(`📅 [Fetch] Aucun match précédent trouvé. Synchronisation globale.`);
   }
+
+  // 2. Récupérer la liste des matchs joués via /matches
+  const response = await bb3ApiClient.get('/matches', params);
+  let contests = response.matches || [];
+  
+  // Formatage de compatibilité pour la boucle existante
+  contests = contests.map((m: any) => ({
+    ...m,
+    match_id: m.id || m.uuid
+  }));
   
   logger.info(`📊 [Fetch] ${contests.length} matchs trouvés dans la compétition.`);
 
@@ -194,7 +210,8 @@ export async function handleFetchCompetition(competitionId: string) {
     // B. Récupérer le payload détaillé du match
     const matchDetailResponse = await bb3ApiClient.get('/match', { id: matchId, rosters: 1 });
     if (!matchDetailResponse.match) {
-      logger.warn(`⚠️ [Fetch] Impossible d'aspirer le match ${matchId}. Passé.`);
+      logger.warn(`⚠️ [Fetch] Impossible d'aspirer la feuille de match ${matchId}. Tentative de sauvegarde en tant que match fantôme/abandonné...`);
+      await saveGhostMatch(c, competitionId);
       continue;
     }
 
@@ -229,8 +246,13 @@ export async function handleFetchCompetition(competitionId: string) {
       }
 
       // 2. Assurer la présence des deux équipes
-      for (const team of rawMatch.teams || []) {
-        const coachId = rawMatch.coaches.find((c: any) => c.coachname === team.coachname)?.idcoach || '';
+      const teams = rawMatch.teams || [];
+      for (let i = 0; i < teams.length; i++) {
+        const team = teams[i];
+        const coachInfo = (rawMatch.coaches && rawMatch.coaches[i]) ? rawMatch.coaches[i] : null;
+        const coachId = coachInfo ? coachInfo.idcoach : '';
+        const coachName = coachInfo ? coachInfo.coachname : 'Coach Inconnu';
+
         const teamUpsert = TeamParser.parseTeam({
           team: {
             id: team.idteamlisting,
@@ -242,7 +264,7 @@ export async function handleFetchCompetition(competitionId: string) {
           },
           coach: {
             idcoach: coachId,
-            name: team.coachname || 'Coach Inconnu',
+            name: coachName,
           },
         });
         await tx.team.upsert(teamUpsert);
@@ -274,5 +296,162 @@ export async function handleFetchCompetition(competitionId: string) {
     });
 
     logger.info(`💾 [DB] Match ${matchId} importé avec succès et fiches de vie des joueurs mises à jour.`);
+  }
+}
+
+/**
+ * Helper : Sauvegarde un match fantôme/abandonné à partir du résumé (contest)
+ * Utile pour les abandons ou crash serveurs où la feuille de match détaillée est nulle.
+ */
+async function saveGhostMatch(c: any, competitionId: string) {
+  try {
+    const isMatchFormat = !!c.uuid;
+    const matchId = c.match_id || c.match_uuid || c.uuid;
+    
+    let home, away;
+    if (isMatchFormat && c.coaches && c.teams) {
+      home = { 
+        coach: { id: c.coaches[0]?.idcoach, name: c.coaches[0]?.coachname },
+        team: { id: c.teams[0]?.idteamlisting, name: c.teams[0]?.teamname, logo: c.teams[0]?.teamlogo, value: c.teams[0]?.value, score: c.teams[0]?.score }
+      };
+      away = { 
+        coach: { id: c.coaches[1]?.idcoach, name: c.coaches[1]?.coachname },
+        team: { id: c.teams[1]?.idteamlisting, name: c.teams[1]?.teamname, logo: c.teams[1]?.teamlogo, value: c.teams[1]?.value, score: c.teams[1]?.score }
+      };
+    } else {
+      home = c.opponents && c.opponents[0] ? c.opponents[0] : null;
+      away = c.opponents && c.opponents[1] ? c.opponents[1] : null;
+    }
+
+    if (!home || !away || !home.team || !away.team) return;
+
+    // Retrouver la vraie leagueId depuis la compétition locale
+    const comp = await prisma.competition.findUnique({
+      where: { id: competitionId },
+      select: { leagueId: true }
+    });
+    if (!comp) return;
+
+    await prisma.$transaction(async (tx: any) => {
+      // 1. Upsert Coaches
+      for (const opp of [home, away]) {
+        if (!opp.coach?.id) continue;
+        const coachName = opp.coach.name !== undefined && opp.coach.name !== null ? opp.coach.name.toString() : 'Coach Inconnu';
+        await tx.coach.upsert({
+          where: { id: opp.coach.id },
+          create: {
+            id: opp.coach.id,
+            name: coachName,
+            lastLang: opp.coach.lang || null,
+          },
+          update: {
+            name: coachName,
+          }
+        });
+      }
+
+      // 2. Upsert Teams
+      for (const opp of [home, away]) {
+        if (!opp.team?.id || !opp.coach?.id) continue;
+        const teamName = opp.team.name !== undefined && opp.team.name !== null ? opp.team.name.toString() : 'Équipe sans nom';
+        await tx.team.upsert({
+          where: { id: opp.team.id },
+          create: {
+            id: opp.team.id,
+            name: teamName,
+            raceId: 0, // Fallback technique car l'API renvoie la race en string ici
+            logo: opp.team.logo || null,
+            value: opp.team.value || 0,
+            cash: 0,
+            coach: { connect: { id: opp.coach.id } }
+          },
+          update: {
+            name: teamName,
+            value: opp.team.value || 0,
+            logo: opp.team.logo || null,
+          }
+        });
+      }
+
+      // 3. Create the Match
+      const matchDateStr = c.match_date || c.started;
+      const startedAt = matchDateStr ? new Date(matchDateStr.replace(' ', 'T') + 'Z') : new Date();
+      const homeScore = home.team.score || 0;
+      const awayScore = away.team.score || 0;
+      const status = c.contest_status || c.status || 'ABANDONED';
+
+      await tx.match.upsert({
+        where: { id: matchId },
+        create: {
+          id: matchId,
+          startedAt,
+          finishedAt: startedAt,
+          round: c.match_round || c.round || 0,
+          platform: 'pc',
+          status: status,
+          league: { connect: { id: comp.leagueId } },
+          competition: { connect: { id: competitionId } },
+          homeTeam: { connect: { id: home.team.id } },
+          awayTeam: { connect: { id: away.team.id } },
+          homeCoach: home.coach?.id ? { connect: { id: home.coach.id } } : undefined,
+          awayCoach: away.coach?.id ? { connect: { id: away.coach.id } } : undefined,
+          homeScore,
+          awayScore,
+        },
+        update: {
+          status: status,
+          homeScore,
+          awayScore
+        }
+      });
+    });
+
+    logger.info(`👻 [DB] Match fantôme/abandonné ${matchId} enregistré avec succès.`);
+  } catch (error: any) {
+    logger.error(`❌ [DB] Échec sauvegarde match fantôme ${c.match_id} : ${error.message}`);
+  }
+}
+
+/**
+ * 4. Recherche de ligues directement sur l'API de Cyanide
+ */
+export async function handleSearchLeagues(query: string) {
+  logger.info(`🔍 [Search] Recherche de ligues sur Cyanide avec la requête "${query}"...`);
+  
+  if (!query || query.trim().length === 0) {
+    return [];
+  }
+
+  try {
+    const response = await bb3ApiClient.get('/leagues', { league: query, limit: 10 });
+    const cyanideLeagues = response.leagues || [];
+
+    // Récupérer les ligues locales déjà importées pour les identifier
+    const localLeagues = await prisma.league.findMany({
+      where: {
+        id: {
+          in: cyanideLeagues.map((l: any) => l.id).filter(Boolean),
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    const localIds = new Set(localLeagues.map(l => l.id));
+
+    // Formater et marquer si déjà importées
+    const data = cyanideLeagues.map((l: any) => ({
+      id: l.id,
+      name: l.name,
+      logo: l.logo || 'Logo_BlackOrc_01',
+      gamerCount: l.gamerCount || l.gamersCount || 0,
+      imported: localIds.has(l.id),
+    }));
+
+    return data;
+  } catch (error: any) {
+    logger.error(`❌ [Search] Erreur lors de la recherche sur Cyanide : ${error.message}`);
+    throw new Error(`Erreur lors de la recherche sur l'API de Cyanide : ${error.message}`);
   }
 }
