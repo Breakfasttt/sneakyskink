@@ -1,44 +1,38 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider, CssBaseline } from '@mui/material';
-import { theme } from './theme';
+import { Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
-import { Dashboard } from './pages/Dashboard';
-import { Leagues } from './pages/Leagues';
-import { LeagueDetail } from './pages/LeagueDetail';
-import { CompetitionsList } from './pages/CompetitionsList';
-import { Competitions } from './pages/Competitions';
-import { MatchDetail } from './pages/MatchDetail';
-import { Search } from './pages/Search';
-import { CoachDetail } from './pages/CoachDetail';
-import { TeamDetail } from './pages/TeamDetail';
-import { SyncManager } from './pages/SyncManager';
+import Home from './pages/Home';
+import SearchResults from './pages/SearchResults';
+import Coaches from './pages/Coaches';
+import CoachDetail from './pages/CoachDetail';
+import Leagues from './pages/Leagues';
+import LeagueDetail from './pages/LeagueDetail';
+import Competitions from './pages/Competitions';
+import CompetitionDetail from './pages/CompetitionDetail';
+import TeamDetail from './pages/TeamDetail';
+import MatchDetail from './pages/MatchDetail';
+import Sync from './pages/Sync';
+import NotFound from './pages/NotFound';
 
-function App() {
+const App: React.FC = () => {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <BrowserRouter>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/leagues" element={<Leagues />} />
-            <Route path="/leagues/:id" element={<LeagueDetail />} />
-            <Route path="/competitions" element={<CompetitionsList />} />
-            <Route path="/competitions/:id" element={<Competitions />} />
-            <Route path="/matches/:id" element={<MatchDetail />} />
-            <Route path="/search" element={<Search />} />
-            <Route path="/coaches/:id" element={<CoachDetail />} />
-            <Route path="/teams/:id" element={<TeamDetail />} />
-            <Route path="/sync" element={<SyncManager />} />
-            
-            {/* Fallback to Dashboard */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Layout>
-      </BrowserRouter>
-    </ThemeProvider>
+    <Routes>
+      <Route path="/" element={<Layout />}>
+        <Route index element={<Home />} />
+        <Route path="search" element={<SearchResults />} />
+        <Route path="coachs" element={<Coaches />} />
+        <Route path="coach/:id" element={<CoachDetail />} />
+        <Route path="ligues" element={<Leagues />} />
+        <Route path="ligue/:id" element={<LeagueDetail />} />
+        <Route path="competitions" element={<Competitions />} />
+        <Route path="competition/:id" element={<CompetitionDetail />} />
+        <Route path="equipe/:id" element={<TeamDetail />} />
+        <Route path="match/:id" element={<MatchDetail />} />
+        <Route path="synchro" element={<Sync />} />
+        <Route path="*" element={<NotFound />} />
+      </Route>
+    </Routes>
   );
-}
+};
 
 export default App;

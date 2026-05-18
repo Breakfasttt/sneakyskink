@@ -3,127 +3,67 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
-  Button,
+  Paper,
   Grid,
+  CircularProgress,
+  alpha,
+  Button,
+  Avatar,
+  Divider,
   Card,
   CardContent,
-  Chip,
-  CircularProgress,
-  Paper,
-  Divider,
-  Tab,
-  Tabs,
-  Avatar,
-  CardActionArea,
-  Alert,
-  Snackbar,
-  LinearProgress,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
 } from '@mui/material';
 import {
-  ChevronLeft as BackIcon,
-  People as CoachIcon,
-  EmojiEvents as TrophyIcon,
+  Person as CoachIcon,
   CloudSync as SyncIcon,
-  SportsEsports as MatchIcon,
-  YouTube as YTIcon,
-  PlayArrow as TwitchIcon,
-  HourglassEmpty as QueueIcon,
-  Schedule as TimeIcon,
+  SportsSoccer as BallIcon,
+  TrendingUp as WinrateIcon,
+  Public as PublicIcon,
+  EmojiEvents as TrophyIcon,
+  Security as BlockIcon,
 } from '@mui/icons-material';
 import { api } from '../api';
-import { getRaceInfo } from '../utils/raceHelper';
 
-interface CoachProfile {
-  id: string;
-  name: string;
-  country: string | null;
-  twitch: string | null;
-  youtube: string | null;
-  teamsCount: number;
-  matchesCount: number;
-  teams: Array<{
-    id: string;
-    name: string;
-    raceId: number;
-    logo: string | null;
-    value: number;
-    wins: number;
-    draws: number;
-    losses: number;
-    activePlayersCount: number;
-  }>;
-}
-
-interface MatchItem {
-  id: string;
-  round: number;
-  startedAt: string;
-  status: string;
-  homeScore: number;
-  awayScore: number;
-  homeTeamId: string;
-  awayTeamId: string;
-  homeTeam: { name: string; logo: string | null };
-  awayTeam: { name: string; logo: string | null };
-  homeCoach: { name: string } | null;
-  awayCoach: { name: string } | null;
-}
-
-export const CoachDetail: React.FC = () => {
+const CoachDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-
-  const [profile, setProfile] = useState<CoachProfile | null>(null);
-  const [stats, setStats] = useState<any>(null);
-  const [recentMatches, setRecentMatches] = useState<MatchItem[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [tabValue, setTabValue] = useState<number>(0);
   
-  // Sync Actions State
-  const [syncing, setSyncing] = useState<boolean>(false);
-  const [syncAlert, setSyncAlert] = useState<{ open: boolean; message: string; severity: 'success' | 'error' } | null>(null);
+  const [coachData, setCoachData] = useState<any>(null);
+  const [stats, setStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+  const [syncSuccess, setSyncSuccess] = useState(false);
 
   useEffect(() => {
     if (!id) return;
-
-    const fetchCoachData = async () => {
-      try {
-        setLoading(true);
-        const [profileRes, statsRes, matchesRes] = await Promise.all([
-          api.getCoach(id),
-          api.getCoachStats(id),
-          api.getMatches({ coachId: id, limit: 5 } as any),
-        ]);
-
-        setProfile((profileRes as any).data);
-        setStats((statsRes as any).data);
-        setRecentMatches((matchesRes as any).data || []);
-      } catch (err) {
-        console.error('Failed to load coach details', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCoachData();
+    setLoading(true);
+    Promise.all([
+      api.getCoach(id),
+      api.getCoachStats(id)
+    ])
+      .then(([coachRes, statsRes]) => {
+        setCoachData(coachRes);
+        setStats(statsRes);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, [id]);
 
-  const handleSyncCoach = async () => {
+  const handleSync = async () => {
     if (!id) return;
+    setSyncing(true);
+    setSyncSuccess(false);
     try {
-      setSyncing(true);
       await api.syncCoach(id);
-      setSyncAlert({
-        open: true,
-        message: `Job de synchronisation BullMQ planifié avec succès !`,
-        severity: 'success',
-      });
-    } catch (err: any) {
-      setSyncAlert({
-        open: true,
-        message: `Échec de planification : ${err.response?.data?.message || err.message}`,
-        severity: 'error',
-      });
+      setSyncSuccess(true);
+      setTimeout(() => setSyncSuccess(false), 3000);
+    } catch {
+      // Ignore
     } finally {
       setSyncing(false);
     }
@@ -131,505 +71,236 @@ export const CoachDetail: React.FC = () => {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
-        <CircularProgress color="primary" size={50} />
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+        <CircularProgress sx={{ color: '#00E676' }} />
       </Box>
     );
   }
 
-  if (!profile || !stats) {
+  if (!coachData) {
     return (
-      <Paper className="glass-panel" sx={{ p: 6, textAlign: 'center', borderRadius: 4, maxWidth: '600px', mx: 'auto', mt: 4 }}>
-        <Typography variant="h5" sx={{ color: '#EF4444', mb: 2, fontWeight: 700 }}>
-          Coach Introuvable
-        </Typography>
-        <Typography variant="body1" sx={{ color: '#94A3B8', mb: 4 }}>
-          Le coach demandé n'existe pas ou n'est pas encore enregistré.
-        </Typography>
-        <Button variant="contained" color="primary" onClick={() => navigate('/')} startIcon={<BackIcon />}>
-          Retour à l'accueil
-        </Button>
-      </Paper>
+      <Box sx={{ py: 4, textAlign: 'center' }}>
+        <Typography variant="h6" sx={{ color: 'text.secondary' }}>Coach introuvable</Typography>
+      </Box>
     );
   }
 
-  const s = stats.summary || {};
-  const perf = stats.performance || {};
-  const winrate = s.winrate || 0;
-
-  // circular gauge math
-  const radius = 50;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (winrate / 100) * circumference;
+  const summary = stats?.summary || { totalMatches: 0, wins: 0, draws: 0, losses: 0, winrate: 0 };
+  const perf = stats?.performance || {};
 
   return (
-    <Box sx={{ maxWidth: '1200px', mx: 'auto', p: 1, animation: 'fadeIn 0.3s ease-in-out' }}>
+    <Box sx={{ maxWidth: 1040, mx: 'auto', py: { xs: 2, md: 4 } }}>
       
-      {/* Back Button */}
-      <Button 
-        variant="text" 
-        onClick={() => navigate('/')} 
-        startIcon={<BackIcon />} 
-        sx={{ color: '#94A3B8', mb: 3, '&:hover': { color: '#00E676' } }}
+      {/* ─── Hero Section ──────────────────────────────────────────────── */}
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 2.5, sm: 4 },
+          borderRadius: 3,
+          border: '1px solid rgba(148,163,184,0.08)',
+          background: 'linear-gradient(135deg, rgba(30,41,59,0.3) 0%, rgba(15,23,42,0.3) 100%)',
+          mb: 3,
+          display: 'flex',
+          flexDirection: { xs: 'column', sm: 'row' },
+          alignItems: { xs: 'flex-start', sm: 'center' },
+          justifyContent: 'space-between',
+          gap: 3,
+        }}
       >
-        Retour au Dashboard
-      </Button>
-
-      {/* 👑 Coach Profile Header Card */}
-      <Card sx={{ p: 4, borderRadius: 5, mb: 4 }}>
-        <Grid container spacing={4} alignItems="center">
-          
-          {/* Avatar and name */}
-          <Grid item xs={12} md={7} sx={{ display: 'flex', alignItems: 'center', gap: 3.5 }}>
-            <Avatar 
-              sx={{ 
-                width: 80, 
-                height: 80, 
-                bgcolor: 'rgba(0, 230, 118, 0.1)',
-                border: '2px solid #00E676',
-                boxShadow: '0 0 20px rgba(0, 230, 118, 0.2)'
-              }}
-            >
-              <CoachIcon sx={{ color: '#00E676', fontSize: 44 }} />
-            </Avatar>
-            <Box>
-              <Typography variant="h3" sx={{ fontFamily: 'Outfit', fontWeight: 900, color: '#F8FAFC', mb: 1, lineHeight: 1.1 }}>
-                {profile.name}
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
-                {profile.country && (
-                  <Chip 
-                    label={`🌍 ${profile.country}`} 
-                    variant="outlined"
-                    sx={{ fontWeight: 700, height: 22, fontSize: '0.65rem', borderColor: 'rgba(255,255,255,0.1)' }}
-                  />
-                )}
-                <Chip 
-                  label={`Coach ID: ${profile.id}`} 
-                  size="small" 
-                  sx={{ fontWeight: 800, height: 22, fontSize: '0.65rem', bgcolor: 'rgba(255,255,255,0.03)' }}
-                />
-              </Box>
-            </Box>
-          </Grid>
-
-          {/* Actions & Social Links */}
-          <Grid item xs={12} md={5} sx={{ display: 'flex', gap: 2, justifyContent: { xs: 'flex-start', md: 'flex-end' }, flexWrap: 'wrap' }}>
-            {profile.twitch && (
-              <Button 
-                variant="outlined" 
-                color="secondary" 
-                startIcon={<TwitchIcon />}
-                href={`https://twitch.tv/${profile.twitch}`}
-                target="_blank"
-                sx={{ borderRadius: 3, fontWeight: 700 }}
-              >
-                Twitch
-              </Button>
-            )}
-            
-            <Button 
-              variant="contained" 
-              color="primary" 
-              onClick={handleSyncCoach} 
-              disabled={syncing}
-              startIcon={syncing ? <CircularProgress size={20} color="inherit" /> : <SyncIcon />}
-              sx={{ borderRadius: 3, fontWeight: 700 }}
-            >
-              {syncing ? 'Synchronisation...' : 'Synchroniser Fiche'}
-            </Button>
-          </Grid>
-
-        </Grid>
-      </Card>
-
-      {/* Main Content Grid: Stats Dashboard (Left) & Teams/Matches (Right) */}
-      <Grid container spacing={4}>
-        
-        {/* LEFT COLUMN: Spike-inspired Performance Dashboard */}
-        <Grid item xs={12} lg={4.5}>
-          
-          {/* Winrate Circular Neon Gauge */}
-          <Card sx={{ p: 4, borderRadius: 4, mb: 4, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <Typography variant="h6" sx={{ fontFamily: 'Outfit', fontWeight: 800, mb: 3, color: '#F8FAFC' }}>
-              📊 Taux de Victoires Global
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5 }}>
+          <Avatar
+            sx={{
+              width: 64,
+              height: 64,
+              bgcolor: 'rgba(0,230,118,0.06)',
+              border: '1px solid rgba(0,230,118,0.2)',
+              color: '#00E676',
+              fontWeight: 800,
+              fontSize: '1.6rem',
+            }}
+          >
+            {coachData.name?.charAt(0).toUpperCase()}
+          </Avatar>
+          <Box>
+            <Typography variant="h4" sx={{ fontWeight: 900, color: '#F8FAFC', letterSpacing: '-0.02em', mb: 0.5 }}>
+              {coachData.name}
             </Typography>
-
-            <Box sx={{ position: 'relative', display: 'inline-flex', mb: 3 }}>
-              {/* SVG circular progress */}
-              <svg width="140" height="140" viewBox="0 0 120 120">
-                {/* Background circle */}
-                <circle 
-                  cx="60" 
-                  cy="60" 
-                  r="50" 
-                  fill="none" 
-                  stroke="rgba(255,255,255,0.02)" 
-                  strokeWidth="8" 
-                />
-                {/* Glowing neon green progress circle */}
-                <circle 
-                  cx="60" 
-                  cy="60" 
-                  r="50" 
-                  fill="none" 
-                  stroke="#00E676" 
-                  strokeWidth="8" 
-                  strokeDasharray={circumference}
-                  strokeDashoffset={strokeDashoffset}
-                  strokeLinecap="round"
-                  transform="rotate(-90 60 60)"
-                  style={{
-                    filter: 'drop-shadow(0px 0px 6px rgba(0, 230, 118, 0.6))',
-                    transition: 'stroke-dashoffset 1s ease-in-out',
-                  }}
-                />
-              </svg>
-              {/* Centered winrate percentage text */}
-              <Box 
-                sx={{ 
-                  position: 'absolute', 
-                  top: 0, 
-                  left: 0, 
-                  bottom: 0, 
-                  right: 0, 
-                  display: 'flex', 
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Typography variant="h3" sx={{ fontFamily: 'Outfit', fontWeight: 900, color: '#F8FAFC', lineHeight: 1 }}>
-                  {winrate.toFixed(0)}%
-                </Typography>
-                <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, mt: 0.5, letterSpacing: '0.05em' }}>
-                  WINRATE
-                </Typography>
-              </Box>
-            </Box>
-
-            {/* Quick Metrics numbers row */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-around', width: '100%', pt: 2, borderTop: '1px solid rgba(255,255,255,0.03)' }}>
-              <Box>
-                <Typography variant="caption" sx={{ color: '#00E676', fontWeight: 800 }}>V</Typography>
-                <Typography variant="body1" sx={{ fontWeight: 800, color: '#F8FAFC' }}>{s.wins}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 800 }}>N</Typography>
-                <Typography variant="body1" sx={{ fontWeight: 800, color: '#F8FAFC' }}>{s.draws}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="caption" sx={{ color: '#EF4444', fontWeight: 800 }}>D</Typography>
-                <Typography variant="body1" sx={{ fontWeight: 800, color: '#F8FAFC' }}>{s.losses}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 800 }}>TOTAL</Typography>
-                <Typography variant="body1" sx={{ fontWeight: 800, color: '#F8FAFC' }}>{s.totalMatches}</Typography>
-              </Box>
-            </Box>
-          </Card>
-
-          {/* Roster/Race Winrate Breakdown */}
-          <Card sx={{ p: 4, borderRadius: 4 }}>
-            <Typography variant="h6" sx={{ fontFamily: 'Outfit', fontWeight: 800, mb: 3, color: '#F8FAFC' }}>
-              🥋 Performances par Roster
-            </Typography>
-
-            {(!stats.rosterUsage || stats.rosterUsage.length === 0) ? (
-              <Typography variant="body2" sx={{ color: '#94A3B8', textAlign: 'center' }}>
-                Aucune donnée de roster enregistrée.
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: '#64748B' }}>
+              <PublicIcon sx={{ fontSize: 14 }} />
+              <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                {coachData.country || 'Inconnu'}
               </Typography>
-            ) : (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3.5 }}>
-                {stats.rosterUsage.map((race: any) => {
-                  const rInfo = getRaceInfo(race.raceId);
-                  const raceMatches = race.matches || 0;
-                  const raceWinrate = raceMatches > 0 
-                    ? ((race.wins + race.draws * 0.5) / raceMatches) * 100 
-                    : 0;
-
-                  return (
-                    <Box key={race.raceId}>
-                      
-                      {/* Name & Matches Count row */}
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 900, color: '#F8FAFC' }}>
-                            {rInfo.name}
-                          </Typography>
-                        </Box>
-                        <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700 }}>
-                          {raceMatches} match{raceMatches > 1 ? 's' : ''} ({race.wins}V - {race.draws}N - {race.losses}D)
-                        </Typography>
-                      </Box>
-
-                      {/* Progress bar and winrate badge */}
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Box sx={{ flex: 1 }}>
-                          <LinearProgress 
-                            variant="determinate" 
-                            value={raceWinrate} 
-                            sx={{ 
-                              height: 6, 
-                              borderRadius: 3, 
-                              bgcolor: 'rgba(255,255,255,0.02)',
-                              '& .MuiLinearProgress-bar': {
-                                bgcolor: '#00E676',
-                                borderRadius: 3,
-                              }
-                            }}
-                          />
-                        </Box>
-                        <Typography variant="body2" sx={{ fontWeight: 800, color: '#00E676', fontFamily: 'Outfit', minWidth: '40px', textAlign: 'right' }}>
-                          {raceWinrate.toFixed(0)}%
-                        </Typography>
-                      </Box>
-
-                    </Box>
-                  );
-                })}
-              </Box>
-            )}
-          </Card>
-
-        </Grid>
-
-        {/* RIGHT COLUMN: Associated Teams & 5 Recent Matches */}
-        <Grid item xs={12} lg={7.5}>
-          
-          {/* Tabs for switching between Teams and Recent Matches */}
-          <Box sx={{ borderBottom: 1, borderColor: 'rgba(148, 163, 184, 0.08)', mb: 3 }}>
-            <Tabs value={tabValue} onChange={(_, v) => setTabValue(v)} textColor="primary" indicatorColor="primary">
-              <Tab label={`Équipes (${profile.teams.length})`} sx={{ fontWeight: 800, fontSize: '0.95rem' }} />
-              <Tab label={`Matchs Récents (${recentMatches.length})`} sx={{ fontWeight: 800, fontSize: '0.95rem' }} />
-              <Tab label="Performances Cumulées" sx={{ fontWeight: 800, fontSize: '0.95rem' }} />
-            </Tabs>
+            </Box>
           </Box>
+        </Box>
 
-          {/* TAB 0: Teams List */}
-          {tabValue === 0 && (
-            <Box>
-              {profile.teams.length === 0 ? (
-                <Paper className="glass-panel" sx={{ p: 4, textAlign: 'center', borderRadius: 4 }}>
-                  <Typography variant="body1" sx={{ color: '#94A3B8' }}>
-                    Aucune équipe enregistrée pour ce coach.
-                  </Typography>
-                </Paper>
-              ) : (
-                <Grid container spacing={3}>
-                  {profile.teams.map((team) => {
-                    const rInfo = getRaceInfo(team.raceId);
-                    return (
-                      <Grid item xs={12} sm={6} key={team.id}>
-                        <Card sx={{ borderRadius: 4, border: '1px solid rgba(148, 163, 184, 0.08) !important' }}>
-                          <CardActionArea onClick={() => navigate(`/teams/${team.id}`)}>
-                            <CardContent sx={{ p: 3 }}>
-                              
-                              {/* Logo, Name & Race */}
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                                <Avatar src={team.logo || undefined} sx={{ width: 44, height: 44, bgcolor: '#0B0F19' }}>🏈</Avatar>
-                                <Box sx={{ overflow: 'hidden' }}>
-                                  <Typography variant="subtitle1" noWrap sx={{ fontFamily: 'Outfit', fontWeight: 800, color: '#F8FAFC' }}>
-                                    {team.name}
-                                  </Typography>
-                                  <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700 }}>
-                                    {rInfo.name}
-                                  </Typography>
-                                </Box>
-                              </Box>
+        <Button
+          onClick={handleSync}
+          disabled={syncing}
+          variant="outlined"
+          startIcon={syncing ? <CircularProgress size={16} sx={{ color: 'inherit' }} /> : <SyncIcon />}
+          sx={{
+            borderColor: syncSuccess ? '#00E676' : 'rgba(0,230,118,0.3)',
+            color: '#00E676',
+            bgcolor: 'rgba(0,230,118,0.04)',
+            fontWeight: 700,
+            textTransform: 'none',
+            borderRadius: 2.5,
+            px: 2.5,
+            py: 1,
+            '&:hover': {
+              borderColor: '#00E676',
+              bgcolor: 'rgba(0,230,118,0.08)',
+            },
+          }}
+        >
+          {syncing ? 'Synchronisation...' : syncSuccess ? 'Sync demandée !' : 'Synchroniser le Coach'}
+        </Button>
+      </Paper>
 
-                              <Divider sx={{ my: 1.5, borderColor: 'rgba(255,255,255,0.03)' }} />
+      {/* ─── Stats Grid ─── */}
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        {/* Winrate */}
+        <Grid item xs={6} sm={3}>
+          <Paper sx={{ p: 2, borderRadius: 2.5, border: '1px solid rgba(148,163,184,0.06)', bgcolor: 'rgba(15,23,42,0.4)', textAlign: 'center' }}>
+            <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, textTransform: 'uppercase', display: 'block', mb: 1 }}>
+              Taux de Victoire
+            </Typography>
+            <Typography sx={{ fontWeight: 900, fontSize: '1.8rem', color: '#00E676', lineHeight: 1 }}>
+              {summary.winrate}%
+            </Typography>
+          </Paper>
+        </Grid>
 
-                              {/* Value & players count */}
-                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <Box>
-                                  <Typography variant="caption" sx={{ color: '#64748B', display: 'block' }}>Valeur d'Équipe</Typography>
-                                  <Typography variant="body2" sx={{ fontWeight: 800, color: '#00E676', fontFamily: 'Outfit' }}>
-                                    {(team.value / 1000).toFixed(0)}k TV
-                                  </Typography>
-                                </Box>
-                                <Box sx={{ textAlign: 'right' }}>
-                                  <Typography variant="caption" sx={{ color: '#64748B', display: 'block' }}>Bilan (V-N-D)</Typography>
-                                  <Typography variant="body2" sx={{ fontWeight: 700, color: '#94A3B8' }}>
-                                    {team.wins}V - {team.draws}N - {team.losses}D
-                                  </Typography>
-                                </Box>
-                              </Box>
+        {/* Total Matches */}
+        <Grid item xs={6} sm={3}>
+          <Paper sx={{ p: 2, borderRadius: 2.5, border: '1px solid rgba(148,163,184,0.06)', bgcolor: 'rgba(15,23,42,0.4)', textAlign: 'center' }}>
+            <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, textTransform: 'uppercase', display: 'block', mb: 1 }}>
+              Matchs Joués
+            </Typography>
+            <Typography sx={{ fontWeight: 900, fontSize: '1.8rem', color: '#F8FAFC', lineHeight: 1 }}>
+              {summary.totalMatches}
+            </Typography>
+          </Paper>
+        </Grid>
 
-                            </CardContent>
-                          </CardActionArea>
-                        </Card>
-                      </Grid>
-                    );
-                  })}
-                </Grid>
-              )}
+        {/* W - D - L */}
+        <Grid item xs={12} sm={6}>
+          <Paper sx={{ p: 2, borderRadius: 2.5, border: '1px solid rgba(148,163,184,0.06)', bgcolor: 'rgba(15,23,42,0.4)', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+              <Typography variant="caption" sx={{ color: '#00E676', fontWeight: 700 }}>{summary.wins} Victoires</Typography>
+              <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 700 }}>{summary.draws} Nuls</Typography>
+              <Typography variant="caption" sx={{ color: '#FF3D00', fontWeight: 700 }}>{summary.losses} Défaites</Typography>
             </Box>
-          )}
-
-          {/* TAB 1: 5 Recent Matches */}
-          {tabValue === 1 && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-              {recentMatches.length === 0 ? (
-                <Paper className="glass-panel" sx={{ p: 4, textAlign: 'center', borderRadius: 4 }}>
-                  <Typography variant="body1" sx={{ color: '#94A3B8' }}>
-                    Aucun match enregistré récemment.
-                  </Typography>
-                </Paper>
-              ) : (
-                recentMatches.map((match) => (
-                  <Card key={match.id} sx={{ borderRadius: 4, border: '1px solid rgba(148, 163, 184, 0.08) !important' }}>
-                    <CardActionArea onClick={() => navigate(`/matches/${match.id}`)}>
-                      <CardContent sx={{ p: 3 }}>
-                        
-                        {/* Round & Date */}
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, alignItems: 'center' }}>
-                          <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700 }}>
-                            Journée {match.round} • {new Date(match.startedAt).toLocaleString()}
-                          </Typography>
-                          <Chip 
-                            label={match.status} 
-                            color={match.status === 'PLAYED' || match.status === 'VALIDATED' ? 'success' : 'default'}
-                            size="small" 
-                            sx={{ height: 18, fontSize: '0.65rem', fontWeight: 800 }}
-                          />
-                        </Box>
-
-                        {/* Head-to-Head */}
-                        <Grid container alignItems="center" spacing={1}>
-                          <Grid item xs={5} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                            <Avatar src={match.homeTeam.logo || undefined} sx={{ width: 34, height: 34, bgcolor: '#0B0F19' }}>🏈</Avatar>
-                            <Box sx={{ overflow: 'hidden' }}>
-                              <Typography variant="subtitle2" noWrap sx={{ fontWeight: 800, color: '#F8FAFC' }}>
-                                {match.homeTeam.name}
-                              </Typography>
-                              <Typography variant="caption" sx={{ color: '#64748B', display: 'block' }}>
-                                {match.homeCoach?.name || 'Inconnu'}
-                              </Typography>
-                            </Box>
-                          </Grid>
-
-                          <Grid item xs={2} sx={{ textAlign: 'center' }}>
-                            <Paper sx={{ py: 0.5, px: 1.5, bgcolor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 2, display: 'inline-block' }}>
-                              <Typography variant="h6" sx={{ fontFamily: 'Outfit', fontWeight: 900, lineHeight: 1 }}>
-                                {match.homeScore} - {match.awayScore}
-                              </Typography>
-                            </Paper>
-                          </Grid>
-
-                          <Grid item xs={5} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, justifyContent: 'flex-end', textAlign: 'right' }}>
-                            <Box sx={{ overflow: 'hidden' }}>
-                              <Typography variant="subtitle2" noWrap sx={{ fontWeight: 800, color: '#F8FAFC' }}>
-                                {match.awayTeam.name}
-                              </Typography>
-                              <Typography variant="caption" sx={{ color: '#64748B', display: 'block' }}>
-                                {match.awayCoach?.name || 'Inconnu'}
-                              </Typography>
-                            </Box>
-                            <Avatar src={match.awayTeam.logo || undefined} sx={{ width: 34, height: 34, bgcolor: '#0B0F19' }}>🏈</Avatar>
-                          </Grid>
-                        </Grid>
-
-                      </CardContent>
-                    </CardActionArea>
-                  </Card>
-                ))
-              )}
+            {/* Visual ratio bar */}
+            <Box sx={{ height: 8, display: 'flex', borderRadius: 99, overflow: 'hidden', bgcolor: 'rgba(255,255,255,0.05)' }}>
+              <Box sx={{ flex: summary.wins || 1, bgcolor: '#00E676' }} />
+              <Box sx={{ flex: summary.draws || 1, bgcolor: '#94A3B8' }} />
+              <Box sx={{ flex: summary.losses || 1, bgcolor: '#FF3D00' }} />
             </Box>
-          )}
+          </Paper>
+        </Grid>
+      </Grid>
 
-          {/* TAB 2: Performance Statistics (Cumulative Player Stats) */}
-          {tabValue === 2 && (
-            <Card sx={{ p: 4, borderRadius: 4 }}>
-              <Typography variant="h6" sx={{ fontFamily: 'Outfit', fontWeight: 800, mb: 3, color: '#F8FAFC' }}>
-                🏅 Statistiques cumulées des Joueurs
-              </Typography>
-              
-              <Grid container spacing={3.5}>
-                
-                <Grid item xs={6} sm={4}>
-                  <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mb: 0.5 }}>Touchdowns Marqués</Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 800, fontFamily: 'Outfit', color: '#00E676' }}>
-                    {perf.touchdowns || 0}
-                  </Typography>
-                </Grid>
+      {/* ─── Main Details ─── */}
+      <Grid container spacing={3}>
+        
+        {/* Teams List */}
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ p: 3, border: '1px solid rgba(148,163,184,0.08)', borderRadius: 3, bgcolor: 'rgba(15,23,42,0.4)', height: '100%' }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#F8FAFC', mb: 2 }}>
+              🛡️ Équipes de {coachData.name} ({coachData.teams?.length ?? 0})
+            </Typography>
 
-                <Grid item xs={6} sm={4}>
-                  <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mb: 0.5 }}>Passes Complétées</Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 800, fontFamily: 'Outfit', color: '#38BDF8' }}>
-                    {perf.passes || 0}
-                  </Typography>
-                </Grid>
+            {!coachData.teams || coachData.teams.length === 0 ? (
+              <Box sx={{ py: 4, textAlign: 'center', color: '#64748B' }}>
+                <Typography variant="body2">Aucune équipe enregistrée pour ce coach.</Typography>
+              </Box>
+            ) : (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                {coachData.teams.map((team: any) => (
+                  <Paper
+                    key={team.id}
+                    onClick={() => navigate(`/equipe/${team.id}`)}
+                    sx={{
+                      p: 1.5,
+                      borderRadius: 2,
+                      border: '1px solid rgba(148,163,184,0.06)',
+                      bgcolor: 'rgba(30,41,59,0.3)',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        border: '1px solid rgba(0,230,118,0.2)',
+                        bgcolor: 'rgba(0,230,118,0.02)',
+                        transform: 'translateX(4px)',
+                      }
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Box sx={{ width: 36, height: 36, borderRadius: 1.5, bgcolor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <TrophyIcon sx={{ fontSize: 18, color: '#F59E0B' }} />
+                      </Box>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: '#F8FAFC' }}>{team.name}</Typography>
+                        <Typography variant="caption" sx={{ color: '#64748B' }}>
+                          TV {(team.value / 1000).toFixed(0)}k · {team.wins}V/{team.draws}N/{team.losses}D
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <ArrowIcon sx={{ fontSize: 14, color: '#334155' }} />
+                  </Paper>
+                ))}
+              </Box>
+            )}
+          </Paper>
+        </Grid>
 
-                <Grid item xs={6} sm={4}>
-                  <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mb: 0.5 }}>Yards à la Course</Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 800, fontFamily: 'Outfit', color: '#F59E0B' }}>
-                    {perf.yardsRunning || 0}
-                  </Typography>
-                </Grid>
+        {/* Coach Performance */}
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ p: 3, border: '1px solid rgba(148,163,184,0.08)', borderRadius: 3, bgcolor: 'rgba(15,23,42,0.4)' }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#F8FAFC', mb: 2 }}>
+              📊 Performance Globale
+            </Typography>
 
-                <Grid item xs={6} sm={4}>
-                  <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mb: 0.5 }}>Blocages Réussis</Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 800, fontFamily: 'Outfit', color: '#10B981' }}>
-                    {perf.blocksSucceeded || 0}
-                  </Typography>
-                </Grid>
-
-                <Grid item xs={6} sm={4}>
-                  <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mb: 0.5 }}>Armures Brisées</Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 800, fontFamily: 'Outfit', color: '#E11D48' }}>
-                    {perf.armourBreaks || 0}
-                  </Typography>
-                </Grid>
-
-                <Grid item xs={6} sm={4}>
-                  <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mb: 0.5 }}>Blessures Infligées</Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 800, fontFamily: 'Outfit', color: '#EF4444' }}>
-                    {perf.casualtiesInflicted || 0}
-                  </Typography>
-                </Grid>
-
-                <Grid item xs={6} sm={4}>
-                  <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mb: 0.5 }}>KOs Infligés</Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 800, fontFamily: 'Outfit', color: '#EC4899' }}>
-                    {perf.koInflicted || 0}
-                  </Typography>
-                </Grid>
-
-                <Grid item xs={6} sm={4}>
-                  <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mb: 0.5 }}>Morts Causées 💀</Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 800, fontFamily: 'Outfit', color: '#F8FAFC' }}>
-                    {perf.deadInflicted || 0}
-                  </Typography>
-                </Grid>
-
-                <Grid item xs={6} sm={4}>
-                  <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mb: 0.5 }}>Morts Subies 💀</Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 800, fontFamily: 'Outfit', color: '#EF4444' }}>
-                    {perf.deadSustained || 0}
-                  </Typography>
-                </Grid>
-
-              </Grid>
-            </Card>
-          )}
-
+            <TableContainer>
+              <Table size="small">
+                <TableBody>
+                  <TableRow sx={{ '& td': { borderBottom: '1px solid rgba(148,163,184,0.04)' } }}>
+                    <TableCell sx={{ color: '#94A3B8', fontWeight: 600, py: 1 }}>Touchdowns marqués</TableCell>
+                    <TableCell align="right" sx={{ color: '#00E676', fontWeight: 800 }}>{perf.touchdowns ?? 0}</TableCell>
+                  </TableRow>
+                  <TableRow sx={{ '& td': { borderBottom: '1px solid rgba(148,163,184,0.04)' } }}>
+                    <TableCell sx={{ color: '#94A3B8', fontWeight: 600, py: 1 }}>Yards courus</TableCell>
+                    <TableCell align="right" sx={{ color: '#F8FAFC', fontWeight: 800 }}>{perf.yardsRunning ?? 0}</TableCell>
+                  </TableRow>
+                  <TableRow sx={{ '& td': { borderBottom: '1px solid rgba(148,163,184,0.04)' } }}>
+                    <TableCell sx={{ color: '#94A3B8', fontWeight: 600, py: 1 }}>Passes réussies</TableCell>
+                    <TableCell align="right" sx={{ color: '#3B82F6', fontWeight: 800 }}>{perf.passes ?? 0}</TableCell>
+                  </TableRow>
+                  <TableRow sx={{ '& td': { borderBottom: '1px solid rgba(148,163,184,0.04)' } }}>
+                    <TableCell sx={{ color: '#94A3B8', fontWeight: 600, py: 1 }}>Blocages infligés</TableCell>
+                    <TableCell align="right" sx={{ color: '#A855F7', fontWeight: 800 }}>{perf.blocksSucceeded ?? 0}</TableCell>
+                  </TableRow>
+                  <TableRow sx={{ '& td': { borderBottom: '1px solid rgba(148,163,184,0.04)' } }}>
+                    <TableCell sx={{ color: '#94A3B8', fontWeight: 600, py: 1 }}>Blessures infligées</TableCell>
+                    <TableCell align="right" sx={{ color: '#F59E0B', fontWeight: 800 }}>{perf.casualtiesInflicted ?? 0}</TableCell>
+                  </TableRow>
+                  <TableRow sx={{ '& td': { borderBottom: 'none' } }}>
+                    <TableCell sx={{ color: '#94A3B8', fontWeight: 600, py: 1 }}>Morts infligés</TableCell>
+                    <TableCell align="right" sx={{ color: '#FF3D00', fontWeight: 800 }}>{perf.deadInflicted ?? 0}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
         </Grid>
 
       </Grid>
-
-      {/* Snackbar notification for API actions */}
-      <Snackbar 
-        open={syncAlert?.open || false} 
-        autoHideDuration={4000} 
-        onClose={() => setSyncAlert(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert severity={syncAlert?.severity || 'success'} sx={{ borderRadius: 3, fontWeight: 700 }}>
-          {syncAlert?.message}
-        </Alert>
-      </Snackbar>
-
     </Box>
   );
 };
+
+export default CoachDetail;

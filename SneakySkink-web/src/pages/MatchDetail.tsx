@@ -3,416 +3,304 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
-  Button,
-  Grid,
-  Card,
-  CardContent,
-  Chip,
-  CircularProgress,
   Paper,
-  Divider,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
+  Grid,
+  CircularProgress,
+  alpha,
   Avatar,
-  Tab,
-  Tabs,
-  LinearProgress,
+  Divider,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  Chip,
 } from '@mui/material';
 import {
-  ChevronLeft as BackIcon,
+  SportsSoccer as MatchIcon,
   EmojiEvents as TrophyIcon,
-  SportsEsports as MatchIcon,
-  Star as StarIcon,
-  CancelPresentation as ForfeitIcon,
-  CompareArrows as VSIcon,
+  Person as CoachIcon,
+  CalendarToday as DateIcon,
+  Star as MvpIcon,
+  SportsKabaddi as CasualtyIcon,
+  PlayArrow as BallIcon,
 } from '@mui/icons-material';
 import { api } from '../api';
-import { getRaceInfo } from '../utils/raceHelper';
 
-interface PlayerStatRow {
-  playerId: string;
-  name: string | null;
-  number: number;
-  type: string;
-  matchPlayed: boolean;
-  mvp: boolean;
-  xpGained: number;
-  touchdowns: number;
-  passes: number;
-  catches: number;
-  interceptions: number;
-  yardsRunning: number;
-  yardsPassing: number;
-  blocksSucceeded: number;
-  blocksSustained: number;
-  armourBreaks: number;
-  tackles: number;
-  pushouts: number;
-  casualtiesInflicted: number;
-  koInflicted: number;
-  injuriesInflicted: number;
-  deadInflicted: number;
-  casualtiesSustained: number;
-  koSustained: number;
-  injuriesSustained: number;
-  deadSustained: number;
-  newCasualties: string[];
-}
-
-interface TeamBlock {
-  id: string;
-  name: string;
-  logo: string | null;
-  raceId: number;
-  score: number;
-  coach: { id: string; name: string; country: string | null } | null;
-  stats: any;
-  players: PlayerStatRow[];
-}
-
-interface MatchDetailSheet {
-  id: string;
-  startedAt: string;
-  finishedAt: string;
-  round: number;
-  platform: string;
-  status: string;
-  leagueId: string;
-  leagueName: string;
-  competitionId: string;
-  competitionName: string;
-  competitionFormat: string;
-  homeTeam: TeamBlock;
-  awayTeam: TeamBlock;
-}
-
-export const MatchDetail: React.FC = () => {
+const MatchDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-
-  const [match, setMatch] = useState<MatchDetailSheet | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [tabValue, setTabValue] = useState<number>(0);
+  
+  const [match, setMatch] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!id) return;
-
-    const fetchMatchDetails = async () => {
-      try {
-        setLoading(true);
-        const response = await api.getMatch(id);
-        setMatch((response as any).data || response);
-      } catch (err) {
-        console.error('Failed to load match details', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMatchDetails();
+    setLoading(true);
+    api.getMatch(id)
+      .then((data: any) => {
+        setMatch(data);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, [id]);
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
-        <CircularProgress color="primary" size={50} />
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+        <CircularProgress sx={{ color: '#00E676' }} />
       </Box>
     );
   }
 
   if (!match) {
     return (
-      <Box sx={{ textAlign: 'center', mt: 5 }}>
-        <Typography variant="h5" color="error">
-          Match introuvable
-        </Typography>
-        <Button onClick={() => navigate('/')} sx={{ mt: 2 }}>
-          Retour
-        </Button>
+      <Box sx={{ py: 4, textAlign: 'center' }}>
+        <Typography variant="h6" sx={{ color: 'text.secondary' }}>Match introuvable</Typography>
       </Box>
     );
   }
 
-  const homeRace = getRaceInfo(match.homeTeam.raceId);
-  const awayRace = getRaceInfo(match.awayTeam.raceId);
+  // Aggregate stats from playerStats for both teams
+  const homePlayerStats = (match.playerStats || []).filter((s: any) => s.teamId === match.homeTeamId);
+  const awayPlayerStats = (match.playerStats || []).filter((s: any) => s.teamId === match.awayTeamId);
 
-  // Check if someone conceded
-  const homeConceded = match.homeTeam.stats?.conceded === true;
-  const awayConceded = match.awayTeam.stats?.conceded === true;
-
-  // Helpers to draw comparative bars
-  const renderCompareRow = (label: string, homeVal: number, awayVal: number, prefix = '') => {
-    const total = homeVal + awayVal || 1;
-    const homePct = Math.round((homeVal / total) * 100);
-    const awayPct = 100 - homePct;
-
-    return (
-      <Box sx={{ mb: 2.5 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5, alignItems: 'center' }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#00E676' }}>
-            {homeVal}{prefix}
-          </Typography>
-          <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.05em' }}>
-            {label}
-          </Typography>
-          <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#FF3D00' }}>
-            {awayVal}{prefix}
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', height: 6, borderRadius: 3, overflow: 'hidden', bgcolor: 'rgba(255,255,255,0.03)' }}>
-          <Box sx={{ width: `${homePct}%`, bgcolor: '#00E676' }} />
-          <Box sx={{ width: `${awayPct}%`, bgcolor: '#FF3D00' }} />
-        </Box>
-      </Box>
-    );
+  const aggregateStat = (statsList: any[], field: string) => {
+    return statsList.reduce((acc, curr) => acc + (curr[field] || 0), 0);
   };
 
-  // Aggregated team stats sums
-  const getAggSum = (players: PlayerStatRow[], key: keyof PlayerStatRow) => {
-    return players.reduce((sum, p) => {
-      const val = p[key];
-      return sum + (typeof val === 'number' ? val : 0);
-    }, 0);
-  };
+  // Find MVPs
+  const mvps = (match.playerStats || []).filter((s: any) => s.mvp === true);
 
-  // Render Roster player stats table
-  const renderPlayerStatsTable = (team: TeamBlock) => (
-    <TableContainer component={Paper} sx={{ bgcolor: '#151D30', border: '1px solid rgba(148, 163, 184, 0.08)' }}>
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell align="center" style={{ width: 40 }}>#</TableCell>
-            <TableCell>Nom</TableCell>
-            <TableCell>Poste</TableCell>
-            <TableCell align="center">TD</TableCell>
-            <TableCell align="center">Passes</TableCell>
-            <TableCell align="center">Bloc.</TableCell>
-            <TableCell align="center">KOs</TableCell>
-            <TableCell align="center">Inj.</TableCell>
-            <TableCell align="center">MVP</TableCell>
-            <TableCell align="center">XP</TableCell>
-            <TableCell>Status / Blessure</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {team.players.map((p) => {
-            const hasStatus = p.mvp || p.deadInflicted > 0 || p.newCasualties.length > 0 || p.xpGained > 0;
-            return (
-              <TableRow key={p.playerId} hover sx={{ opacity: p.matchPlayed ? 1 : 0.4 }}>
-                <TableCell align="center" sx={{ fontWeight: 700 }}>{p.number}</TableCell>
-                <TableCell sx={{ fontWeight: 650 }}>{p.name || `Joueur #${p.number}`}</TableCell>
-                <TableCell sx={{ color: '#94A3B8', fontSize: '0.8rem' }}>{p.type.replace(/^[a-z]+_/i, '')}</TableCell>
-                <TableCell align="center" sx={{ fontWeight: p.touchdowns > 0 ? 800 : 400, color: p.touchdowns > 0 ? '#00E676' : 'inherit' }}>{p.touchdowns || '-'}</TableCell>
-                <TableCell align="center">{p.passes || '-'}</TableCell>
-                <TableCell align="center">{p.blocksSucceeded || '-'}</TableCell>
-                <TableCell align="center" sx={{ color: p.koInflicted > 0 ? '#F59E0B' : 'inherit' }}>{p.koInflicted || '-'}</TableCell>
-                <TableCell align="center" sx={{ color: p.casualtiesInflicted > 0 ? '#FF3D00' : 'inherit' }}>{p.casualtiesInflicted || '-'}</TableCell>
-                <TableCell align="center">{p.mvp ? <StarIcon style={{ color: '#F59E0B', fontSize: 16 }} /> : '-'}</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 700, color: '#38BDF8' }}>{p.xpGained > 0 ? `+${p.xpGained}` : '-'}</TableCell>
-                <TableCell>
-                  {p.deadSustained > 0 ? (
-                    <Chip label="MORT 💀" size="small" color="error" sx={{ fontWeight: 800, fontSize: '0.65rem' }} />
-                  ) : p.newCasualties.length > 0 ? (
-                    <Chip label={`Blessé: ${p.newCasualties.join(', ')}`} size="small" color="warning" sx={{ fontWeight: 800, fontSize: '0.65rem' }} />
-                  ) : !p.matchPlayed ? (
-                    <Chip label="Banc" size="small" variant="outlined" sx={{ fontSize: '0.65rem' }} />
-                  ) : (
-                    '-'
-                  )}
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  );
+  // Find scorers (TDs > 0)
+  const scorers = (match.playerStats || []).filter((s: any) => s.touchdowns > 0);
+
+  // Find violent players (Casualties > 0)
+  const violence = (match.playerStats || []).filter((s: any) => s.casualtiesInflicted > 0);
 
   return (
-    <Box sx={{ animation: 'fadeIn 0.3s ease-in-out' }}>
-      {/* Back to Competition */}
-      <Button
-        startIcon={<BackIcon />}
-        onClick={() => navigate(`/competitions/${match.competitionId}`)}
-        sx={{ mb: 3, fontWeight: 700, color: '#94A3B8' }}
-      >
-        Retour à la Compétition
-      </Button>
-
-      {/* Match Header Score Card */}
-      <Paper
-        className="glass-panel"
-        sx={{
-          p: { xs: 3, md: 5 },
-          mb: 4,
-          borderRadius: 4,
-        }}
-      >
-        {/* League and competition info */}
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <Typography variant="caption" sx={{ color: '#00E676', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-            🏆 {match.leagueName} &bull; {match.competitionName} (Round {match.round})
+    <Box sx={{ maxWidth: 960, mx: 'auto', py: { xs: 2, md: 4 } }}>
+      
+      {/* ─── League / Competition Breadcrumb Header ─── */}
+      <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mb: 3 }}>
+        <Chip
+          icon={<TrophyIcon style={{ fontSize: 13, color: '#F59E0B' }} />}
+          label={match.league?.name || 'Ligue'}
+          onClick={() => navigate(`/ligue/${match.leagueId}`)}
+          size="small"
+          sx={{ bgcolor: 'rgba(245,158,11,0.06)', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.15)', fontWeight: 600 }}
+        />
+        <Chip
+          icon={<MatchIcon style={{ fontSize: 13, color: '#3B82F6' }} />}
+          label={match.competition?.name || 'Compétition'}
+          onClick={() => navigate(`/competition/${match.competitionId}`)}
+          size="small"
+          sx={{ bgcolor: 'rgba(59,130,246,0.06)', color: '#3B82F6', border: '1px solid rgba(59,130,246,0.15)', fontWeight: 600 }}
+        />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#64748B', ml: 'auto' }}>
+          <DateIcon sx={{ fontSize: 13 }} />
+          <Typography variant="caption" sx={{ fontWeight: 600 }}>
+            {new Date(match.startedAt).toLocaleDateString('fr-FR')} à {new Date(match.startedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
           </Typography>
         </Box>
+      </Box>
 
-        {/* Head-to-Head display */}
-        <Grid container alignItems="center" spacing={4} sx={{ mb: 2 }}>
-          {/* Home Team Column */}
-          <Grid item xs={12} sm={4} sx={{ display: 'flex', flexDirection: 'column', alignItems: { xs: 'center', sm: 'flex-end' }, textAlign: { xs: 'center', sm: 'right' } }}>
+      {/* ─── Match Board (Score & Teams) ─── */}
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 3, sm: 5 },
+          borderRadius: 3.5,
+          border: '1px solid rgba(148,163,184,0.08)',
+          background: 'linear-gradient(180deg, rgba(30,41,59,0.3) 0%, rgba(15,23,42,0.3) 100%)',
+          mb: 3,
+        }}
+      >
+        <Grid container spacing={3} alignItems="center">
+          
+          {/* Home Team */}
+          <Grid item xs={12} sm={4} sx={{ textAlign: { xs: 'center', sm: 'right' } }}>
             <Avatar
-              src={match.homeTeam.logo || undefined}
-              alt={match.homeTeam.name}
-              sx={{ width: 80, height: 80, mb: 2, bgcolor: '#0B0F19', border: `2px solid ${homeRace.color}` }}
-            >
-              🏈
-            </Avatar>
-            <Typography
-              variant="h5"
-              onClick={() => navigate(`/teams/${match.homeTeam.id}`)}
-              sx={{ fontFamily: 'Outfit', fontWeight: 900, cursor: 'pointer', '&:hover': { color: '#00E676' } }}
-            >
-              {match.homeTeam.name}
-            </Typography>
-            <Chip label={homeRace.name} size="small" sx={{ mt: 1, bgcolor: homeRace.color, color: '#FFF', fontWeight: 700 }} />
-            {match.homeTeam.coach && (
-              <Typography
-                variant="body2"
-                onClick={() => navigate(`/coaches/${match.homeTeam.coach?.id}`)}
-                sx={{ color: '#94A3B8', mt: 1.5, fontWeight: 600, cursor: 'pointer', '&:hover': { color: '#00E676' } }}
-              >
-                Coach : {match.homeTeam.coach.name} {match.homeTeam.coach.country && `(${match.homeTeam.coach.country})`}
-              </Typography>
-            )}
-            {homeConceded && (
-              <Chip
-                icon={<ForfeitIcon />}
-                label="CONCESSION / FORFAIT"
-                color="error"
-                sx={{ mt: 2, fontWeight: 800, animation: 'pulse 1.5s infinite' }}
-              />
-            )}
-          </Grid>
-
-          {/* Central score display */}
-          <Grid item xs={12} sm={4} sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <Box
               sx={{
-                px: 4,
-                py: 2,
-                bgcolor: 'rgba(255,255,255,0.02)',
-                border: '1px solid rgba(148, 163, 184, 0.08)',
-                borderRadius: 4,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 2,
-                boxShadow: '0 8px 32px 0 rgba(0,0,0,0.2)',
+                width: 56,
+                height: 56,
+                bgcolor: 'rgba(0,230,118,0.06)',
+                border: '1px solid rgba(0,230,118,0.15)',
+                color: '#00E676',
+                mx: { xs: 'auto', sm: '0 0 0 auto' },
+                mb: 1.5,
               }}
             >
-              <Typography variant="h2" sx={{ fontFamily: 'Outfit', fontWeight: 900, color: '#00E676', pr: 1 }}>
-                {match.homeTeam.score}
-              </Typography>
-              <VSIcon style={{ color: '#64748B', fontSize: 28 }} />
-              <Typography variant="h2" sx={{ fontFamily: 'Outfit', fontWeight: 900, color: '#FF3D00', pl: 1 }}>
-                {match.awayTeam.score}
-              </Typography>
-            </Box>
-            <Typography variant="caption" sx={{ color: '#64748B', mt: 2, fontWeight: 700, textTransform: 'uppercase' }}>
-              Platforme : {match.platform.toUpperCase()} &bull; Statut : {match.status}
+              H
+            </Avatar>
+            <Typography
+              onClick={() => navigate(`/equipe/${match.homeTeamId}`)}
+              sx={{ fontWeight: 900, color: '#F8FAFC', fontSize: '1.2rem', cursor: 'pointer', '&:hover': { color: '#00E676' } }}
+            >
+              {match.homeTeam?.name}
+            </Typography>
+            <Typography variant="caption" sx={{ color: '#64748B', display: 'flex', alignItems: 'center', justifyContent: { xs: 'center', sm: 'flex-end' }, gap: 0.5, mt: 0.5 }}>
+              <CoachIcon sx={{ fontSize: 12 }} />
+              {match.homeCoach?.name || 'Inconnu'}
             </Typography>
           </Grid>
 
-          {/* Away Team Column */}
-          <Grid item xs={12} sm={4} sx={{ display: 'flex', flexDirection: 'column', alignItems: { xs: 'center', sm: 'flex-start' }, textAlign: { xs: 'center', sm: 'left' } }}>
+          {/* Scoreboard */}
+          <Grid item xs={12} sm={4} sx={{ textAlign: 'center' }}>
+            <Box sx={{ display: 'inline-flex', flexDirection: 'column', gap: 1 }}>
+              <Box sx={{ px: 4, py: 1.5, borderRadius: 3, bgcolor: 'rgba(15,23,42,0.6)', border: '1px solid rgba(148,163,184,0.1)' }}>
+                <Typography sx={{ fontWeight: 950, fontSize: '2.5rem', color: '#00E676', letterSpacing: '0.1em', lineHeight: 1 }}>
+                  {match.homeScore} - {match.awayScore}
+                </Typography>
+              </Box>
+              <Typography variant="caption" sx={{ color: '#475569', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                Journée {match.round}
+              </Typography>
+            </Box>
+          </Grid>
+
+          {/* Away Team */}
+          <Grid item xs={12} sm={4} sx={{ textAlign: { xs: 'center', sm: 'left' } }}>
             <Avatar
-              src={match.awayTeam.logo || undefined}
-              alt={match.awayTeam.name}
-              sx={{ width: 80, height: 80, mb: 2, bgcolor: '#0B0F19', border: `2px solid ${awayRace.color}` }}
+              sx={{
+                width: 56,
+                height: 56,
+                bgcolor: 'rgba(168,85,247,0.06)',
+                border: '1px solid rgba(168,85,247,0.15)',
+                color: '#A855F7',
+                mx: { xs: 'auto', sm: 'auto 0 0 0' },
+                mb: 1.5,
+              }}
             >
-              🏈
+              A
             </Avatar>
             <Typography
-              variant="h5"
-              onClick={() => navigate(`/teams/${match.awayTeam.id}`)}
-              sx={{ fontFamily: 'Outfit', fontWeight: 900, cursor: 'pointer', '&:hover': { color: '#FF3D00' } }}
+              onClick={() => navigate(`/equipe/${match.awayTeamId}`)}
+              sx={{ fontWeight: 900, color: '#F8FAFC', fontSize: '1.2rem', cursor: 'pointer', '&:hover': { color: '#00E676' } }}
             >
-              {match.awayTeam.name}
+              {match.awayTeam?.name}
             </Typography>
-            <Chip label={awayRace.name} size="small" sx={{ mt: 1, bgcolor: awayRace.color, color: '#FFF', fontWeight: 700 }} />
-            {match.awayTeam.coach && (
-              <Typography
-                variant="body2"
-                onClick={() => navigate(`/coaches/${match.awayTeam.coach?.id}`)}
-                sx={{ color: '#94A3B8', mt: 1.5, fontWeight: 600, cursor: 'pointer', '&:hover': { color: '#FF3D00' } }}
-              >
-                Coach : {match.awayTeam.coach.name} {match.awayTeam.coach.country && `(${match.awayTeam.coach.country})`}
-              </Typography>
-            )}
-            {awayConceded && (
-              <Chip
-                icon={<ForfeitIcon />}
-                label="CONCESSION / FORFAIT"
-                color="error"
-                sx={{ mt: 2, fontWeight: 800, animation: 'pulse 1.5s infinite' }}
-              />
-            )}
+            <Typography variant="caption" sx={{ color: '#64748B', display: 'flex', alignItems: 'center', justifyContent: { xs: 'center', sm: 'flex-start' }, gap: 0.5, mt: 0.5 }}>
+              <CoachIcon sx={{ fontSize: 12 }} />
+              {match.awayCoach?.name || 'Inconnu'}
+            </Typography>
           </Grid>
+
         </Grid>
       </Paper>
 
-      {/* Tabs */}
-      <Box sx={{ borderBottom: 1, borderColor: 'rgba(148, 163, 184, 0.08)', mb: 3 }}>
-        <Tabs value={tabValue} onChange={(_, v) => setTabValue(v)} textColor="primary" indicatorColor="primary">
-          <Tab label="Statistiques Globales" sx={{ fontWeight: 700, fontSize: '1rem' }} />
-          <Tab label="Roster Domicile" sx={{ fontWeight: 700, fontSize: '1rem' }} />
-          <Tab label="Roster Extérieur" sx={{ fontWeight: 700, fontSize: '1rem' }} />
-        </Tabs>
-      </Box>
+      {/* ─── Match Detailed Team Stats ─── */}
+      <Paper sx={{ p: 3, border: '1px solid rgba(148,163,184,0.08)', borderRadius: 3, bgcolor: 'rgba(15,23,42,0.4)', mb: 3 }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#F8FAFC', mb: 3, textAlign: 'center' }}>
+          📊 Statistiques des Équipes
+        </Typography>
 
-      {/* Tab 0: Comparative Stats */}
-      {tabValue === 0 && (
-        <Card>
-          <CardContent sx={{ p: 4 }}>
-            <Typography variant="h6" sx={{ fontFamily: 'Outfit', fontWeight: 800, mb: 3 }}>
-              📊 Comparatif des Statistiques d'Équipe
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+          {[
+            { label: 'Blocages réussis', field: 'blocksSucceeded' },
+            { label: 'Yards courus', field: 'yardsRunning' },
+            { label: 'Passes réussies', field: 'passes' },
+            { label: 'Yards de passes', field: 'yardsPassing' },
+            { label: 'Blessures infligées', field: 'casualtiesInflicted' },
+            { label: 'Morts infligés', field: 'deadInflicted' },
+          ].map((stat) => {
+            const homeVal = aggregateStat(homePlayerStats, stat.field);
+            const awayVal = aggregateStat(awayPlayerStats, stat.field);
+            const total = homeVal + awayVal || 1;
+            const homePct = (homeVal / total) * 100;
+
+            return (
+              <Box key={stat.label}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                  <Typography variant="caption" sx={{ fontWeight: 700, color: '#F8FAFC' }}>{homeVal}</Typography>
+                  <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>{stat.label}</Typography>
+                  <Typography variant="caption" sx={{ fontWeight: 700, color: '#F8FAFC' }}>{awayVal}</Typography>
+                </Box>
+                <Box sx={{ height: 6, display: 'flex', borderRadius: 99, overflow: 'hidden', bgcolor: 'rgba(255,255,255,0.05)' }}>
+                  <Box sx={{ width: `${homePct}%`, bgcolor: '#00E676' }} />
+                  <Box sx={{ flex: 1, bgcolor: '#A855F7' }} />
+                </Box>
+              </Box>
+            );
+          })}
+        </Box>
+      </Paper>
+
+      {/* ─── Highlights (MVPs & Scorers) ─── */}
+      <Grid container spacing={3}>
+        
+        {/* Scorers & Violent players */}
+        <Grid item xs={12} sm={6}>
+          <Paper sx={{ p: 3, border: '1px solid rgba(148,163,184,0.08)', borderRadius: 3, bgcolor: 'rgba(15,23,42,0.4)', height: '100%' }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#F8FAFC', mb: 2 }}>
+              ⭐ Faits de Match
             </Typography>
-            <Box sx={{ maxWidth: '800px', mx: 'auto' }}>
-              {renderCompareRow('Touchdowns', match.homeTeam.score, match.awayTeam.score)}
-              {renderCompareRow('Passes réussies', getAggSum(match.homeTeam.players, 'passes'), getAggSum(match.awayTeam.players, 'passes'))}
-              {renderCompareRow('Yards à la course', getAggSum(match.homeTeam.players, 'yardsRunning'), getAggSum(match.awayTeam.players, 'yardsRunning'))}
-              {renderCompareRow('Yards à la passe', getAggSum(match.homeTeam.players, 'yardsPassing'), getAggSum(match.awayTeam.players, 'yardsPassing'))}
-              {renderCompareRow('Blocages réussis', getAggSum(match.homeTeam.players, 'blocksSucceeded'), getAggSum(match.awayTeam.players, 'blocksSucceeded'))}
-              {renderCompareRow('Armures brisées', getAggSum(match.homeTeam.players, 'armourBreaks'), getAggSum(match.awayTeam.players, 'armourBreaks'))}
-              {renderCompareRow('KOs Infligés', getAggSum(match.homeTeam.players, 'koInflicted'), getAggSum(match.awayTeam.players, 'koInflicted'))}
-              {renderCompareRow('Blessures Infligées', getAggSum(match.homeTeam.players, 'casualtiesInflicted'), getAggSum(match.awayTeam.players, 'casualtiesInflicted'))}
-              {renderCompareRow('Morts Provoquées 💀', getAggSum(match.homeTeam.players, 'deadInflicted'), getAggSum(match.awayTeam.players, 'deadInflicted'))}
-            </Box>
-          </CardContent>
-        </Card>
-      )}
 
-      {/* Tab 1: Home Roster player stats */}
-      {tabValue === 1 && (
-        <Box sx={{ animation: 'fadeIn 0.2s ease-in-out' }}>
-          <Typography variant="h6" sx={{ fontFamily: 'Outfit', fontWeight: 800, mb: 2, color: '#00E676' }}>
-            🛡️ Feuille de Match - {match.homeTeam.name}
-          </Typography>
-          {renderPlayerStatsTable(match.homeTeam)}
-        </Box>
-      )}
+            <List size="small" disablePadding>
+              {mvps.map((s: any) => (
+                <ListItem key={s.id} sx={{ py: 1, px: 0 }}>
+                  <ListItemIcon sx={{ minWidth: 32 }}><MvpIcon sx={{ color: '#F59E0B', fontSize: 18 }} /></ListItemIcon>
+                  <ListItemText
+                    primary={s.player?.name || `Joueur #${s.player?.number}`}
+                    secondary={`MVP du match (${s.team?.name})`}
+                    primaryTypographyProps={{ fontWeight: 700, fontSize: '0.85rem', color: '#F8FAFC' }}
+                    secondaryTypographyProps={{ fontSize: '0.68rem', color: '#64748B' }}
+                  />
+                </ListItem>
+              ))}
+              
+              {scorers.map((s: any) => (
+                <ListItem key={s.id} sx={{ py: 1, px: 0 }}>
+                  <ListItemIcon sx={{ minWidth: 32 }}><BallIcon sx={{ color: '#3B82F6', fontSize: 18 }} /></ListItemIcon>
+                  <ListItemText
+                    primary={s.player?.name || `Joueur #${s.player?.number}`}
+                    secondary={`A marqué ${s.touchdowns} Touchdown(s) (${s.team?.name})`}
+                    primaryTypographyProps={{ fontWeight: 700, fontSize: '0.85rem', color: '#F8FAFC' }}
+                    secondaryTypographyProps={{ fontSize: '0.68rem', color: '#64748B' }}
+                  />
+                </ListItem>
+              ))}
 
-      {/* Tab 2: Away Roster player stats */}
-      {tabValue === 2 && (
-        <Box sx={{ animation: 'fadeIn 0.2s ease-in-out' }}>
-          <Typography variant="h6" sx={{ fontFamily: 'Outfit', fontWeight: 800, mb: 2, color: '#FF3D00' }}>
-            ⚔️ Feuille de Match - {match.awayTeam.name}
-          </Typography>
-          {renderPlayerStatsTable(match.awayTeam)}
-        </Box>
-      )}
+              {violence.map((s: any) => (
+                <ListItem key={s.id} sx={{ py: 1, px: 0 }}>
+                  <ListItemIcon sx={{ minWidth: 32 }}><CasualtyIcon sx={{ color: '#FF3D00', fontSize: 18 }} /></ListItemIcon>
+                  <ListItemText
+                    primary={s.player?.name || `Joueur #${s.player?.number}`}
+                    secondary={`A infligé ${s.casualtiesInflicted} Sortie(s) (${s.team?.name})`}
+                    primaryTypographyProps={{ fontWeight: 700, fontSize: '0.85rem', color: '#F8FAFC' }}
+                    secondaryTypographyProps={{ fontSize: '0.68rem', color: '#64748B' }}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </Paper>
+        </Grid>
+
+        {/* Sync / Metadata Details */}
+        <Grid item xs={12} sm={6}>
+          <Paper sx={{ p: 3, border: '1px solid rgba(148,163,184,0.08)', borderRadius: 3, bgcolor: 'rgba(15,23,42,0.4)', height: '100%' }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#F8FAFC', mb: 2 }}>
+              ⚙️ Informations Additionnelles
+            </Typography>
+            <List size="small" disablePadding>
+              <ListItem sx={{ py: 1, px: 0, justifyContent: 'space-between' }}>
+                <Typography variant="body2" sx={{ color: '#64748B' }}>Identifiant du Match</Typography>
+                <Typography variant="body2" sx={{ color: '#F8FAFC', fontFamily: 'monospace', fontSize: '0.75rem' }}>{match.id}</Typography>
+              </ListItem>
+              <ListItem sx={{ py: 1, px: 0, justifyContent: 'space-between' }}>
+                <Typography variant="body2" sx={{ color: '#64748B' }}>Plateforme</Typography>
+                <Typography variant="body2" sx={{ color: '#F8FAFC', textTransform: 'uppercase' }}>{match.platform}</Typography>
+              </ListItem>
+              <ListItem sx={{ py: 1, px: 0, justifyContent: 'space-between' }}>
+                <Typography variant="body2" sx={{ color: '#64748B' }}>Statut du match</Typography>
+                <Chip label={match.status} size="small" sx={{ height: 20, bgcolor: 'rgba(0,230,118,0.08)', color: '#00E676', border: '1px solid rgba(0,230,118,0.15)', fontWeight: 700, fontSize: '0.6rem' }} />
+              </ListItem>
+            </List>
+          </Paper>
+        </Grid>
+
+      </Grid>
     </Box>
   );
 };
+
+export default MatchDetail;

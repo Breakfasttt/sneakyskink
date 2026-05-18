@@ -10,14 +10,15 @@
     "preview": "node node_modules/vite/bin/vite.js preview"
   },
   "dependencies": {
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
-    "@mui/material": "^9.0.1",
-    "@mui/icons-material": "^9.0.1",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
-    "react-router-dom": "^7.15.1",
+    "@mui/icons-material": "^9.0.1",
+    "@mui/material": "^9.0.1",
     "axios": "^1.16.1",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "react-router-dom": "^7.15.1",
+    "recharts": "^3.8.1",
     "sneakyskink-api-client": "*"
   },
   "devDependencies": {

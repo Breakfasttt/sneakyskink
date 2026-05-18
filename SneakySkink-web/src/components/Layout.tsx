@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import {
   Box,
   AppBar,
@@ -31,11 +31,7 @@ import {
 } from '@mui/icons-material';
 import { api } from '../api';
 
-interface LayoutProps {
-  children: React.ReactNode;
-}
-
-export const Layout: React.FC<LayoutProps> = ({ children }) => {
+export const Layout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
@@ -70,9 +66,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   // Determine current active navigation index
   const getNavIndex = () => {
     const path = location.pathname;
-    if (path.startsWith('/leagues') || path.startsWith('/competitions')) return 1;
-    if (path.startsWith('/search') || path.startsWith('/coaches') || path.startsWith('/teams')) return 2;
-    if (path.startsWith('/sync')) return 3;
+    if (path.startsWith('/ligues') || path.startsWith('/competitions')) return 1;
+    if (path.startsWith('/search') || path.startsWith('/coach')) return 2;
+    if (path.startsWith('/synchro')) return 3;
     return 0; // default to dashboard
   };
 
@@ -84,13 +80,13 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         navigate('/');
         break;
       case 1:
-        navigate('/leagues');
+        navigate('/ligues');
         break;
       case 2:
         navigate('/search');
         break;
       case 3:
-        navigate('/sync');
+        navigate('/synchro');
         break;
       default:
         navigate('/');
@@ -98,8 +94,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   const navigationItems = [
-    { label: 'Dashboard', icon: <DashboardIcon />, path: '/' },
-    { label: 'Ligues', icon: <TrophyIcon />, path: '/leagues' },
+    { label: 'Accueil', icon: <DashboardIcon />, path: '/' },
+    { label: 'Ligues', icon: <TrophyIcon />, path: '/ligues' },
     { label: 'Recherche', icon: <SearchIcon />, path: '/search' },
     {
       label: 'Synchro',
@@ -108,7 +104,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <SyncIcon />
         </Badge>
       ),
-      path: '/sync',
+      path: '/synchro',
     },
   ];
 
@@ -192,9 +188,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
           {/* Small Queue Indicator for Mobile */}
           {isMobile && queueCount > 0 && (
-            <IconButton onClick={() => navigate('/sync')} size="small" sx={{ bgcolor: 'rgba(255, 61, 0, 0.15)', color: '#FF3D00' }}>
+            <IconButton onClick={() => navigate('/synchro')} size="small" sx={{ bgcolor: 'rgba(255, 61, 0, 0.15)', color: '#FF3D00' }}>
               <Badge badgeContent={queueCount} color="error">
-                <QueueIcon size="small" />
+                <QueueIcon fontSize="small" />
               </Badge>
             </IconButton>
           )}
@@ -203,7 +199,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {/* Main Content Area */}
       <Box component="main" sx={{ flexGrow: 1, p: { xs: 2, md: 4 }, maxWidth: '1200px', width: '100%', mx: 'auto', boxSizing: 'border-box' }}>
-        {children}
+        <Outlet />
       </Box>
 
       {/* Bottom Navigation for Mobile Devices */}
