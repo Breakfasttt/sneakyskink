@@ -16,10 +16,19 @@ export interface ClientConfig {
 }
 
 export interface SyncQueueState {
-  active: number;
-  waiting: number;
-  completed: number;
-  failed: number;
+  success?: boolean;
+  counts: {
+    active: number;
+    waiting: number;
+    completed: number;
+    failed: number;
+    delayed?: number;
+  };
+  hasPendingCalls?: boolean;
+  harvesterRunning?: boolean;
+  cyanideOnline?: boolean;
+  activeJobs?: any[];
+  waitingJobs?: any[];
 }
 
 export interface GlobalStats {
@@ -164,6 +173,14 @@ export class SneakySkinkApiClient {
    */
   public async getSyncQueue(): Promise<SyncQueueState> {
     const res = await this.client.get('/sync/queue');
+    return res.data;
+  }
+
+  /**
+   * 🧹 Nettoie l'historique des jobs (complétés et échoués) de la file d'attente
+   */
+  public async cleanSyncQueue(): Promise<{ success: boolean; cleanedCompleted: number; cleanedFailed: number }> {
+    const res = await this.client.post('/sync/queue/clean');
     return res.data;
   }
 

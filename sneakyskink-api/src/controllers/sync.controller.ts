@@ -39,4 +39,13 @@ export class SyncController {
       next(error);
     }
   }
+
+  static async cleanQueue(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await SyncService.cleanQueue();
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
 }

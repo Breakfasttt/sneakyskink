@@ -25,56 +25,11 @@ import {
   CloudSync as SyncIcon,
 } from '@mui/icons-material';
 import { api } from '../api';
+import { WidgetMatchsParHeure } from '../components/widgets';
 
 // ─── Inline Styles ────────────────────────────────────────────────────────────
 const glow = (color: string) => `0 0 24px ${alpha(color, 0.25)}`;
 
-// ─── CSS Bar Chart ─────────────────────────────────────────────────────────────
-const CssBarChart: React.FC<{ data: { label: string; count: number }[] }> = ({ data }) => {
-  const max = Math.max(...data.map(d => d.count), 1);
-  return (
-    <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: '2px', height: 140 }}>
-      {data.map((d, i) => (
-        <Box
-          key={i}
-          sx={{
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-            height: '100%',
-            gap: '3px',
-          }}
-        >
-          <Box
-            sx={{
-              width: '100%',
-              borderRadius: '3px 3px 0 0',
-              height: `${Math.max((d.count / max) * 100, 3)}%`,
-              background: d.count > 0
-                ? 'linear-gradient(180deg, #00E676 0%, #00B248 100%)'
-                : 'rgba(148,163,184,0.08)',
-              transition: 'height 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
-              boxShadow: d.count > 0 ? '0 -2px 8px rgba(0,230,118,0.3)' : 'none',
-            }}
-          />
-          <Typography
-            variant="caption"
-            sx={{
-              color: '#475569',
-              fontSize: '0.5rem',
-              lineHeight: 1,
-              writingMode: 'horizontal-tb',
-            }}
-          >
-            {d.label}
-          </Typography>
-        </Box>
-      ))}
-    </Box>
-  );
-};
 
 // ─── Stat Card ─────────────────────────────────────────────────────────────────
 interface StatCardProps {
@@ -150,7 +105,7 @@ const Home: React.FC = () => {
   const [stats, setStats] = useState<{ leagues: number | null; competitions: number | null; coaches: number | null }>({
     leagues: null, competitions: null, coaches: null,
   });
-  const [activity, setActivity] = useState<{ label: string; count: number }[]>([]);
+  const [recentMatches, setRecentMatches] = useState<{ startedAt: string }[]>([]);
   const [activityLoading, setActivityLoading] = useState(true);
 
   useEffect(() => {
@@ -163,15 +118,11 @@ const Home: React.FC = () => {
       });
     }).catch(() => {});
 
-    api.getActivityStats().then((res: any) => {
-      const actualStats = res.data || res || {};
-      const hourly = actualStats.hourlyActivity || [];
-      const formatted = hourly.map((count: number, hour: number) => ({
-        label: `${hour}h`,
-        count: count
-      }));
-      setActivity(formatted);
-    }).catch(() => setActivity([])).finally(() => setActivityLoading(false));
+    api.getGlobalStats().then((res: any) => {
+      const payload = res?.data || res || {};
+      const matches = payload?.matches || [];
+      setRecentMatches(matches);
+    }).catch(() => setRecentMatches([])).finally(() => setActivityLoading(false));
   }, []);
 
   const handleSearch = useCallback((value: string) => {
@@ -400,49 +351,13 @@ const Home: React.FC = () => {
       </Box>
 
       {/* ── Activity Chart ───────────────────────────────────────────────── */}
-      <Paper
-        elevation={0}
-        sx={{
-          p: { xs: 2.5, sm: 3 },
-          border: '1px solid rgba(148,163,184,0.07)',
-          borderRadius: 3,
-          bgcolor: 'rgba(15,23,42,0.6)',
-          backdropFilter: 'blur(12px)',
-          mb: 3,
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-          <Box>
-            <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#F8FAFC', lineHeight: 1 }}>
-              Activité des dernières 24h
-            </Typography>
-            <Typography variant="caption" sx={{ color: '#475569' }}>Matchs joués par heure</Typography>
-          </Box>
-          <Box sx={{ px: 1.5, py: 0.5, borderRadius: 2, bgcolor: 'rgba(0,230,118,0.08)', border: '1px solid rgba(0,230,118,0.15)' }}>
-            <Typography variant="caption" sx={{ color: '#00E676', fontWeight: 700, fontSize: '0.65rem' }}>LIVE</Typography>
-          </Box>
+      {activityLoading ? (
+        <Skeleton variant="rectangular" height={280} sx={{ borderRadius: 3, bgcolor: 'rgba(255,255,255,0.03)', mb: 3 }} />
+      ) : (
+        <Box sx={{ mb: 3 }}>
+          <WidgetMatchsParHeure matches={recentMatches} />
         </Box>
-
-        {activityLoading ? (
-          <Skeleton variant="rectangular" height={160} sx={{ borderRadius: 2, bgcolor: 'rgba(255,255,255,0.03)' }} />
-        ) : activity.length === 0 ? (
-          <Box sx={{
-            height: 160,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 1,
-            borderRadius: 2,
-            border: '1px dashed rgba(148,163,184,0.08)',
-          }}>
-            <SyncIcon sx={{ color: '#1E293B', fontSize: 32 }} />
-            <Typography variant="body2" sx={{ color: '#334155' }}>Aucune donnée d'activité disponible</Typography>
-          </Box>
-        ) : (
-          <CssBarChart data={activity} />
-        )}
-      </Paper>
+      )}
 
       {/* ── Quick Links ──────────────────────────────────────────────────── */}
       <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>

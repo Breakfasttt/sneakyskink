@@ -6,5 +6,6 @@ const router = Router();
 router.post('/coach/:id', SyncController.syncCoach);
 router.post('/league/:id', SyncController.syncLeague);
 router.get('/queue', SyncController.getQueueStatus);
+router.post('/queue/clean', SyncController.cleanQueue);
 
 export default router;

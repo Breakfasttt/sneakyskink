@@ -86,7 +86,7 @@ export const WidgetMatchsParHeure: React.FC<WidgetMatchsParHeureProps> = ({ matc
         Activité Recente (Dernières 24h UTC)
       </Typography>
 
-      <Box sx={{ flex: 1, width: '100%', minHeight: 180 }}>
+      <Box sx={{ width: '100%', height: 200 }}>
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
             <defs>

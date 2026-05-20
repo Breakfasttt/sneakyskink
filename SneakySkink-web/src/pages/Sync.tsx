@@ -56,7 +56,7 @@ const Sync: React.FC = () => {
     );
   }
 
-  const q = queueState || { active: 0, waiting: 0, completed: 0, failed: 0 };
+  const q = queueState?.counts || { active: 0, waiting: 0, completed: 0, failed: 0 };
 
   return (
     <Box sx={{ maxWidth: 720, mx: 'auto', py: { xs: 2, md: 4 } }}>
@@ -65,7 +65,7 @@ const Sync: React.FC = () => {
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
           <Typography variant="h4" sx={{ fontWeight: 900, color: '#F8FAFC', letterSpacing: '-0.03em' }}>
-            ⚡ Harvester Synchro
+            ⚡ SneakySync
           </Typography>
           <Typography variant="body2" sx={{ color: '#64748B' }}>
             Suivez en temps réel l'état des jobs de synchronisation dans la file d'attente BullMQ.
@@ -118,10 +118,10 @@ const Sync: React.FC = () => {
       {/* ─── Operations Details ─── */}
       <Paper sx={{ p: 3, border: '1px solid rgba(148,163,184,0.08)', borderRadius: 3, bgcolor: 'rgba(15,23,42,0.4)' }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#F8FAFC', mb: 2 }}>
-          ℹ️ Fonctionnement du Harvester
+          ℹ️ Fonctionnement de SneakySync
         </Typography>
         <Typography variant="body2" sx={{ color: '#94A3B8', mb: 2, lineHeight: 1.6 }}>
-          Le Harvester utilise une stratégie de synchronisation <strong>Delta-sync</strong> pour optimiser le quota d'API de Cyanide. 
+          SneakySync utilise une stratégie de synchronisation <strong>Delta-sync</strong> pour optimiser le quota d'API de Cyanide. 
           Il requête uniquement les données produites depuis le dernier match enregistré en base de données.
         </Typography>
         <Typography variant="body2" sx={{ color: '#94A3B8', mb: 2, lineHeight: 1.6 }}>

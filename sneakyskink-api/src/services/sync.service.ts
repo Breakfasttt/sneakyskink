@@ -48,6 +48,28 @@ export class SyncService {
       }
     }
 
+    // Fetch active and waiting jobs for monitoring
+    let activeJobs: any[] = [];
+    let waitingJobs: any[] = [];
+    try {
+      const active = await harvesterQueue.getActive();
+      const waiting = await harvesterQueue.getWaiting(0, 9); // Les 10 premiers
+
+      const mapJob = (job: any) => ({
+        id: job.id,
+        name: job.name,
+        data: job.data,
+        timestamp: job.timestamp,
+        attemptsMade: job.attemptsMade,
+        priority: job.opts?.priority || 0,
+      });
+
+      activeJobs = active.map(mapJob);
+      waitingJobs = waiting.map(mapJob);
+    } catch (err) {
+      logger.error(`Erreur lors de la récupération des détails des jobs de la file d'attente: ${err}`);
+    }
+
     return {
       success: true,
       counts: {
@@ -60,6 +82,20 @@ export class SyncService {
       hasPendingCalls: counts.waiting > 0 || counts.active > 0,
       harvesterRunning,
       cyanideOnline,
+      activeJobs,
+      waitingJobs,
+    };
+  }
+
+  static async cleanQueue() {
+    // Supprime tous les jobs complétés et échoués (grace period = 0, no limit)
+    const completed = await harvesterQueue.clean(0, 0, 'completed');
+    const failed = await harvesterQueue.clean(0, 0, 'failed');
+    logger.info(`🧹 [Sync Service] Nettoyage de la file d'attente : ${completed.length} complétés, ${failed.length} échoués supprimés.`);
+    return {
+      success: true,
+      cleanedCompleted: completed.length,
+      cleanedFailed: failed.length,
     };
   }
 }

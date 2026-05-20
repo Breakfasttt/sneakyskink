@@ -124,7 +124,7 @@ export const Layout: React.FC = () => {
             <Tooltip title={`SneakyAPI : ${harvesterRunning ? 'Actif' : 'Hors ligne'} (Consulter la documentation)`}>
               <Paper
                 elevation={0}
-                onClick={() => navigate('/api-docs')}
+                onClick={() => navigate('/sneakyapi')}
                 sx={{
                   px: 1.5,
                   py: 0.5,
