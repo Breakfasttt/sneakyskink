@@ -121,9 +121,10 @@ export const Layout: React.FC = () => {
 
           {/* Discreet Status Indicators (top right) */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Tooltip title={`Harvester Daemon: ${harvesterRunning ? 'Actif' : 'Hors ligne'}`}>
+            <Tooltip title={`SneakyAPI : ${harvesterRunning ? 'Actif' : 'Hors ligne'} (Consulter la documentation)`}>
               <Paper
                 elevation={0}
+                onClick={() => navigate('/api-docs')}
                 sx={{
                   px: 1.5,
                   py: 0.5,
@@ -133,6 +134,11 @@ export const Layout: React.FC = () => {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 0.75,
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s',
+                  '&:hover': {
+                    bgcolor: harvesterRunning ? 'rgba(0, 230, 118, 0.16)' : 'rgba(239, 68, 68, 0.16)',
+                  }
                 }}
               >
                 <Box
@@ -151,7 +157,7 @@ export const Layout: React.FC = () => {
                   }}
                 />
                 <Typography variant="caption" sx={{ color: harvesterRunning ? '#00E676' : '#EF4444', fontWeight: 800, fontSize: '0.65rem', letterSpacing: '0.05em' }}>
-                  HARVESTER
+                  SNEAKYAPI
                 </Typography>
               </Paper>
             </Tooltip>

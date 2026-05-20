@@ -222,4 +222,20 @@ export class SneakySkinkApiClient {
     const res = await this.client.get(`/stats/league/${id}`);
     return res.data;
   }
+
+  /**
+   * 📊 Récupère les statistiques détaillées pour une équipe
+   */
+  public async getTeamStats(id: string): Promise<any> {
+    const res = await this.client.get(`/stats/team/${id}`);
+    return res.data;
+  }
+
+  /**
+   * 📊 Récupère les statistiques de performance d'un joueur
+   */
+  public async getPlayerStats(id: string): Promise<any> {
+    const res = await this.client.get(`/stats/player/${id}`);
+    return res.data;
+  }
 }

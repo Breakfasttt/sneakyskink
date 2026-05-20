@@ -88,10 +88,10 @@ export class TeamsService {
           ? {
               orderBy: { number: 'asc' },
               include: {
-                stats: true,
+                matchStats: true,
               },
             }
-          : false,
+          : undefined,
         _count: {
           select: {
             players: true,

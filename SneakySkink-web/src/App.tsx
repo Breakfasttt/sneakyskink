@@ -12,6 +12,7 @@ import CompetitionDetail from './pages/CompetitionDetail';
 import TeamDetail from './pages/TeamDetail';
 import MatchDetail from './pages/MatchDetail';
 import Sync from './pages/Sync';
+import ApiDocs from './pages/ApiDocs';
 import NotFound from './pages/NotFound';
 
 const App: React.FC = () => {
@@ -29,6 +30,7 @@ const App: React.FC = () => {
         <Route path="equipe/:id" element={<TeamDetail />} />
         <Route path="match/:id" element={<MatchDetail />} />
         <Route path="synchro" element={<Sync />} />
+        <Route path="api-docs" element={<ApiDocs />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
