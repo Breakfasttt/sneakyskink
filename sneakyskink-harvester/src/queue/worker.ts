@@ -52,12 +52,12 @@ export const harvesterWorker = new Worker<JobData>(
 export async function handleFetchCoach(coachId: string) {
   logger.info(`🔍 [Fetch] Récupération du coach ${coachId}...`);
   
-  // Appeler l'API de Cyanide
-  const response = await bb3ApiClient.get('/coaches', { idcoaches: coachId });
+  // Appeler l'API de Cyanide via lookup (l'endpoint /coaches filtre mal par ID individuel)
+  const response = await bb3ApiClient.get('/lookup', { coach_id: coachId });
   const coachesList = response.coaches || [];
   
   if (coachesList.length === 0) {
-    throw new Error(`Aucun coach trouvé avec l'ID ${coachId} sur l'API Cyanide.`);
+    throw new Error(`Aucun coach trouvé avec l'ID ${coachId} via lookup sur l'API Cyanide.`);
   }
 
   const rawCoach = coachesList[0];

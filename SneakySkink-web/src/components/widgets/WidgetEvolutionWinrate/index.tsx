@@ -104,6 +104,7 @@ export const WidgetEvolutionWinrate: React.FC<WidgetEvolutionWinrateProps> = ({
         minHeight: 280,
         display: 'flex',
         flexDirection: 'column',
+        minWidth: 0,
       }}
     >
       <Typography variant="subtitle2" sx={{ color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', mb: 3 }}>
@@ -115,8 +116,8 @@ export const WidgetEvolutionWinrate: React.FC<WidgetEvolutionWinrateProps> = ({
           <Typography variant="body2" sx={{ color: '#475569' }}>Aucun match enregistré</Typography>
         </Box>
       ) : (
-        <Box sx={{ flex: 1, width: '100%', minHeight: 180 }}>
-          <ResponsiveContainer width="100%" height="100%">
+        <Box sx={{ width: '100%', height: 200, minWidth: 0 }}>
+          <ResponsiveContainer width="99%" height="100%">
             <LineChart data={chartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.04)" vertical={false} />
               <XAxis dataKey="matchIndex" stroke="#475569" fontSize={9} tickLine={false} />
