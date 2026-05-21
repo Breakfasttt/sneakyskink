@@ -1,3 +1,7 @@
+/**
+ * Alignement de la file d'attente BullMQ et des priorités avec le Harvester.
+ */
+
 import { Queue } from 'bullmq';
 import { Redis } from 'ioredis';
 import { env } from '../config/environment.js';
@@ -5,11 +9,22 @@ import { logger } from './logger.js';
 
 export const QUEUE_NAME = 'harvester-queue';
 
-export type JobType = 'fetch-league' | 'fetch-competition' | 'fetch-coach' | 'search-leagues' | 'maintenance-task';
+export type JobType = 
+  | 'fetch-league' 
+  | 'fetch-competition' 
+  | 'fetch-coach' 
+  | 'fetch-team'
+  | 'fetch-match'
+  | 'search-leagues' 
+  | 'maintenance-task';
 
 export interface JobData {
   type: JobType;
   id: string;
+  leagueId?: string;
+  competitionId?: string;
+  contest?: any;
+  priority?: 'high' | 'medium' | 'low';
 }
 
 // Configuration de la connexion Redis partagée
@@ -39,14 +54,34 @@ export const harvesterQueue = new Queue<JobData>(QUEUE_NAME, {
 });
 
 /**
- * Associe les priorités sémantiques aux valeurs de priorité natives de BullMQ.
+ * Calcule la priorité numérique native de BullMQ.
  * Chez BullMQ, plus la valeur numérique est basse, plus le job est prioritaire (1 = ultra prioritaire).
  */
-const PRIORITY_MAP = {
-  high: 1,     // Pour les requêtes à la demande (missing coaches, leagues, competitions)
-  medium: 5,   // Pour les synchronisations planifiées toutes les 2h
-  low: 10,     // Pour l'aspiration historique / bulk import
-};
+export function calculateJobPriority(type: JobType, triggerPriority: 'high' | 'medium' | 'low' = 'medium'): number {
+  let base = 60; // Par défaut pour les autres tâches
+  switch (type) {
+    case 'maintenance-task':
+      base = 5;
+      break;
+    case 'fetch-coach':
+      base = 10;
+      break;
+    case 'fetch-league':
+      base = 20;
+      break;
+    case 'fetch-competition':
+      base = 30;
+      break;
+    case 'fetch-match':
+      base = 40;
+      break;
+    case 'fetch-team':
+      base = 50;
+      break;
+  }
+  const offset = triggerPriority === 'high' ? -2 : triggerPriority === 'low' ? 2 : 0;
+  return base + offset;
+}
 
 /**
  * Envoie un job d'aspiration de ligue dans la file d'attente
@@ -55,8 +90,8 @@ export async function queueLeagueFetch(leagueId: string, priority: 'high' | 'med
   logger.info(`📥 [Queue API] Enfilement de la ligue ${leagueId} (priorité : ${priority})`);
   await harvesterQueue.add(
     `fetch-league-${leagueId}`,
-    { type: 'fetch-league', id: leagueId },
-    { priority: PRIORITY_MAP[priority] }
+    { type: 'fetch-league', id: leagueId, priority },
+    { priority: calculateJobPriority('fetch-league', priority) }
   );
 }
 
@@ -67,8 +102,8 @@ export async function queueCompetitionFetch(competitionId: string, priority: 'hi
   logger.info(`📥 [Queue API] Enfilement de la compétition ${competitionId} (priorité : ${priority})`);
   await harvesterQueue.add(
     `fetch-competition-${competitionId}`,
-    { type: 'fetch-competition', id: competitionId },
-    { priority: PRIORITY_MAP[priority] }
+    { type: 'fetch-competition', id: competitionId, priority },
+    { priority: calculateJobPriority('fetch-competition', priority) }
   );
 }
 
@@ -79,8 +114,8 @@ export async function queueCoachFetch(coachId: string, priority: 'high' | 'mediu
   logger.info(`📥 [Queue API] Enfilement du coach ${coachId} (priorité : ${priority})`);
   await harvesterQueue.add(
     `fetch-coach-${coachId}`,
-    { type: 'fetch-coach', id: coachId },
-    { priority: PRIORITY_MAP[priority] }
+    { type: 'fetch-coach', id: coachId, priority },
+    { priority: calculateJobPriority('fetch-coach', priority) }
   );
 }
 
@@ -92,7 +127,7 @@ export async function queueMaintenanceRun(trigger: 'AUTOMATIC' | 'MANUAL' = 'MAN
   const job = await harvesterQueue.add(
     `maintenance-${Date.now()}`,
     { type: 'maintenance-task', id: 'manual-trigger', trigger } as any,
-    { priority: PRIORITY_MAP.high }
+    { priority: calculateJobPriority('maintenance-task', 'high') }
   );
   return job.id;
 }

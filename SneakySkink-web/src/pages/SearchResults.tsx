@@ -47,13 +47,32 @@ const SearchResults: React.FC = () => {
         const filteredLeagues = (Array.isArray(leaguesList) ? leaguesList : [])
           .filter((l: any) => l.name?.toLowerCase().includes(query.toLowerCase()));
 
+        const lLength = filteredLeagues.length;
+        const cLength = coachesList.length;
+        const tLength = teamsList.length;
+
+        if (lLength + cLength + tLength === 1) {
+          if (lLength === 1) {
+            navigate(`/ligue/${filteredLeagues[0].id}`, { replace: true });
+            return;
+          }
+          if (cLength === 1) {
+            navigate(`/coach/${coachesList[0].id}`, { replace: true });
+            return;
+          }
+          if (tLength === 1) {
+            navigate(`/equipe/${teamsList[0].id}`, { replace: true });
+            return;
+          }
+        }
+
         setLeagues(filteredLeagues);
         setCoaches(Array.isArray(coachesList) ? coachesList : []);
         setTeams(Array.isArray(teamsList) ? teamsList : []);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [query]);
+  }, [query, navigate]);
 
   const hasResults = leagues.length > 0 || coaches.length > 0 || teams.length > 0;
 

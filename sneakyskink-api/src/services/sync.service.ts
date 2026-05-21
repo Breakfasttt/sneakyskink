@@ -1,4 +1,9 @@
-import { queueCoachFetch, queueLeagueFetch, harvesterQueue } from '../lib/queue.js';
+/**
+ * Service de gestion de la synchronisation de la file d'attente
+ * et de la configuration du rythme des appels (Rate Pacing).
+ */
+
+import { queueCoachFetch, queueLeagueFetch, harvesterQueue, redisConnection } from '../lib/queue.js';
 import { logger } from '../lib/logger.js';
 import axios from 'axios';
 
@@ -24,7 +29,7 @@ export class SyncService {
   }
 
   static async getQueueStatus() {
-    const counts = await harvesterQueue.getJobCounts('waiting', 'active', 'delayed', 'failed', 'completed');
+    const counts = await harvesterQueue.getJobCounts('waiting', 'active', 'delayed', 'failed', 'completed', 'prioritized');
     
     // Check if harvester worker is active
     let harvesterRunning = false;
@@ -48,12 +53,12 @@ export class SyncService {
       }
     }
 
-    // Fetch active and waiting jobs for monitoring
+    // Fetch active and waiting/prioritized jobs for monitoring
     let activeJobs: any[] = [];
     let waitingJobs: any[] = [];
     try {
       const active = await harvesterQueue.getActive();
-      const waiting = await harvesterQueue.getWaiting(0, 9); // Les 10 premiers
+      const waiting = await harvesterQueue.getJobs(['waiting', 'prioritized'], 0, 9); // Les 10 premiers
 
       const mapJob = (job: any) => ({
         id: job.id,
@@ -70,20 +75,34 @@ export class SyncService {
       logger.error(`Erreur lors de la récupération des détails des jobs de la file d'attente: ${err}`);
     }
 
+    // Récupérer le statut du bypass de rate pacing
+    const bypass = await redisConnection.get('sneakyskink:bypass_pacing');
+    const pacingBypassed = !!bypass;
+    let pacingBypassRemainingSeconds = 0;
+    if (pacingBypassed) {
+      try {
+        pacingBypassRemainingSeconds = await redisConnection.ttl('sneakyskink:bypass_pacing');
+      } catch (err) {
+        // ignore
+      }
+    }
+
     return {
       success: true,
       counts: {
-        waiting: counts.waiting,
+        waiting: (counts.waiting || 0) + (counts.prioritized || 0),
         active: counts.active,
         delayed: counts.delayed,
         failed: counts.failed,
         completed: counts.completed,
       },
-      hasPendingCalls: counts.waiting > 0 || counts.active > 0,
+      hasPendingCalls: ((counts.waiting || 0) + (counts.prioritized || 0)) > 0 || counts.active > 0,
       harvesterRunning,
       cyanideOnline,
       activeJobs,
       waitingJobs,
+      pacingBypassed,
+      pacingBypassRemainingSeconds,
     };
   }
 
@@ -96,6 +115,31 @@ export class SyncService {
       success: true,
       cleanedCompleted: completed.length,
       cleanedFailed: failed.length,
+    };
+  }
+
+  /**
+   * Désactive temporairement le rate pacing pendant 1 heure (3600 secondes)
+   */
+  static async bypassPacing() {
+    logger.info('⚡ [Sync Service] Demande de bypass temporaire du rate pacing (1 heure)');
+    await redisConnection.set('sneakyskink:bypass_pacing', 'true', 'EX', 3600);
+    return {
+      success: true,
+      message: 'Le rate pacing a été désactivé temporairement pour 1 heure (3600 secondes).',
+      expiresAt: new Date(Date.now() + 3600 * 1000).toISOString(),
+    };
+  }
+
+  /**
+   * Réactive immédiatement le rate pacing normal
+   */
+  static async restorePacing() {
+    logger.info('⚡ [Sync Service] Demande de restauration du rate pacing normal');
+    await redisConnection.del('sneakyskink:bypass_pacing');
+    return {
+      success: true,
+      message: 'Le rate pacing normal a été réactivé avec succès.',
     };
   }
 }

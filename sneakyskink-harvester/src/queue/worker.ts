@@ -1,6 +1,18 @@
+/**
+ * Worker BullMQ pour traiter les tâches d'aspiration de données du Harvester.
+ */
+
 import { Worker, Job } from 'bullmq';
 import { redisConnection } from './connection.js';
-import { harvesterQueue, QUEUE_NAME, JobData, queueCoachFetch, queueCompetitionFetch } from './queue.js';
+import { 
+  harvesterQueue, 
+  QUEUE_NAME, 
+  JobData, 
+  queueCoachFetch, 
+  queueCompetitionFetch,
+  queueTeamFetch,
+  queueMatchFetch
+} from './queue.js';
 import { prisma } from '../database/client.js';
 import { bb3ApiClient } from '../services/bb3-api-client.js';
 import { LeagueParser } from '../parsers/bb3/league.parser.js';
@@ -12,8 +24,9 @@ import { MaintenanceService } from '../services/maintenance.service.js';
 export const harvesterWorker = new Worker<JobData>(
   QUEUE_NAME,
   async (job: Job<JobData>) => {
-    const { type, id } = job.data;
-    logger.info(`🚀 [Worker] Traitement du job [${job.id}] : ${type} pour l'ID ${id}`);
+    const { type, id, priority } = job.data;
+    const triggerPriority = priority || 'medium';
+    logger.info(`🚀 [Worker] Traitement du job [${job.id}] : ${type} pour l'ID ${id} (priorité déclencheur: ${triggerPriority})`);
 
     try {
       switch (type) {
@@ -22,11 +35,19 @@ export const harvesterWorker = new Worker<JobData>(
           break;
 
         case 'fetch-league':
-          await handleFetchLeague(id);
+          await handleFetchLeague(id, triggerPriority);
           break;
 
         case 'fetch-competition':
-          await handleFetchCompetition(id);
+          await handleFetchCompetition(id, triggerPriority);
+          break;
+
+        case 'fetch-team':
+          await handleFetchTeam(id, job.data.leagueId!, triggerPriority);
+          break;
+
+        case 'fetch-match':
+          await handleFetchMatch(id, job.data.competitionId!, job.data.contest, triggerPriority);
           break;
 
         case 'search-leagues':
@@ -52,7 +73,7 @@ export const harvesterWorker = new Worker<JobData>(
   },
   {
     connection: redisConnection,
-    concurrency: 1, // Exécuter séquentiellement pour respecter scrupuleusement les quotas d'API
+    concurrency: 1, // Exécuter séquentiellement ; BullMQ gère l'ordre par priorité native
   }
 );
 
@@ -81,7 +102,7 @@ export async function handleFetchCoach(coachId: string) {
 /**
  * 2. Traitement de la récupération d'une Ligue
  */
-export async function handleFetchLeague(leagueId: string) {
+export async function handleFetchLeague(leagueId: string, triggerPriority: 'high' | 'medium' | 'low' = 'medium') {
   logger.info(`🔍 [Fetch] Récupération des détails de la ligue ${leagueId}...`);
   
   // A. Récupérer et sauvegarder les détails de la ligue
@@ -110,63 +131,26 @@ export async function handleFetchLeague(leagueId: string) {
     await prisma.competition.upsert(compUpsert);
     logger.info(`💾 [DB] Compétition "${compUpsert.create.name}" sauvegardée.`);
 
-    // D. Si la compétition est active (InProgress), on planifie automatiquement une synchronisation des matchs
+    // D. Si la compétition est active (InProgress ou Scheduled), on planifie automatiquement une synchronisation des matchs
     if (compUpsert.create.status === 'InProgress' || compUpsert.create.status === 'Scheduled') {
-      await queueCompetitionFetch(rawComp.id, 'medium');
+      await queueCompetitionFetch(rawComp.id, triggerPriority);
     }
   }
 
-  // E. Récupérer et initialiser le roster de toutes les équipes de la ligue
+  // E. Enfiler la récupération des rosters détaillés de chaque équipe de la ligue
   logger.info(`🔍 [Fetch] Récupération des équipes inscrites dans la ligue ${leagueId}...`);
   const teamsResponse = await bb3ApiClient.get('/teams', { league: leagueId });
   const teams = teamsResponse.teams || [];
 
   for (const t of teams) {
-    logger.info(`🔍 [Fetch] Initialisation du roster complet de l'équipe ID ${t.id}...`);
-    // Appeler le roster complet
-    const detailResponse = await bb3ApiClient.get('/team', { id: t.id, roster: 1, skills: 1, casualties: 1 });
-    if (!detailResponse.team) continue;
-
-    // Détecter si le coach de l'équipe existe déjà en base de données.
-    // Si c'est un nouveau coach, on enfile un job pour charger son profil complet de manière asynchrone.
-    const coachId = detailResponse.team.idcoach?.toString();
-    if (coachId) {
-      const coachExists = await prisma.coach.findUnique({
-        where: { id: coachId },
-        select: { id: true },
-      });
-      if (!coachExists) {
-        logger.info(`✨ [Queue] Nouveau coach détecté : ID ${coachId}. Planification d'une synchronisation complète...`);
-        await queueCoachFetch(coachId, 'low');
-      }
-    }
-
-    // Transaction Prisma pour insérer le coach, l'équipe et ses joueurs
-    await prisma.$transaction(async (tx: any) => {
-      // 1. Sauvegarder le coach
-      const coachUpsert = TeamParser.parseCoach(detailResponse.coach, detailResponse.team.idcoach);
-      await tx.coach.upsert(coachUpsert);
-
-      // 2. Sauvegarder l'équipe
-      const teamUpsert = TeamParser.parseTeam(detailResponse);
-      await tx.team.upsert(teamUpsert);
-
-      // 3. Sauvegarder tous les joueurs du roster
-      const players = detailResponse.roster || [];
-      for (const p of players) {
-        const playerUpsert = TeamParser.parsePlayer(p, detailResponse.team.id);
-        await tx.player.upsert(playerUpsert);
-      }
-    });
-
-    logger.info(`💾 [DB] Équipe "${detailResponse.team.name}" et ses ${detailResponse.roster?.length || 0} joueurs initialisés en BD.`);
+    await queueTeamFetch(t.id.toString(), leagueId, triggerPriority);
   }
 }
 
 /**
  * 3. Traitement de la récupération d'une Compétition (Matchs / Contests)
  */
-export async function handleFetchCompetition(competitionId: string) {
+export async function handleFetchCompetition(competitionId: string, triggerPriority: 'high' | 'medium' | 'low' = 'medium') {
   logger.info(`🔍 [Fetch] Récupération des matchs pour la compétition ${competitionId}...`);
 
   // 1. Chercher le dernier match importé pour cette compétition (Delta Sync)
@@ -215,99 +199,165 @@ export async function handleFetchCompetition(competitionId: string) {
       continue;
     }
 
-    logger.info(`📥 [Fetch] Nouveau match détecté (${matchId}). Aspiration de la feuille détaillée...`);
-
-    // B. Récupérer le payload détaillé du match
-    const matchDetailResponse = await bb3ApiClient.get('/match', { id: matchId, rosters: 1 });
-    if (!matchDetailResponse.match) {
-      logger.warn(`⚠️ [Fetch] Impossible d'aspirer la feuille de match ${matchId}. Tentative de sauvegarde en tant que match fantôme/abandonné...`);
-      await saveGhostMatch(c, competitionId);
-      continue;
-    }
-
-    // Détecter si les coachs du match existent déjà en base de données.
-    // Si c'est un nouveau coach, on enfile un job pour charger son profil complet de manière asynchrone.
-    const rawMatch = matchDetailResponse.match;
-    for (const coach of rawMatch.coaches || []) {
-      const coachId = coach.idcoach?.toString();
-      if (coachId) {
-        const coachExists = await prisma.coach.findUnique({
-          where: { id: coachId },
-          select: { id: true },
-        });
-        if (!coachExists) {
-          logger.info(`✨ [Queue] Nouveau coach détecté dans le match : ID ${coachId}. Planification d'une synchronisation complète...`);
-          await queueCoachFetch(coachId, 'low');
-        }
-      }
-    }
-
-    // C. Sauvegarder le match et mettre à jour les joueurs de façon transactionnelle
-    await prisma.$transaction(async (tx: any) => {
-      // 1. Assurer la présence des deux coachs
-      const rawMatch = matchDetailResponse.match;
-      for (const coach of rawMatch.coaches || []) {
-        const coachUpsert = TeamParser.parseCoach({
-          idcoach: coach.idcoach,
-          name: coach.coachname,
-          lastlang: coach.lastlang,
-        });
-        await tx.coach.upsert(coachUpsert);
-      }
-
-      // 2. Assurer la présence des deux équipes
-      const teams = rawMatch.teams || [];
-      for (let i = 0; i < teams.length; i++) {
-        const team = teams[i];
-        const coachInfo = (rawMatch.coaches && rawMatch.coaches[i]) ? rawMatch.coaches[i] : null;
-        const coachId = coachInfo ? coachInfo.idcoach : '';
-        const coachName = coachInfo ? coachInfo.coachname : 'Coach Inconnu';
-
-        const teamUpsert = TeamParser.parseTeam({
-          team: {
-            id: team.idteamlisting,
-            idcoach: coachId,
-            idraces: team.idraces,
-            name: team.teamname,
-            value: team.value,
-            cash: 0, // Optionnel lors du match
-          },
-          coach: {
-            idcoach: coachId,
-            name: coachName,
-          },
-        });
-        await tx.team.upsert(teamUpsert);
-      }
-
-      // 3. Parser et sauvegarder le match global
-      const matchUpsert = MatchParser.parseMatch(matchDetailResponse);
-      await tx.match.upsert(matchUpsert);
-
-      // 4. Parser les statistiques de chaque joueur et mettre à jour leur XP / Niveau / Blessures
-      for (const team of rawMatch.teams || []) {
-        const players = team.roster || [];
-        for (const p of players) {
-          // A. S'assurer que le joueur existe dans la table Player (si manquant)
-          const playerUpsert = TeamParser.parsePlayer(p, team.idteamlisting);
-          await tx.player.upsert(playerUpsert);
-
-          // B. Enregistrer ses statistiques pour ce match précis
-          const statsData = MatchParser.parsePlayerMatchStats(p, rawMatch.id, team.idteamlisting);
-          await tx.playerMatchStats.create({
-            data: statsData,
-          });
-
-          // C. Mettre à jour sa fiche de vie globale (XP, niveau, blessures)
-          const lifeUpdate = MatchParser.preparePlayerLifeUpdate(p);
-          await tx.player.update(lifeUpdate);
-        }
-      }
-    });
-
-    logger.info(`💾 [DB] Match ${matchId} importé avec succès et fiches de vie des joueurs mises à jour.`);
+    // Enfiler le job d'aspiration détaillé du match
+    await queueMatchFetch(matchId, competitionId, c, triggerPriority);
   }
 }
+
+/**
+ * 4. Traitement de la récupération d'une Équipe (Roster)
+ */
+export async function handleFetchTeam(teamId: string, leagueId: string, triggerPriority: 'high' | 'medium' | 'low' = 'medium') {
+  logger.info(`🔍 [Fetch] Initialisation du roster complet de l'équipe ID ${teamId}...`);
+  
+  // Appeler le roster complet
+  const detailResponse = await bb3ApiClient.get('/team', { id: teamId, roster: 1, skills: 1, casualties: 1 });
+  if (!detailResponse.team) {
+    logger.warn(`⚠️ [Fetch] Impossible d'aspirer le roster de l'équipe ID ${teamId}.`);
+    return;
+  }
+
+  // Détecter si le coach de l'équipe existe déjà en base de données.
+  // Si c'est un nouveau coach, on enfile un job pour charger son profil complet de manière asynchrone.
+  const coachId = detailResponse.team.idcoach?.toString();
+  if (coachId) {
+    const coachExists = await prisma.coach.findUnique({
+      where: { id: coachId },
+      select: { id: true },
+    });
+    if (!coachExists) {
+      logger.info(`✨ [Queue] Nouveau coach détecté : ID ${coachId}. Planification d'une synchronisation complète...`);
+      await queueCoachFetch(coachId, triggerPriority);
+    }
+  }
+
+  // Transaction Prisma pour insérer le coach, l'équipe et ses joueurs
+  await prisma.$transaction(async (tx: any) => {
+    // 1. Sauvegarder le coach
+    const coachUpsert = TeamParser.parseCoach(detailResponse.coach, detailResponse.team.idcoach);
+    await tx.coach.upsert(coachUpsert);
+
+    // 2. Sauvegarder l'équipe
+    const teamUpsert = TeamParser.parseTeam(detailResponse);
+    await tx.team.upsert(teamUpsert);
+
+    // 3. Sauvegarder tous les joueurs du roster
+    const players = detailResponse.roster || [];
+    for (const p of players) {
+      const playerUpsert = TeamParser.parsePlayer(p, detailResponse.team.id);
+      await tx.player.upsert(playerUpsert);
+    }
+  });
+
+  logger.info(`💾 [DB] Équipe "${detailResponse.team.name}" et ses ${detailResponse.roster?.length || 0} joueurs initialisés en BD.`);
+}
+
+/**
+ * 5. Traitement de la récupération d'un Match détaillé
+ */
+export async function handleFetchMatch(matchId: string, competitionId: string, contest: any, triggerPriority: 'high' | 'medium' | 'low' = 'medium') {
+  logger.info(`📥 [Fetch] Aspiration de la feuille détaillée du match ${matchId}...`);
+
+  // Vérifier s'il n'a pas été créé par une autre exécution entre-temps
+  const existing = await prisma.match.findUnique({
+    where: { id: matchId },
+  });
+  if (existing) {
+    logger.info(`ℹ️ [Fetch] Match ${matchId} déjà enregistré.`);
+    return;
+  }
+
+  // Récupérer le payload détaillé du match
+  const matchDetailResponse = await bb3ApiClient.get('/match', { id: matchId, rosters: 1 });
+  if (!matchDetailResponse.match) {
+    logger.warn(`⚠️ [Fetch] Impossible d'aspirer la feuille de match ${matchId}. Tentative de sauvegarde en tant que match fantôme/abandonné...`);
+    await saveGhostMatch(contest, competitionId);
+    return;
+  }
+
+  // Détecter si les coachs du match existent déjà en base de données.
+  // Si c'est un nouveau coach, on enfile un job pour charger son profil complet de manière asynchrone.
+  const rawMatch = matchDetailResponse.match;
+  for (const coach of rawMatch.coaches || []) {
+    const coachId = coach.idcoach?.toString();
+    if (coachId) {
+      const coachExists = await prisma.coach.findUnique({
+        where: { id: coachId },
+        select: { id: true },
+      });
+      if (!coachExists) {
+        logger.info(`✨ [Queue] Nouveau coach détecté dans le match : ID ${coachId}. Planification d'une synchronisation complète...`);
+        await queueCoachFetch(coachId, triggerPriority);
+      }
+    }
+  }
+
+  // Sauvegarder le match et mettre à jour les joueurs de façon transactionnelle
+  await prisma.$transaction(async (tx: any) => {
+    // 1. Assurer la présence des deux coachs
+    const rawMatch = matchDetailResponse.match;
+    for (const coach of rawMatch.coaches || []) {
+      const coachUpsert = TeamParser.parseCoach({
+        idcoach: coach.idcoach,
+        name: coach.coachname,
+        lastlang: coach.lastlang,
+      });
+      await tx.coach.upsert(coachUpsert);
+    }
+
+    // 2. Assurer la présence des deux équipes
+    const teams = rawMatch.teams || [];
+    for (let i = 0; i < teams.length; i++) {
+      const team = teams[i];
+      const coachInfo = (rawMatch.coaches && rawMatch.coaches[i]) ? rawMatch.coaches[i] : null;
+      const coachId = coachInfo ? coachInfo.idcoach : '';
+      const coachName = coachInfo ? coachInfo.coachname : 'Coach Inconnu';
+
+      const teamUpsert = TeamParser.parseTeam({
+        team: {
+          id: team.idteamlisting,
+          idcoach: coachId,
+          idraces: team.idraces,
+          name: team.teamname,
+          value: team.value,
+          cash: 0,
+        },
+        coach: {
+          idcoach: coachId,
+          name: coachName,
+        },
+      });
+      await tx.team.upsert(teamUpsert);
+    }
+
+    // 3. Parser et sauvegarder le match global
+    const matchUpsert = MatchParser.parseMatch(matchDetailResponse);
+    await tx.match.upsert(matchUpsert);
+
+    // 4. Parser les statistiques de chaque joueur et mettre à jour leur XP / Niveau / Blessures
+    for (const team of rawMatch.teams || []) {
+      const players = team.roster || [];
+      for (const p of players) {
+        // A. S'assurer que le joueur existe dans la table Player (si manquant)
+        const playerUpsert = TeamParser.parsePlayer(p, team.idteamlisting);
+        await tx.player.upsert(playerUpsert);
+
+        // B. Enregistrer ses statistiques pour ce match précis
+        const statsData = MatchParser.parsePlayerMatchStats(p, rawMatch.id, team.idteamlisting);
+        await tx.playerMatchStats.create({
+          data: statsData,
+        });
+
+        // C. Mettre à jour sa fiche de vie globale (XP, niveau, blessures)
+        const lifeUpdate = MatchParser.preparePlayerLifeUpdate(p);
+        await tx.player.update(lifeUpdate);
+      }
+    }
+  });
+
+  logger.info(`💾 [DB] Match ${matchId} importé avec succès et fiches de vie des joueurs mises à jour.`);
+}
+
 
 /**
  * Helper : Sauvegarde un match fantôme/abandonné à partir du résumé (contest)

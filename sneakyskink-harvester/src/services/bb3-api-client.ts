@@ -1,9 +1,15 @@
+/**
+ * Client API de Cyanide pour Blood Bowl 3 avec gestion du Rate Pacing
+ * et résilience aux erreurs de quotas.
+ */
+
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import { apiKeyManager } from './api-key-manager.js';
 import { logger } from '../utils/logger.js';
 import { env } from '../config/environment.js';
 import { ConsoleDashboard } from '../utils/dashboard.js';
 import { ActivityTracker } from '../utils/activity-tracker.js';
+import { redisConnection } from '../queue/connection.js';
 
 export class BB3ApiClient {
   private axiosInstance: AxiosInstance;
@@ -72,8 +78,25 @@ export class BB3ApiClient {
           `🚀 [BB3ApiClient] Tentative ${attempts}/${BB3ApiClient.MAX_RETRIES} sur [${method}] avec la clé [${maskedKey}]`
         );
 
-        // 2.5. Régulation du rythme (Rate Pacing) — ignoré en mode maintenance
-        const pacingDelay = this.maintenanceMode ? 0 : apiKeyManager.getDynamicPacingDelay(activeKey);
+        // 2.5. Régulation du rythme (Rate Pacing) — ignoré en mode maintenance ou si bypass temporaire dans Redis
+        let isBypassed = this.maintenanceMode;
+        if (!isBypassed) {
+          try {
+            const bypass = await redisConnection.get('sneakyskink:bypass_pacing');
+            if (bypass) {
+              isBypassed = true;
+            }
+          } catch (err: any) {
+            logger.warn(`⚠️ [BB3ApiClient] Erreur de lecture du bypass de pacing dans Redis: ${err.message}`);
+          }
+        }
+        if (isBypassed) {
+          ConsoleDashboard.setPacing(-1, -1);
+        } else {
+          ConsoleDashboard.setPacing(0, 0);
+        }
+
+        const pacingDelay = isBypassed ? 0 : apiKeyManager.getDynamicPacingDelay(activeKey);
         const now = Date.now();
         const timeSinceLast = now - this.lastRequestTime;
         if (pacingDelay > 0 && timeSinceLast < pacingDelay) {
@@ -89,7 +112,12 @@ export class BB3ApiClient {
         // 3. Exécuter l'appel
         // Cyanide utilise le format d'URL : /ws/bb3/{method}/ ou /ws/cya/{method}/
         // La plupart des services BB3 sont sous /bb3/{method}/
-        ConsoleDashboard.setActivity(`Appel API: [${method}] (Tentative ${attempts}/${BB3ApiClient.MAX_RETRIES})`);
+        const safeParams = { ...params };
+        if (safeParams.key) {
+          safeParams.key = '***MASKED***';
+        }
+        const paramsStr = JSON.stringify(safeParams);
+        ConsoleDashboard.setActivity(`Appel API: [${method}] (Tentative ${attempts}/${BB3ApiClient.MAX_RETRIES}) - Params: ${paramsStr}`);
         const cleanMethod = method.replace(/^\/+|\/+$/g, '');
         const endpoint = (cleanMethod === 'status' || cleanMethod === 'welcome') ? `cya/${cleanMethod}/` : `bb3/${cleanMethod}/`;
         const response = await this.axiosInstance.get(endpoint, { params: queryParams });
@@ -101,12 +129,27 @@ export class BB3ApiClient {
           throw new Error(`Cyanide API Error Payload: ${data.error}`);
         }
 
+        // Signaler la dernière réponse reçue au Dashboard
+        let responseSummary = '';
+        if (data === null || data === undefined) {
+          responseSummary = 'null';
+        } else {
+          const rawStr = JSON.stringify(data);
+          const typeStr = Array.isArray(data) ? `Array(${data.length})` : typeof data;
+          const preview = rawStr.length > 60 ? rawStr.substring(0, 60) + '...' : rawStr;
+          responseSummary = `${typeStr} -> ${preview}`;
+        }
+        const timestamp = new Date().toLocaleTimeString('fr-FR');
+        ConsoleDashboard.setLastResponse(`[${timestamp}] ${responseSummary}`);
+
         // 5. Signaler le succès au KeyManager
         ActivityTracker.touch();
         apiKeyManager.reportSuccess(activeKey);
         return data as T;
 
       } catch (error: any) {
+        const timestamp = new Date().toLocaleTimeString('fr-FR');
+        ConsoleDashboard.setLastResponse(`[${timestamp}] ERROR -> ${error.message}`);
         logger.warn(
           `⚠️ [BB3ApiClient] Échec de la tentative ${attempts}/${BB3ApiClient.MAX_RETRIES} sur [${method}] avec la clé [${maskedKey}]. Erreur : ${error.message}`
         );

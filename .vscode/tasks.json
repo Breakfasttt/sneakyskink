@@ -44,6 +44,34 @@
       }
     },
     {
+      "label": "⚡ Bypass Rate Pacing (1h)",
+      "type": "shell",
+      "command": "chcp 65001 >$null; curl.exe -X POST http://localhost:3001/sync/pacing/bypass -H 'x-admin-key: sneakyskink_secret_admin_key_2026'",
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "🛡️ Restore Rate Pacing",
+      "type": "shell",
+      "command": "chcp 65001 >$null; curl.exe -X POST http://localhost:3001/sync/pacing/restore -H 'x-admin-key: sneakyskink_secret_admin_key_2026'",
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
       "label": "🚀 Start All Services (3 Terminals)",
       "dependsOn": [
         "⚡ Start Harvester",

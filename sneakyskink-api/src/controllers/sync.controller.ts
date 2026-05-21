@@ -1,3 +1,8 @@
+/**
+ * Contrôleur pour la gestion de la synchronisation à la demande
+ * et la configuration du rate pacing de l'API.
+ */
+
 import { Request, Response, NextFunction } from 'express';
 import { SyncService } from '../services/sync.service.js';
 import { ApiError } from '../middlewares/error.middleware.js';
@@ -43,6 +48,24 @@ export class SyncController {
   static async cleanQueue(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await SyncService.cleanQueue();
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async bypassPacing(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await SyncService.bypassPacing();
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async restorePacing(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await SyncService.restorePacing();
       res.status(200).json(result);
     } catch (error) {
       next(error);

@@ -1,3 +1,8 @@
+/**
+ * Utilitaire d'affichage du tableau de bord console (Dashboard TUI)
+ * adaptable à la taille du terminal.
+ */
+
 import readline from 'readline';
 
 interface SystemStatus {
@@ -28,6 +33,7 @@ export class ConsoleDashboard {
   private static pacingTotalMs = 0;
 
   private static currentActivity = 'Démarrage en cours...';
+  private static lastResponse = 'Aucune';
   private static alertHistory: string[] = [];
   private static readonly MAX_ALERTS = 8;
   private static renderTimer: NodeJS.Timeout | null = null;
@@ -136,6 +142,13 @@ export class ConsoleDashboard {
   }
 
   /**
+   * Met à jour la dernière réponse reçue.
+   */
+  public static setLastResponse(responseInfo: string): void {
+    this.lastResponse = responseInfo;
+  }
+
+  /**
    * Ajoute une alerte (Warning/Error) persistante dans le panneau du bas.
    */
   public static addAlert(level: 'WARN' | 'ERROR' | 'FATAL', message: string): void {
@@ -178,21 +191,6 @@ export class ConsoleDashboard {
     // Déplacer le curseur en haut à gauche (0,0) et effacer vers le bas
     out += '\x1B[H\x1B[J';
 
-    // 1. Bannière ou titre simple selon la hauteur dispo
-    const showBanner = rows >= 32;
-
-    if (showBanner) {
-      out += this.BANNER + '\n';
-    } else {
-      out += `\n  🦎  S N E A K Y   S K I N K   -   H A R V E S T E R  (v1.0.0) 🦎\n`;
-    }
-
-    const separatorWidth = Math.min(95, cols);
-    const separator = '═'.repeat(separatorWidth) + '\n';
-
-    out += separator;
-
-    // 2. Statuts des systèmes
     const formatStatus = (status: string) => {
       if (status === 'OK' || status === 'CONNECTED' || status === 'RUNNING') {
         return `\x1B[32m${status}\x1B[0m`; // Vert
@@ -203,63 +201,125 @@ export class ConsoleDashboard {
       return `\x1B[31m${status}\x1B[0m`; // Rouge
     };
 
-    out += `  💻 SYSTEM STATUS: `;
-    out += `Database: ${formatStatus(this.statuses.db)}  |  `;
-    out += `Redis: ${formatStatus(this.statuses.redis)}  |  `;
-    out += `Scheduler: ${formatStatus(this.statuses.scheduler)}  |  `;
-    out += `Worker: ${formatStatus(this.statuses.worker)}\n`;
-    out += separator;
+    const separatorWidth = Math.min(95, cols);
+    const separator = '═'.repeat(separatorWidth) + '\n';
 
-    // 3. Quotas de la clé active
-    out += `  🔑 ACTIVE API KEY: Clé #${this.currentKeyIndex + 1} (${this.currentKeyMasked})\n\n`;
-    
-    const hourlyBar = this.makeProgressBar(this.hourlyRequests, this.hourlyLimit, 25);
-    const dailyBar = this.makeProgressBar(this.dailyRequests, this.dailyLimit, 25);
-    
-    out += `  📊 Hour Quota :  ${hourlyBar}  ${this.hourlyRequests}/${this.hourlyLimit}  (Reset dans ${this.hourlyResetMinutes}m)\n`;
-    out += `  📊 Day Quota  :  ${dailyBar}  ${this.dailyRequests}/${this.dailyLimit}  (Reset dans ${this.dailyResetHours}h)\n`;
-    out += separator;
+    // Layout compact pour les petits terminaux (hauteur < 18)
+    if (rows < 18) {
+      // 1. Titre compact (1 ligne)
+      out += `  🦎 SNEAKY SKINK - HARVESTER (v1.0.0)\n`;
 
-    // 4. Barre de pacing
-    out += `  ⏳ RATE PACING: `;
-    if (this.pacingRemainingMs > 0) {
-      const total = this.pacingTotalMs > 0 ? this.pacingTotalMs : 2500;
-      const pacingBar = this.makeProgressBar(total - this.pacingRemainingMs, total, 25);
-      const remainingSecs = (this.pacingRemainingMs / 1000).toFixed(1);
-      out += `${pacingBar}  Attente : ${remainingSecs}s avant la prochaine requête...\n`;
-    } else {
-      out += `${'█'.repeat(25)}  Prêt pour la prochaine requête !\n`;
-    }
-    out += separator;
+      // 2. Statuts compacts (1 ligne)
+      out += `  💻 STATUS: DB:${formatStatus(this.statuses.db)} | RD:${formatStatus(this.statuses.redis)} | SCH:${formatStatus(this.statuses.scheduler)} | WK:${formatStatus(this.statuses.worker)}\n`;
 
-    // 5. Activité en cours
-    out += `  ⚡ CURRENT ACTIVITY:\n`;
-    out += `  > \x1B[1m${this.currentActivity}\x1B[0m\n`;
-    out += separator;
+      // 3. Quotas compacts (2 lignes)
+      out += `  🔑 KEY #${this.currentKeyIndex + 1} (${this.currentKeyMasked})\n`;
+      out += `  📊 QUOTAS: Hr: ${this.hourlyRequests}/${this.hourlyLimit} | Dy: ${this.dailyRequests}/${this.dailyLimit}\n`;
 
-    // 6. Warnings & Erreurs détectés
-    out += `  ⚠️ WARNINGS & ERRORS DETECTED (Historique récent):\n`;
-
-    // Calculer la hauteur fixe pour les alertes pour éviter tout scrolling.
-    const usedLines = showBanner ? 24 : 19;
-    const maxAlertLines = Math.max(2, rows - usedLines);
-
-    if (this.alertHistory.length === 0) {
-      out += `  \x1B[32mAucun avertissement ou erreur détecté. Le système fonctionne parfaitement.\x1B[0m\n`;
-      for (let i = 0; i < maxAlertLines - 1; i++) {
-        out += '\n';
+      // 4. Pacing compact (1 ligne)
+      if (this.pacingRemainingMs === -1) {
+        out += `  ⏳ PACING: DÉSACTIVÉ (Bypass actif)\n`;
+      } else if (this.pacingRemainingMs > 0) {
+        const remainingSecs = (this.pacingRemainingMs / 1000).toFixed(1);
+        out += `  ⏳ PACING: Attente ${remainingSecs}s...\n`;
+      } else {
+        out += `  ⏳ PACING: Prêt !\n`;
       }
-    } else {
-      for (let i = 0; i < maxAlertLines; i++) {
-        const alertIndex = this.alertHistory.length - maxAlertLines + i;
-        if (alertIndex >= 0 && this.alertHistory[alertIndex]) {
-          out += `  ${this.alertHistory[alertIndex]}\n`;
-        } else {
-          out += '\n';
+
+      // 5. Activité compacte et réponse (2 lignes)
+      out += `  ⚡ ACT: ${this.currentActivity.substring(0, cols - 12)}\n`;
+      out += `  📥 RES: ${this.lastResponse.substring(0, cols - 12)}\n`;
+
+      // 6. Alertes compactes (reste des lignes)
+      const usedLines = 8;
+      const maxAlertLines = Math.max(1, rows - usedLines);
+      out += `  ⚠️ ERRORS (${this.alertHistory.length}):\n`;
+      if (this.alertHistory.length === 0) {
+        out += `  \x1B[32mAucune erreur.\x1B[0m\n`;
+      } else {
+        for (let i = 0; i < maxAlertLines; i++) {
+          const alertIndex = this.alertHistory.length - maxAlertLines + i;
+          if (alertIndex >= 0 && this.alertHistory[alertIndex]) {
+            out += `  ${this.alertHistory[alertIndex]}\n`;
+          }
         }
       }
+    } else {
+      // Layout normal ou large
+      const showBanner = rows >= 30;
+
+      if (showBanner) {
+        out += this.BANNER + '\n';
+      } else {
+        out += `\n  🦎  S N E A K Y   S K I N K   -   H A R V E S T E R  (v1.0.0) 🦎\n`;
+      }
+
+      out += separator;
+
+      // 2. Statuts des systèmes
+      out += `  💻 SYSTEM STATUS: `;
+      out += `Database: ${formatStatus(this.statuses.db)}  |  `;
+      out += `Redis: ${formatStatus(this.statuses.redis)}  |  `;
+      out += `Scheduler: ${formatStatus(this.statuses.scheduler)}  |  `;
+      out += `Worker: ${formatStatus(this.statuses.worker)}\n`;
+      out += separator;
+
+      // 3. Quotas de la clé active
+      out += `  🔑 ACTIVE API KEY: Clé #${this.currentKeyIndex + 1} (${this.currentKeyMasked})\n\n`;
+      
+      const barWidth = cols >= 80 ? 25 : 15;
+      const hourlyBar = this.makeProgressBar(this.hourlyRequests, this.hourlyLimit, barWidth);
+      const dailyBar = this.makeProgressBar(this.dailyRequests, this.dailyLimit, barWidth);
+      
+      out += `  📊 Hour Quota :  ${hourlyBar}  ${this.hourlyRequests}/${this.hourlyLimit}  (Reset dans ${this.hourlyResetMinutes}m)\n`;
+      out += `  📊 Day Quota  :  ${dailyBar}  ${this.dailyRequests}/${this.dailyLimit}  (Reset dans ${this.dailyResetHours}h)\n`;
+      out += separator;
+
+      // 4. Barre de pacing
+      out += `  ⏳ RATE PACING: `;
+      if (this.pacingRemainingMs === -1) {
+        out += `\x1B[33mDÉSACTIVÉ (Bypass actif)\x1B[0m\n`;
+      } else if (this.pacingRemainingMs > 0) {
+        const total = this.pacingTotalMs > 0 ? this.pacingTotalMs : 2500;
+        const pacingBar = this.makeProgressBar(total - this.pacingRemainingMs, total, barWidth);
+        const remainingSecs = (this.pacingRemainingMs / 1000).toFixed(1);
+        out += `${pacingBar}  Attente : ${remainingSecs}s avant la prochaine requête...\n`;
+      } else {
+        out += `${'█'.repeat(barWidth)}  Prêt pour la prochaine requête !\n`;
+      }
+      out += separator;
+
+      // 5. Activité en cours et dernière réponse
+      out += `  ⚡ CURRENT ACTIVITY:\n`;
+      out += `  > \x1B[1m${this.currentActivity}\x1B[0m\n`;
+      out += `  📥 LAST RECEIVED RESPONSE:\n`;
+      out += `  > \x1B[32m${this.lastResponse}\x1B[0m\n`;
+      out += separator;
+
+      // 6. Warnings & Erreurs détectés
+      out += `  ⚠️ WARNINGS & ERRORS DETECTED (Historique récent):\n`;
+
+      // Calculer la hauteur fixe pour les alertes pour éviter tout scrolling.
+      const usedLines = showBanner ? 26 : 21;
+      const maxAlertLines = Math.max(2, rows - usedLines);
+
+      if (this.alertHistory.length === 0) {
+        out += `  \x1B[32mAucun avertissement ou erreur détecté. Le système fonctionne parfaitement.\x1B[0m\n`;
+        for (let i = 0; i < maxAlertLines - 1; i++) {
+          out += '\n';
+        }
+      } else {
+        for (let i = 0; i < maxAlertLines; i++) {
+          const alertIndex = this.alertHistory.length - maxAlertLines + i;
+          if (alertIndex >= 0 && this.alertHistory[alertIndex]) {
+            out += `  ${this.alertHistory[alertIndex]}\n`;
+          } else {
+            out += '\n';
+          }
+        }
+      }
+      out += separator;
     }
-    out += separator;
 
     // S'assurer de ne jamais dépasser la hauteur du terminal pour éviter tout scrolling.
     let lines = out.split('\n');
