@@ -4,12 +4,12 @@ import { requireAdminKey } from '../middlewares/auth.middleware.js';
 
 const router = Router();
 
-// Sécuriser toutes les routes de synchronisation
-router.use(requireAdminKey);
-
-router.post('/coach/:id', SyncController.syncCoach);
-router.post('/league/:id', SyncController.syncLeague);
+// Route publique : statut de la file (lu par le frontend web)
 router.get('/queue', SyncController.getQueueStatus);
-router.post('/queue/clean', SyncController.cleanQueue);
+
+// Routes protégées : actions de synchronisation et nettoyage
+router.post('/coach/:id', requireAdminKey, SyncController.syncCoach);
+router.post('/league/:id', requireAdminKey, SyncController.syncLeague);
+router.post('/queue/clean', requireAdminKey, SyncController.cleanQueue);
 
 export default router;

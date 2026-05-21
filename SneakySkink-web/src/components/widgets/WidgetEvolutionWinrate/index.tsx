@@ -116,8 +116,8 @@ export const WidgetEvolutionWinrate: React.FC<WidgetEvolutionWinrateProps> = ({
           <Typography variant="body2" sx={{ color: '#475569' }}>Aucun match enregistré</Typography>
         </Box>
       ) : (
-        <Box sx={{ width: '100%', height: 200, minWidth: 0 }}>
-          <ResponsiveContainer width="99%" height="100%">
+        <Box sx={{ width: '100%', minWidth: 0 }}>
+          <ResponsiveContainer width="100%" height={200}>
             <LineChart data={chartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.04)" vertical={false} />
               <XAxis dataKey="matchIndex" stroke="#475569" fontSize={9} tickLine={false} />

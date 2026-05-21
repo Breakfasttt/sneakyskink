@@ -70,6 +70,7 @@ export const WidgetWinrateParRoster: React.FC<WidgetWinrateParRosterProps> = ({ 
         minHeight: 320,
         display: 'flex',
         flexDirection: 'column',
+        minWidth: 0,
       }}
     >
       <Typography variant="subtitle2" sx={{ color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', mb: 2 }}>
@@ -81,7 +82,7 @@ export const WidgetWinrateParRoster: React.FC<WidgetWinrateParRosterProps> = ({ 
           <Typography variant="body2" sx={{ color: '#475569' }}>Aucune donnée disponible</Typography>
         </Box>
       ) : (
-        <Box sx={{ flex: 1, width: '100%', height: sortedData.length * 40 + 40, minHeight: 240 }}>
+        <Box sx={{ width: '100%', height: Math.max(240, sortedData.length * 40 + 40), minWidth: 0 }}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={sortedData}
