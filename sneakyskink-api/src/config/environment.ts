@@ -17,6 +17,9 @@ export interface Environment {
     port: number;
     password?: string;
   };
+  adminApiKey: string;
+  rateLimitWindowMs: number;
+  rateLimitMax: number;
 }
 
 // Validation des variables obligatoires
@@ -34,6 +37,9 @@ export const env: Environment = {
     port: parseInt(process.env.REDIS_PORT || '6379', 10),
     password: process.env.REDIS_PASSWORD || undefined,
   },
+  adminApiKey: process.env.ADMIN_API_KEY || 'sneakyskink_secret_admin_key_2026',
+  rateLimitWindowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10), // 15 min par défaut
+  rateLimitMax: parseInt(process.env.RATE_LIMIT_MAX || '1000', 10), // 1000 requêtes
 };
 
 console.log(`ℹ️ [Config] Chargement réussi. Port d'écoute : ${env.port} | Mode : ${env.nodeEnv}`);

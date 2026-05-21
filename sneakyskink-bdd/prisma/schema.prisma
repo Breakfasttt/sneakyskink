@@ -220,3 +220,27 @@ model PlayerMatchStats {
 
   @@map("player_match_stats")
 }
+
+// -------------------------------------------------------------
+// 4. Maintenance & Audits
+// -------------------------------------------------------------
+
+model AuditReport {
+  id              String   @id @default(uuid())
+  createdAt       DateTime @default(now()) @map("created_at")
+  trigger         String   // "AUTOMATIC" | "MANUAL"
+  status          String   // "SUCCESS" | "FAILED"
+  durationMs      Int      @map("duration_ms")
+  
+  // Statistiques d'anomalies
+  duplicatesFound Int      @default(0) @map("duplicates_found")
+  duplicatesFixed Int      @default(0) @map("duplicates_fixed")
+  incompleteFound Int      @default(0) @map("incomplete_found")
+  incompleteFixed Int      @default(0) @map("incomplete_fixed")
+  mismatchedFound Int      @default(0) @map("mismatched_found")
+  mismatchedFixed Int      @default(0) @map("mismatched_fixed")
+  
+  details         Json?    // Détails des IDs corrigés et erreurs rencontrées
+
+  @@map("audit_reports")
+}

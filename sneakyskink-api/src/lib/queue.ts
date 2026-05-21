@@ -5,7 +5,7 @@ import { logger } from './logger.js';
 
 export const QUEUE_NAME = 'harvester-queue';
 
-export type JobType = 'fetch-league' | 'fetch-competition' | 'fetch-coach' | 'search-leagues';
+export type JobType = 'fetch-league' | 'fetch-competition' | 'fetch-coach' | 'search-leagues' | 'maintenance-task';
 
 export interface JobData {
   type: JobType;
@@ -82,4 +82,17 @@ export async function queueCoachFetch(coachId: string, priority: 'high' | 'mediu
     { type: 'fetch-coach', id: coachId },
     { priority: PRIORITY_MAP[priority] }
   );
+}
+
+/**
+ * Envoie un job de maintenance dans la file d'attente.
+ */
+export async function queueMaintenanceRun(trigger: 'AUTOMATIC' | 'MANUAL' = 'MANUAL') {
+  logger.info(`📥 [Queue API] Enfilement d'un job de maintenance (déclencheur : ${trigger})`);
+  const job = await harvesterQueue.add(
+    `maintenance-${Date.now()}`,
+    { type: 'maintenance-task', id: 'manual-trigger', trigger } as any,
+    { priority: PRIORITY_MAP.high }
+  );
+  return job.id;
 }

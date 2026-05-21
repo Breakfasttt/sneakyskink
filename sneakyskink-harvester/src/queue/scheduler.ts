@@ -34,6 +34,36 @@ export async function triggerPeriodicSync() {
 }
 
 /**
+ * Planifie la tâche de maintenance récurrente (dimanche à 4h00 du matin) via BullMQ repeat.
+ */
+export async function scheduleMaintenanceTask() {
+  logger.info('⏰ [Scheduler] Planification de la tâche de maintenance récurrente...');
+  try {
+    // Nettoyer les anciens repeatable jobs pour éviter les doublons au redémarrage
+    const repeatableJobs = await harvesterQueue.getRepeatableJobs();
+    for (const job of repeatableJobs) {
+      if (job.name === 'maintenance-task-cron') {
+        await harvesterQueue.removeRepeatableByKey(job.key);
+      }
+    }
+
+    // Planifier la tâche récurrente
+    await harvesterQueue.add(
+      'maintenance-task-cron',
+      { type: 'maintenance-task', id: 'periodic', trigger: 'AUTOMATIC' } as any,
+      {
+        repeat: {
+          pattern: '0 4 * * 0', // Chaque dimanche à 4h00
+        }
+      }
+    );
+    logger.info('✅ [Scheduler] Tâche de maintenance planifiée avec succès (Chaque dimanche à 4h00).');
+  } catch (err: any) {
+    logger.error(`❌ [Scheduler] Échec de la planification de la maintenance récurrente : ${err.message}`);
+  }
+}
+
+/**
  * Initialise le planificateur récurrent.
  */
 export function initScheduler() {
@@ -73,5 +103,6 @@ export function initScheduler() {
   setTimeout(async () => {
     logger.info('⏰ [Scheduler] Synchro initiale de démarrage...');
     await triggerPeriodicSync();
+    await scheduleMaintenanceTask();
   }, 5000);
 }

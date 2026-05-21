@@ -7,6 +7,7 @@ import { LeagueParser } from '../parsers/bb3/league.parser.js';
 import { TeamParser } from '../parsers/bb3/team.parser.js';
 import { MatchParser } from '../parsers/bb3/match.parser.js';
 import { logger } from '../utils/logger.js';
+import { MaintenanceService } from '../services/maintenance.service.js';
 
 export const harvesterWorker = new Worker<JobData>(
   QUEUE_NAME,
@@ -30,6 +31,10 @@ export const harvesterWorker = new Worker<JobData>(
 
         case 'search-leagues':
           return await handleSearchLeagues(id);
+
+        case 'maintenance-task':
+          await MaintenanceService.runMaintenance((job.data as any).trigger || 'AUTOMATIC');
+          break;
 
         default:
           throw new Error(`Type de job non supporté : ${type}`);

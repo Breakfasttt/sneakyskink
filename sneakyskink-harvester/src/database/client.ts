@@ -1,4 +1,4 @@
-import { prisma } from 'sneakyskink-bdd';
+import { prisma, Prisma } from 'sneakyskink-bdd';
 
-export { prisma };
+export { prisma, Prisma };
 export default prisma;

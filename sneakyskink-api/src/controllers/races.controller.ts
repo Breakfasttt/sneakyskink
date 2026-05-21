@@ -26,7 +26,7 @@ export class RacesController {
    */
   static async getById(req: Request, res: Response, next: NextFunction) {
     try {
-      const id = parseInt(req.params.id, 10);
+      const id = parseInt(req.params.id as string, 10);
       if (isNaN(id)) {
         return res.status(400).json({
           success: false,
