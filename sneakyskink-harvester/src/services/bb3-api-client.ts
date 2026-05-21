@@ -8,6 +8,8 @@ import { ActivityTracker } from '../utils/activity-tracker.js';
 export class BB3ApiClient {
   private axiosInstance: AxiosInstance;
   private lastRequestTime = 0;
+  /** Quand actif, le pacing est ignoré pour toutes les requêtes (mode maintenance) */
+  private maintenanceMode = false;
   private static readonly BASE_URL = 'https://web.cyanide-studio.com/ws/';
   private static readonly MAX_RETRIES = 3;
   private static readonly TIMEOUT_MS = 60000; // 60 secondes (les serveurs Cyanide peuvent être lents)
@@ -21,6 +23,16 @@ export class BB3ApiClient {
         'User-Agent': 'SneakySkink-Harvester/1.0.0',
       },
     });
+  }
+
+  /**
+   * Active ou désactive le mode maintenance.
+   * Quand actif, le Rate Pacing est ignoré sur TOUS les appels pour maximiser la vitesse
+   * tout en respectant les quotas (getAvailableKey bloque si la limite est atteinte).
+   */
+  public setMaintenanceMode(enabled: boolean): void {
+    this.maintenanceMode = enabled;
+    logger.info(`⚡ [BB3ApiClient] Mode maintenance : ${enabled ? 'ACTIVÉ (pacing désactivé)' : 'DÉSACTIVÉ (pacing normal)'}`);
   }
 
   /**
@@ -60,11 +72,11 @@ export class BB3ApiClient {
           `🚀 [BB3ApiClient] Tentative ${attempts}/${BB3ApiClient.MAX_RETRIES} sur [${method}] avec la clé [${maskedKey}]`
         );
 
-        // 2.5. Régulation du rythme (Rate Pacing) pour respecter scrupuleusement les quotas
-        const pacingDelay = apiKeyManager.getDynamicPacingDelay(activeKey);
+        // 2.5. Régulation du rythme (Rate Pacing) — ignoré en mode maintenance
+        const pacingDelay = this.maintenanceMode ? 0 : apiKeyManager.getDynamicPacingDelay(activeKey);
         const now = Date.now();
         const timeSinceLast = now - this.lastRequestTime;
-        if (timeSinceLast < pacingDelay) {
+        if (pacingDelay > 0 && timeSinceLast < pacingDelay) {
           const waitTime = pacingDelay - timeSinceLast;
           logger.debug(
             `⏳ [BB3ApiClient] Rate pacing : attente de ${waitTime}ms avant l'appel suivant pour réguler le trafic...`

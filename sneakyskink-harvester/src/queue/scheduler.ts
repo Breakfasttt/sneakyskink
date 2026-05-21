@@ -34,7 +34,7 @@ export async function triggerPeriodicSync() {
 }
 
 /**
- * Planifie la tâche de maintenance récurrente (dimanche à 4h00 du matin) via BullMQ repeat.
+ * Planifie la tâche de maintenance récurrente (tous les 2 jours à 2h00 du matin) via BullMQ repeat.
  */
 export async function scheduleMaintenanceTask() {
   logger.info('⏰ [Scheduler] Planification de la tâche de maintenance récurrente...');
@@ -53,11 +53,11 @@ export async function scheduleMaintenanceTask() {
       { type: 'maintenance-task', id: 'periodic', trigger: 'AUTOMATIC' } as any,
       {
         repeat: {
-          pattern: '0 4 * * 0', // Chaque dimanche à 4h00
+          pattern: '0 2 */2 * *', // Tous les 2 jours à 2h00 du matin
         }
       }
     );
-    logger.info('✅ [Scheduler] Tâche de maintenance planifiée avec succès (Chaque dimanche à 4h00).');
+    logger.info('✅ [Scheduler] Tâche de maintenance planifiée avec succès (Tous les 2 jours à 2h00).');
   } catch (err: any) {
     logger.error(`❌ [Scheduler] Échec de la planification de la maintenance récurrente : ${err.message}`);
   }

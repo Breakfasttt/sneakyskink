@@ -33,7 +33,12 @@ export const harvesterWorker = new Worker<JobData>(
           return await handleSearchLeagues(id);
 
         case 'maintenance-task':
-          await MaintenanceService.runMaintenance((job.data as any).trigger || 'AUTOMATIC');
+          bb3ApiClient.setMaintenanceMode(true);
+          try {
+            await MaintenanceService.runMaintenance((job.data as any).trigger || 'AUTOMATIC');
+          } finally {
+            bb3ApiClient.setMaintenanceMode(false);
+          }
           break;
 
         default:
