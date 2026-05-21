@@ -1,0 +1,16 @@
+{
+  "size": [
+    2,
+    166,
+    5
+  ],
+  "ranking": [],
+  "meta": {
+    "user": "Breakyt",
+    "game": "bb3",
+    "method": "sprintranking",
+    "format": "json",
+    "services": "https://web.cyanide-studio.com/ws/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2&bb=3"
+  },
+  "promotional_content": false
+}

@@ -1,6 +1,6 @@
 {
   "size": [
-    763,
+    766,
     260,
     5
   ],
@@ -26,6 +26,16 @@
       "status": "Registered"
     },
     {
+      "name": "Vectorohyeah",
+      "id": "330653e8-e6fd-11ee-a745-02000090a64f",
+      "email": null,
+      "twitch": null,
+      "youtube": null,
+      "country": "",
+      "lang": null,
+      "status": "Registered"
+    },
+    {
       "name": "Dam's",
       "id": "8ddc1d60-5d60-11ef-be7b-bc24112ec32e",
       "email": null,
@@ -36,18 +46,8 @@
       "status": "Registered"
     },
     {
-      "name": "Grimdark",
-      "id": "3bc6655c-5f7f-11ee-af36-020000a4d571",
-      "email": null,
-      "twitch": null,
-      "youtube": null,
-      "country": "",
-      "lang": null,
-      "status": "Registered"
-    },
-    {
-      "name": "nikkelsen",
-      "id": "a38dc327-2479-11ee-b762-020000d1a054",
+      "name": "Matawaga",
+      "id": "85f76782-4f74-11ef-be7b-bc24112ec32e",
       "email": null,
       "twitch": null,
       "youtube": null,

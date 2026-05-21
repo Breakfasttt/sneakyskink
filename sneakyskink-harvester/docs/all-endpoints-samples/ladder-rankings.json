@@ -1,6 +1,6 @@
 {
   "size": [
-    3177,
+    3175,
     231,
     159,
     5
@@ -22,7 +22,7 @@
       "coach": {
         "name": "DocMaXX",
         "id": "a4649573-b6bf-11ee-a745-02000090a64f",
-        "lang": "english",
+        "lang": "german",
         "country": null
       }
     },
@@ -62,7 +62,7 @@
       "coach": {
         "name": "LEGOLAS_1974",
         "id": "b03c8043-b38c-11ed-b762-020000d1a054",
-        "lang": "english",
+        "lang": "spanish",
         "country": null
       }
     },
@@ -202,7 +202,7 @@
       "coach": {
         "name": "Sumpflager",
         "id": "d835ccce-b377-11ed-b762-020000d1a054",
-        "lang": "english",
+        "lang": "german",
         "country": null
       }
     }

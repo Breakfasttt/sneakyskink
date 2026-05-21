@@ -1,0 +1,30 @@
+{
+  "size": [
+    4,
+    4,
+    4,
+    1,
+    1,
+    3,
+    5,
+    4,
+    162,
+    5
+  ],
+  "is_campaign": 3536,
+  "is_friendly": 1769,
+  "is_eternal_league": 8061,
+  "is_ladder": 0,
+  "is_event": 0,
+  "is_arena": 931,
+  "total": 21975,
+  "is_league_play": 7678,
+  "meta": {
+    "user": "Breakyt",
+    "game": "bb3",
+    "method": "gamecount",
+    "format": "json",
+    "services": "https://web.cyanide-studio.com/ws/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2&bb=3"
+  },
+  "promotional_content": false
+}

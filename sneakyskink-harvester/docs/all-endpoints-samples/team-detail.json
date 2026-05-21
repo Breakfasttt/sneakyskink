@@ -87,12 +87,12 @@
       }
     },
     {
-      "id": "71745c91-36b8-11ef-9e7e-bc24112ec32e",
-      "name": "Ando Morfale",
+      "id": "0e8bf3e9-6d23-11ee-ba07-02000090a64f",
+      "name": "Vollo Douce raclée",
       "idraces": 8,
-      "number": 2,
-      "value": 100,
-      "xp": 0,
+      "number": 4,
+      "value": 180,
+      "xp": 12,
       "attributes": {
         "pa": 5,
         "ma": 5,
@@ -112,15 +112,20 @@
         "malus": []
       },
       "type": "chaosChosen_chosenBlocker",
-      "level": 1,
+      "level": 5,
       "casualties_state_id": [],
       "casualties_state": [],
       "suspended_next_match": false,
-      "skills": [],
+      "skills": [
+        "block",
+        "mighty blow (+1)",
+        "guard",
+        "claws"
+      ],
       "statistics": {
         "": {
-          "inflictedcasualties": 1,
-          "inflictedinjuries": 0,
+          "inflictedcasualties": 0,
+          "inflictedinjuries": 1,
           "inflictedko": 0,
           "sustainedcasualties": 0,
           "sustainedko": 0,
@@ -184,146 +189,6 @@
       }
     },
     {
-      "id": "0e8bf3e9-6d23-11ee-ba07-02000090a64f",
-      "name": "Vollo Douce raclée",
-      "idraces": 8,
-      "number": 4,
-      "value": 180,
-      "xp": 12,
-      "attributes": {
-        "pa": 5,
-        "ma": 5,
-        "st": 4,
-        "ag": 3,
-        "av": 10
-      },
-      "attributes_ex": {
-        "default": {
-          "ma": 5,
-          "st": 4,
-          "ag": 3,
-          "av": 10,
-          "pa": 5
-        },
-        "bonus": [],
-        "malus": []
-      },
-      "type": "chaosChosen_chosenBlocker",
-      "level": 5,
-      "casualties_state_id": [],
-      "casualties_state": [],
-      "suspended_next_match": false,
-      "skills": [
-        "block",
-        "mighty blow (+1)",
-        "guard",
-        "claws"
-      ],
-      "statistics": {
-        "": {
-          "inflictedcasualties": 0,
-          "inflictedinjuries": 1,
-          "inflictedko": 0,
-          "sustainedcasualties": 0,
-          "sustainedko": 0,
-          "sustainedinjuries": 0
-        }
-      }
-    },
-    {
-      "id": "7d5fac34-6eb0-11ee-ba07-02000090a64f",
-      "name": "Oliv Coup d’boule",
-      "idraces": 8,
-      "number": 5,
-      "value": 140,
-      "xp": 2,
-      "attributes": {
-        "pa": 5,
-        "ma": 5,
-        "st": 4,
-        "ag": 3,
-        "av": 10
-      },
-      "attributes_ex": {
-        "default": {
-          "ma": 5,
-          "st": 4,
-          "ag": 3,
-          "av": 10,
-          "pa": 5
-        },
-        "bonus": [],
-        "malus": []
-      },
-      "type": "chaosChosen_chosenBlocker",
-      "level": 3,
-      "casualties_state_id": [
-        3
-      ],
-      "casualties_state": [
-        "serious_injury"
-      ],
-      "suspended_next_match": false,
-      "skills": [
-        "block",
-        "guard"
-      ],
-      "statistics": {
-        "": {
-          "inflictedcasualties": 0,
-          "inflictedinjuries": 0,
-          "inflictedko": 0,
-          "sustainedcasualties": 0,
-          "sustainedko": 0,
-          "sustainedinjuries": 0
-        }
-      }
-    },
-    {
-      "id": "92de4775-8793-11ee-b910-02000090a64f",
-      "name": "Kitrahn Faux pas",
-      "idraces": 8,
-      "number": 6,
-      "value": 60,
-      "xp": 0,
-      "attributes": {
-        "pa": 4,
-        "ma": 6,
-        "st": 3,
-        "ag": 3,
-        "av": 9
-      },
-      "attributes_ex": {
-        "default": {
-          "ma": 6,
-          "st": 3,
-          "ag": 3,
-          "av": 9,
-          "pa": 4
-        },
-        "bonus": [],
-        "malus": []
-      },
-      "type": "chaosChosen_beastmanRunner",
-      "level": 1,
-      "casualties_state_id": [],
-      "casualties_state": [],
-      "suspended_next_match": false,
-      "skills": [
-        "horns"
-      ],
-      "statistics": {
-        "": {
-          "inflictedcasualties": 0,
-          "inflictedinjuries": 0,
-          "inflictedko": 0,
-          "sustainedcasualties": 0,
-          "sustainedko": 0,
-          "sustainedinjuries": 0
-        }
-      }
-    },
-    {
       "id": "0ee7cbd0-6d23-11ee-ba07-02000090a64f",
       "name": "Malagor Boum Boum",
       "idraces": 8,
@@ -371,113 +236,6 @@
           "inflictedcasualties": 0,
           "inflictedinjuries": 1,
           "inflictedko": 1,
-          "sustainedcasualties": 0,
-          "sustainedko": 0,
-          "sustainedinjuries": 0
-        }
-      }
-    },
-    {
-      "id": "e0f91e34-6f40-11ee-ba07-02000090a64f",
-      "name": "Ghokoz Rubis",
-      "idraces": 8,
-      "number": 8,
-      "value": 140,
-      "xp": 16,
-      "attributes": {
-        "pa": 4,
-        "ma": 6,
-        "st": 3,
-        "ag": 3,
-        "av": 9
-      },
-      "attributes_ex": {
-        "default": {
-          "ma": 6,
-          "st": 3,
-          "ag": 3,
-          "av": 9,
-          "pa": 4
-        },
-        "bonus": [],
-        "malus": []
-      },
-      "type": "chaosChosen_beastmanRunner",
-      "level": 5,
-      "casualties_state_id": [],
-      "casualties_state": [],
-      "suspended_next_match": false,
-      "skills": [
-        "horns",
-        "block",
-        "tackle",
-        "mighty blow (+1)",
-        "claws"
-      ],
-      "statistics": {
-        "": {
-          "inflictedcasualties": 0,
-          "inflictedinjuries": 0,
-          "inflictedko": 0,
-          "sustainedcasualties": 0,
-          "sustainedko": 0,
-          "sustainedinjuries": 0
-        }
-      }
-    },
-    {
-      "id": "8330e7f7-6f36-11ee-ba07-02000090a64f",
-      "name": "Ugorh Gobe mouches",
-      "idraces": 8,
-      "number": 9,
-      "value": 140,
-      "xp": 11,
-      "attributes": {
-        "pa": 3,
-        "ma": 6,
-        "st": 3,
-        "ag": 2,
-        "av": 9
-      },
-      "attributes_ex": {
-        "default": {
-          "ma": 6,
-          "st": 3,
-          "ag": 3,
-          "av": 9,
-          "pa": 4
-        },
-        "bonus": [],
-        "malus": {
-          "ag": 1,
-          "pa": 1
-        }
-      },
-      "type": "chaosChosen_beastmanRunner",
-      "level": 5,
-      "casualties_state_id": [
-        3,
-        7,
-        8
-      ],
-      "casualties_state": [
-        "serious_injury",
-        "broken_arm",
-        "neck_injury"
-      ],
-      "suspended_next_match": false,
-      "skills": [
-        "horns",
-        "block",
-        "mighty blow (+1)",
-        "claws",
-        "tackle"
-      ],
-      "statistics": {
-        "": {
-          "inflictedcasualties": 0,
-          "inflictedinjuries": 0,
-          "inflictedko": 0,
           "sustainedcasualties": 0,
           "sustainedko": 0,
           "sustainedinjuries": 0
@@ -569,6 +327,248 @@
           "sustainedcasualties": 1,
           "sustainedko": 0,
           "sustainedinjuries": 1
+        }
+      }
+    },
+    {
+      "id": "71745c91-36b8-11ef-9e7e-bc24112ec32e",
+      "name": "Ando Morfale",
+      "idraces": 8,
+      "number": 2,
+      "value": 100,
+      "xp": 0,
+      "attributes": {
+        "pa": 5,
+        "ma": 5,
+        "st": 4,
+        "ag": 3,
+        "av": 10
+      },
+      "attributes_ex": {
+        "default": {
+          "ma": 5,
+          "st": 4,
+          "ag": 3,
+          "av": 10,
+          "pa": 5
+        },
+        "bonus": [],
+        "malus": []
+      },
+      "type": "chaosChosen_chosenBlocker",
+      "level": 1,
+      "casualties_state_id": [],
+      "casualties_state": [],
+      "suspended_next_match": false,
+      "skills": [],
+      "statistics": {
+        "": {
+          "inflictedcasualties": 1,
+          "inflictedinjuries": 0,
+          "inflictedko": 0,
+          "sustainedcasualties": 0,
+          "sustainedko": 0,
+          "sustainedinjuries": 0
+        }
+      }
+    },
+    {
+      "id": "7d5fac34-6eb0-11ee-ba07-02000090a64f",
+      "name": "Oliv Coup d’boule",
+      "idraces": 8,
+      "number": 5,
+      "value": 140,
+      "xp": 2,
+      "attributes": {
+        "pa": 5,
+        "ma": 5,
+        "st": 4,
+        "ag": 3,
+        "av": 10
+      },
+      "attributes_ex": {
+        "default": {
+          "ma": 5,
+          "st": 4,
+          "ag": 3,
+          "av": 10,
+          "pa": 5
+        },
+        "bonus": [],
+        "malus": []
+      },
+      "type": "chaosChosen_chosenBlocker",
+      "level": 3,
+      "casualties_state_id": [
+        3
+      ],
+      "casualties_state": [
+        "serious_injury"
+      ],
+      "suspended_next_match": false,
+      "skills": [
+        "block",
+        "guard"
+      ],
+      "statistics": {
+        "": {
+          "inflictedcasualties": 0,
+          "inflictedinjuries": 0,
+          "inflictedko": 0,
+          "sustainedcasualties": 0,
+          "sustainedko": 0,
+          "sustainedinjuries": 0
+        }
+      }
+    },
+    {
+      "id": "8330e7f7-6f36-11ee-ba07-02000090a64f",
+      "name": "Ugorh Gobe mouches",
+      "idraces": 8,
+      "number": 9,
+      "value": 140,
+      "xp": 11,
+      "attributes": {
+        "pa": 3,
+        "ma": 6,
+        "st": 3,
+        "ag": 2,
+        "av": 9
+      },
+      "attributes_ex": {
+        "default": {
+          "ma": 6,
+          "st": 3,
+          "ag": 3,
+          "av": 9,
+          "pa": 4
+        },
+        "bonus": [],
+        "malus": {
+          "ag": 1,
+          "pa": 1
+        }
+      },
+      "type": "chaosChosen_beastmanRunner",
+      "level": 5,
+      "casualties_state_id": [
+        3,
+        7,
+        8
+      ],
+      "casualties_state": [
+        "serious_injury",
+        "broken_arm",
+        "neck_injury"
+      ],
+      "suspended_next_match": false,
+      "skills": [
+        "horns",
+        "block",
+        "mighty blow (+1)",
+        "claws",
+        "tackle"
+      ],
+      "statistics": {
+        "": {
+          "inflictedcasualties": 0,
+          "inflictedinjuries": 0,
+          "inflictedko": 0,
+          "sustainedcasualties": 0,
+          "sustainedko": 0,
+          "sustainedinjuries": 0
+        }
+      }
+    },
+    {
+      "id": "92de4775-8793-11ee-b910-02000090a64f",
+      "name": "Kitrahn Faux pas",
+      "idraces": 8,
+      "number": 6,
+      "value": 60,
+      "xp": 0,
+      "attributes": {
+        "pa": 4,
+        "ma": 6,
+        "st": 3,
+        "ag": 3,
+        "av": 9
+      },
+      "attributes_ex": {
+        "default": {
+          "ma": 6,
+          "st": 3,
+          "ag": 3,
+          "av": 9,
+          "pa": 4
+        },
+        "bonus": [],
+        "malus": []
+      },
+      "type": "chaosChosen_beastmanRunner",
+      "level": 1,
+      "casualties_state_id": [],
+      "casualties_state": [],
+      "suspended_next_match": false,
+      "skills": [
+        "horns"
+      ],
+      "statistics": {
+        "": {
+          "inflictedcasualties": 0,
+          "inflictedinjuries": 0,
+          "inflictedko": 0,
+          "sustainedcasualties": 0,
+          "sustainedko": 0,
+          "sustainedinjuries": 0
+        }
+      }
+    },
+    {
+      "id": "e0f91e34-6f40-11ee-ba07-02000090a64f",
+      "name": "Ghokoz Rubis",
+      "idraces": 8,
+      "number": 8,
+      "value": 140,
+      "xp": 16,
+      "attributes": {
+        "pa": 4,
+        "ma": 6,
+        "st": 3,
+        "ag": 3,
+        "av": 9
+      },
+      "attributes_ex": {
+        "default": {
+          "ma": 6,
+          "st": 3,
+          "ag": 3,
+          "av": 9,
+          "pa": 4
+        },
+        "bonus": [],
+        "malus": []
+      },
+      "type": "chaosChosen_beastmanRunner",
+      "level": 5,
+      "casualties_state_id": [],
+      "casualties_state": [],
+      "suspended_next_match": false,
+      "skills": [
+        "horns",
+        "block",
+        "tackle",
+        "mighty blow (+1)",
+        "claws"
+      ],
+      "statistics": {
+        "": {
+          "inflictedcasualties": 0,
+          "inflictedinjuries": 0,
+          "inflictedko": 0,
+          "sustainedcasualties": 0,
+          "sustainedko": 0,
+          "sustainedinjuries": 0
         }
       }
     }

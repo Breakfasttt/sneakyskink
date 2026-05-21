@@ -1,0 +1,95 @@
+{
+  "size": [
+    3674,
+    255,
+    5
+  ],
+  "data": [
+    {
+      "title": "",
+      "body": "{\n  \"Description\": \"Weekend Clash #3 (16-17 May). Registration now open, sign up by 14 May.\",\n  \"BackgroundImageURL\": \"https://i.ibb.co/60Z0yxcV/WBB-Official-Competitions-Visual-black-760x280.jpg\",\n  \"bBackgroundLocalURL\": false,\n  \"UrlToRedirect\": \"https://discord.gg/HmKy9VuRSm\",\n  \"bRedirectLocalURL\": false,\n  \"ItemID\": \"\"\n}",
+      "footer": "",
+      "image_url": null,
+      "link_url": null,
+      "promotional_content": false,
+      "store_id": null
+    },
+    {
+      "title": "",
+      "body": "{\n  \"Description\": \"Official Discord competitions server open Join to learn about Warhammer Blood Bowl circuit\",\n  \"BackgroundImageURL\": \"https://i.ibb.co/FbrtFt7J/Adobe-Express-file.jpg\",\n  \"bBackgroundLocalURL\": false,\n  \"UrlToRedirect\": \"https://discord.gg/Na3mtxaWGX\",\n  \"bRedirectLocalURL\": false,\n  \"ItemID\": \"\"\n}",
+      "footer": "",
+      "image_url": null,
+      "link_url": null,
+      "promotional_content": false,
+      "store_id": null
+    },
+    {
+      "title": "",
+      "body": "{\n  \"Description\": \"Join the community on the official Blood Bowl 3 Discord server\",\n  \"BackgroundImageURL\": \"/Game/UI/Menus/Home/Textures/news-touchdown.news-touchdown\",\n  \"bBackgroundLocalURL\": false,\n  \"UrlToRedirect\": \"https://discord.gg/bloodbowl3\",\n  \"bRedirectLocalURL\": false,\n  \"ItemID\": \"\"\n}",
+      "footer": "",
+      "image_url": null,
+      "link_url": null,
+      "promotional_content": false,
+      "store_id": null
+    },
+    {
+      "title": "",
+      "body": "{\n\"Description\": \"Blood Bowl 3 Tutorials & Guides by cKnoor with lineups, skills and tips.\", \n\"BackgroundImageURL\": \"https://i.ibb.co/TMh2C3Xr/12.png\", \n\"bBackgroundLocalURL\": false, \n\"UrlToRedirect\": \"https://www.youtube.com/watch?v=QO1wVp9dLvs&list=PLSJ6kwwJv4NoQZcg9mFZNJTisrFPh62Gz\", \"bRedirectLocalURL\": false, \n\"ItemID\": \"\"\n}",
+      "footer": "",
+      "image_url": null,
+      "link_url": null,
+      "promotional_content": false,
+      "store_id": null
+    },
+    {
+      "title": "",
+      "body": "{\n  \"Description\": \"Play of the Month - Participate on Discord\",\n  \"BackgroundImageURL\": \"/Game/UI/Menus/Home/Textures/news-touchdown.news-touchdown\",\n  \"bBackgroundLocalURL\": false,\n  \"UrlToRedirect\": \"https://discord.gg/bloodbowl3\",\n  \"bRedirectLocalURL\": false,\n  \"ItemID\": \"\"\n}",
+      "footer": "",
+      "image_url": null,
+      "link_url": null,
+      "promotional_content": false,
+      "store_id": null
+    },
+    {
+      "title": "",
+      "body": "{\n  \"Description\": \"Race Guides for every team in Blood Bowl 3 by Andy Davo\",\n  \"BackgroundImageURL\": \"https://i.ibb.co/B2qzK8Zn/8.png\",\n  \"bBackgroundLocalURL\": false,\n  \"UrlToRedirect\": \"https://www.youtube.com/playlist?list=PL_h_E_IlwqtesCMYz0D4C1_hys7psyegu\",\n  \"bRedirectLocalURL\": false,\n  \"LocalURLType\": \"Relative\",\n  \"ItemID\": \"\"\n}",
+      "footer": "",
+      "image_url": null,
+      "link_url": null,
+      "promotional_content": false,
+      "store_id": null
+    },
+    {
+      "title": "",
+      "body": "{\n\"Description\": \"Discord Chat Facilitator: Learn how to link your account!\", \n\"BackgroundImageURL\": \"https://i.ibb.co/Wv37WHqS/4.png\", \n\"bBackgroundLocalURL\": false,\n\"UrlToRedirect\": \"https://nacon.me/BB3ChatFacilitator\",\n\"bRedirectLocalURL\": false, \n\"ItemID\": \"\"\n}\n",
+      "footer": "",
+      "image_url": null,
+      "link_url": null,
+      "promotional_content": false,
+      "store_id": null
+    },
+    {
+      "title": "",
+      "body": "{\n  \"Description\": \"Discover the Super League: the Spring season is live!\",\n  \"BackgroundImageURL\": \"https://i.ibb.co/Y7Gw4SNG/this-1.jpg\",\n  \"bBackgroundLocalURL\": false,\n  \"UrlToRedirect\": \"https://youtube.com/playlist?list=PLF7TYdtPEaNQMBgmoX_-nmu8Aeaa5WTa1&si=AonXqCdtYwbdQ3Bv\",\n  \"bRedirectLocalURL\": false,\n  \"ItemID\": \"\"\n}",
+      "footer": "",
+      "image_url": null,
+      "link_url": null,
+      "promotional_content": false,
+      "store_id": null
+    }
+  ],
+  "meta": {
+    "env": "bb3_live_pc",
+    "lang": "english",
+    "platform": "PC",
+    "region": "_",
+    "accept_promo": 0,
+    "limit": 100,
+    "user": "Breakyt",
+    "game": "cya",
+    "method": "welcome",
+    "format": "json",
+    "services": "https://web.cyanide-studio.com/ws/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2&bb=3"
+  },
+  "promotional_content": false
+}
