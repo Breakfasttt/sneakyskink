@@ -6,6 +6,7 @@ import coachesRouter from './coaches.routes.js';
 import matchesRouter from './matches.routes.js';
 import syncRouter from './sync.routes.js';
 import statsRouter from './stats.routes.js';
+import racesRouter from './races.routes.js';
 import { prisma } from '../lib/prisma.js';
 
 const router = Router();
@@ -41,6 +42,7 @@ router.get('/', async (req, res, next) => {
         teams: '/teams',
         coaches: '/coaches',
         matches: '/matches',
+        races: '/races',
         sync: {
           coach: '/sync/coach/:id',
           league: '/sync/league/:id',
@@ -67,5 +69,6 @@ router.use('/coaches', coachesRouter);
 router.use('/matches', matchesRouter);
 router.use('/sync', syncRouter);
 router.use('/stats', statsRouter);
+router.use('/races', racesRouter);
 
 export default router;

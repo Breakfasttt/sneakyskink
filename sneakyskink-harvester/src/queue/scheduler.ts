@@ -1,13 +1,16 @@
 import { prisma } from '../database/client.js';
-import { queueLeagueFetch } from './queue.js';
+import { queueLeagueFetch, harvesterQueue } from './queue.js';
 import { logger } from '../utils/logger.js';
 import { env } from '../config/environment.js';
+import { ActivityTracker } from '../utils/activity-tracker.js';
 
 /**
  * Déclenche une synchronisation immédiate de toutes les ligues actives de la BDD
  */
 export async function triggerPeriodicSync() {
   logger.info('🔄 [Scheduler] Démarrage de la synchronisation périodique des ligues actives...');
+  // Marquer l'activité pour éviter que le détecteur d'inactivité ne s'active immédiatement
+  ActivityTracker.touch();
 
   try {
     // Récupérer toutes les ligues marquées comme actives
@@ -43,6 +46,27 @@ export function initScheduler() {
     logger.info(`⏰ [Scheduler] Déclenchement automatique du cycle de ${env.syncIntervalMinutes} minutes...`);
     await triggerPeriodicSync();
   }, syncIntervalMs);
+
+  // Détecteur d'inactivité (Idle Check) : relance la synchro si aucune activité et file vide depuis 5 minutes
+  setInterval(async () => {
+    const lastActivity = ActivityTracker.getLastActivityTime();
+    const idleTime = Date.now() - lastActivity;
+    const idleLimitMs = 5 * 60 * 1000; // 5 minutes
+
+    if (idleTime > idleLimitMs) {
+      try {
+        const waitingCount = await harvesterQueue.getWaitingCount();
+        const activeCount = await harvesterQueue.getActiveCount();
+
+        if (waitingCount === 0 && activeCount === 0) {
+          logger.info('🛌 [Scheduler] Aucune activité et file vide depuis plus de 5 minutes. Relance automatique de la synchronisation...');
+          await triggerPeriodicSync();
+        }
+      } catch (err: any) {
+        logger.error(`⚠️ [Scheduler] Échec de la vérification d'inactivité : ${err.message}`);
+      }
+    }
+  }, 60000); // Vérification toutes les minutes
 
   // Déclencher immédiatement une première synchronisation des ligues actives lors du démarrage du daemon
   // pour s'assurer que notre base locale est à jour !

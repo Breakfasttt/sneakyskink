@@ -1,5 +1,7 @@
 import { env } from '../config/environment.js';
 import { logger } from '../utils/logger.js';
+import { redisConnection } from '../queue/connection.js';
+import { ConsoleDashboard } from '../utils/dashboard.js';
 
 interface ApiKeyStatus {
   key: string;
@@ -12,8 +14,8 @@ interface ApiKeyStatus {
 
 export class ApiKeyManager {
   private keysStatus: Map<string, ApiKeyStatus> = new Map();
-  private static readonly HOURLY_LIMIT = 1000;
-  private static readonly DAILY_LIMIT = 10000;
+  public static readonly HOURLY_LIMIT = 1000;
+  public static readonly DAILY_LIMIT = 10000;
   private static readonly HOUR_MS = 60 * 60 * 1000;
   private static readonly DAY_MS = 24 * 60 * 60 * 1000;
   private static readonly DEFAULT_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes par défaut sur erreur
@@ -26,10 +28,6 @@ export class ApiKeyManager {
 
     const now = Date.now();
     for (const key of env.apiKeys) {
-      // Masquer la clé pour les logs (affiche les 4 premiers et derniers caractères)
-      const maskedKey = `${key.substring(0, 4)}...${key.substring(key.length - 4)}`;
-      logger.info(`🔑 ApiKeyManager: Enregistrement de la clé [${maskedKey}]`);
-      
       this.keysStatus.set(key, {
         key,
         hourlyRequests: 0,
@@ -39,6 +37,121 @@ export class ApiKeyManager {
         cooldownUntil: 0,
       });
     }
+  }
+
+  /**
+   * Initialise le gestionnaire en restaurant l'état des quotas depuis Redis.
+   */
+  public async initialize(): Promise<void> {
+    logger.info('🔑 [ApiKeyManager] Restauration des quotas depuis Redis...');
+    const now = Date.now();
+
+    for (const [key, status] of this.keysStatus.entries()) {
+      const maskedKey = this.mask(key);
+      try {
+        const redisKey = `sneakyskink:quota:status:${this.mask(key)}`;
+        const cached = await redisConnection.get(redisKey);
+
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          status.hourlyRequests = parsed.hourlyRequests ?? 0;
+          status.dailyRequests = parsed.dailyRequests ?? 0;
+          status.hourlyResetTime = parsed.hourlyResetTime ?? (now + ApiKeyManager.HOUR_MS);
+          status.dailyResetTime = parsed.dailyResetTime ?? (now + ApiKeyManager.DAY_MS);
+          status.cooldownUntil = parsed.cooldownUntil ?? 0;
+
+          // Réinitialiser les quotas si les fenêtres temporelles ont expiré pendant l'arrêt
+          this.checkAndResetQuotas(status, now);
+
+          logger.info(
+            `🔑 [ApiKeyManager] Clé [${maskedKey}] restaurée. Quota horaire: ${status.hourlyRequests}/${ApiKeyManager.HOURLY_LIMIT}`
+          );
+        } else {
+          logger.info(`🔑 [ApiKeyManager] Clé [${maskedKey}] : Aucun quota en cache, initialisation par défaut.`);
+          await this.persistStatus(status);
+        }
+      } catch (err: any) {
+        logger.error(`⚠️ [ApiKeyManager] Échec chargement Redis pour clé [${maskedKey}]: ${err.message}`);
+      }
+    }
+    
+    // Afficher les quotas de la première clé au démarrage pour le TUI
+    if (env.apiKeys.length > 0) {
+      this.updateDashboard(env.apiKeys[0]);
+    }
+  }
+
+  /**
+   * Sauvegarde l'état d'une clé d'API dans Redis de manière asynchrone.
+   */
+  private async persistStatus(status: ApiKeyStatus): Promise<void> {
+    try {
+      const redisKey = `sneakyskink:quota:status:${this.mask(status.key)}`;
+      const payload = JSON.stringify({
+        hourlyRequests: status.hourlyRequests,
+        dailyRequests: status.dailyRequests,
+        hourlyResetTime: status.hourlyResetTime,
+        dailyResetTime: status.dailyResetTime,
+        cooldownUntil: status.cooldownUntil,
+      });
+      // Garder les quotas en cache pour 48 heures maximum
+      await redisConnection.set(redisKey, payload, 'EX', 172800);
+    } catch (err: any) {
+      logger.error(`⚠️ [ApiKeyManager] Échec persistance Redis pour clé [${this.mask(status.key)}]: ${err.message}`);
+    }
+  }
+
+  /**
+   * Calcule le délai minimum de pacing dynamique pour une clé API.
+   * Répartit l'utilisation restante sur le temps restant avant réinitialisation.
+   */
+  public getDynamicPacingDelay(key: string): number {
+    const status = this.keysStatus.get(key);
+    if (!status) return 2500;
+
+    const now = Date.now();
+    this.checkAndResetQuotas(status, now);
+
+    // 1. Calcul du rythme de lissage horaire
+    const remainingHourMs = status.hourlyResetTime - now;
+    const remainingHourReqs = ApiKeyManager.HOURLY_LIMIT - status.hourlyRequests;
+    const hourlyDelay = remainingHourReqs > 0 && remainingHourMs > 0
+      ? (remainingHourMs / remainingHourReqs)
+      : 3600; // Si plus de requêtes dispo, délai max
+
+    // 2. Calcul du rythme de lissage journalier
+    const remainingDayMs = status.dailyResetTime - now;
+    const remainingDayReqs = ApiKeyManager.DAILY_LIMIT - status.dailyRequests;
+    const dailyDelay = remainingDayReqs > 0 && remainingDayMs > 0
+      ? (remainingDayMs / remainingDayReqs)
+      : 8640;
+
+    // Prendre le max des deux lissages et borner avec un minimum de sécurité de 1 seconde (burst protection)
+    const delay = Math.max(1000, hourlyDelay, dailyDelay);
+
+    return Math.ceil(delay);
+  }
+
+  /**
+   * Met à jour les statistiques de quotas affichées dans le Dashboard console.
+   */
+  public updateDashboard(key: string): void {
+    const status = this.keysStatus.get(key);
+    if (!status) return;
+
+    const now = Date.now();
+    const keyIndex = env.apiKeys.indexOf(key);
+
+    ConsoleDashboard.setQuotaInfo({
+      keyIndex: keyIndex >= 0 ? keyIndex : 0,
+      keyMasked: this.mask(key),
+      hourlyRequests: status.hourlyRequests,
+      hourlyLimit: ApiKeyManager.HOURLY_LIMIT,
+      dailyRequests: status.dailyRequests,
+      dailyLimit: ApiKeyManager.DAILY_LIMIT,
+      hourlyResetMinutes: Math.max(0, Math.ceil((status.hourlyResetTime - now) / (60 * 1000))),
+      dailyResetHours: Math.max(0, Math.ceil((status.dailyResetTime - now) / (60 * 60 * 1000))),
+    });
   }
 
   /**
@@ -73,6 +186,9 @@ export class ApiKeyManager {
       throw new Error('Toutes les clés API sont actuellement saturées (quotas dépassés) ou en cooldown.');
     }
 
+    // Mettre à jour l'affichage TUI
+    this.updateDashboard(bestKey.key);
+
     return bestKey.key;
   }
 
@@ -88,6 +204,12 @@ export class ApiKeyManager {
 
     status.hourlyRequests++;
     status.dailyRequests++;
+
+    // Sauvegarder dans Redis de manière asynchrone
+    this.persistStatus(status);
+
+    // Mettre à jour l'affichage TUI
+    this.updateDashboard(key);
 
     const maskedKey = this.mask(key);
     logger.debug(
@@ -109,6 +231,10 @@ export class ApiKeyManager {
     // On force la réinitialisation de son quota horaire car Cyanide signale un dépassement
     status.hourlyRequests = ApiKeyManager.HOURLY_LIMIT; 
 
+    // Persister et mettre à jour le Dashboard
+    this.persistStatus(status);
+    this.updateDashboard(key);
+
     logger.warn(
       `🚨 [ApiKeyManager] La clé [${this.mask(key)}] a reçu une erreur 429. Cooldown pendant ${cooldownDuration / 1000}s.`
     );
@@ -123,6 +249,10 @@ export class ApiKeyManager {
 
     const now = Date.now();
     status.cooldownUntil = now + ApiKeyManager.DEFAULT_COOLDOWN_MS;
+
+    // Persister et mettre à jour le Dashboard
+    this.persistStatus(status);
+    this.updateDashboard(key);
 
     logger.error(
       `❌ [ApiKeyManager] Erreur technique avec la clé [${this.mask(key)}]. Cooldown temporaire de 5 minutes activé.`
@@ -153,16 +283,24 @@ export class ApiKeyManager {
    * Réinitialise les fenêtres de quotas si le temps est écoulé.
    */
   private checkAndResetQuotas(status: ApiKeyStatus, now: number): void {
+    let changed = false;
+
     if (now >= status.hourlyResetTime) {
       status.hourlyRequests = 0;
       status.hourlyResetTime = now + ApiKeyManager.HOUR_MS;
+      changed = true;
       logger.info(`🔄 [ApiKeyManager] Quota horaire réinitialisé pour la clé [${this.mask(status.key)}].`);
     }
 
     if (now >= status.dailyResetTime) {
       status.dailyRequests = 0;
       status.dailyResetTime = now + ApiKeyManager.DAY_MS;
+      changed = true;
       logger.info(`🔄 [ApiKeyManager] Quota journalier réinitialisé pour la clé [${this.mask(status.key)}].`);
+    }
+
+    if (changed) {
+      this.persistStatus(status);
     }
   }
 

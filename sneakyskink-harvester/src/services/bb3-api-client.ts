@@ -2,6 +2,8 @@ import axios, { AxiosInstance, AxiosError } from 'axios';
 import { apiKeyManager } from './api-key-manager.js';
 import { logger } from '../utils/logger.js';
 import { env } from '../config/environment.js';
+import { ConsoleDashboard } from '../utils/dashboard.js';
+import { ActivityTracker } from '../utils/activity-tracker.js';
 
 export class BB3ApiClient {
   private axiosInstance: AxiosInstance;
@@ -59,14 +61,15 @@ export class BB3ApiClient {
         );
 
         // 2.5. Régulation du rythme (Rate Pacing) pour respecter scrupuleusement les quotas
+        const pacingDelay = apiKeyManager.getDynamicPacingDelay(activeKey);
         const now = Date.now();
         const timeSinceLast = now - this.lastRequestTime;
-        const minDelay = env.apiMinDelayMs;
-        if (timeSinceLast < minDelay) {
-          const waitTime = minDelay - timeSinceLast;
+        if (timeSinceLast < pacingDelay) {
+          const waitTime = pacingDelay - timeSinceLast;
           logger.debug(
             `⏳ [BB3ApiClient] Rate pacing : attente de ${waitTime}ms avant l'appel suivant pour réguler le trafic...`
           );
+          ConsoleDashboard.setPacing(waitTime, waitTime);
           await new Promise((resolve) => setTimeout(resolve, waitTime));
         }
         this.lastRequestTime = Date.now();
@@ -74,8 +77,9 @@ export class BB3ApiClient {
         // 3. Exécuter l'appel
         // Cyanide utilise le format d'URL : /ws/bb3/{method}/ ou /ws/cya/{method}/
         // La plupart des services BB3 sont sous /bb3/{method}/
+        ConsoleDashboard.setActivity(`Appel API: [${method}] (Tentative ${attempts}/${BB3ApiClient.MAX_RETRIES})`);
         const cleanMethod = method.replace(/^\/+|\/+$/g, '');
-        const endpoint = cleanMethod === 'status' ? 'cya/status/' : `bb3/${cleanMethod}/`;
+        const endpoint = (cleanMethod === 'status' || cleanMethod === 'welcome') ? `cya/${cleanMethod}/` : `bb3/${cleanMethod}/`;
         const response = await this.axiosInstance.get(endpoint, { params: queryParams });
 
         // 4. Valider le corps de réponse
@@ -86,6 +90,7 @@ export class BB3ApiClient {
         }
 
         // 5. Signaler le succès au KeyManager
+        ActivityTracker.touch();
         apiKeyManager.reportSuccess(activeKey);
         return data as T;
 
