@@ -18,6 +18,14 @@ import {
   List,
   ListItem,
   Chip,
+  Tabs,
+  Tab,
+  TableContainer,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
 } from '@mui/material';
 import {
   SportsSoccer as MatchIcon,
@@ -35,6 +43,7 @@ const MatchDetail: React.FC = () => {
   
   const [match, setMatch] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState(0);
 
   useEffect(() => {
     if (!id) return;
@@ -135,7 +144,55 @@ const MatchDetail: React.FC = () => {
           label: 'Sortie',
           icon: '💥',
           color: '#D97706',
-          text: `A infligé ${p.casualtiesInflicted} sortie(s) (${p.koInflicted || 0} KO, ${p.injuriesInflicted || 0} blessure(s), ${p.deadInflicted || 0} mort(s)).`,
+          text: `A infligé ${p.casualtiesInflicted} sortie(s) (${p.injuriesInflicted || 0} blessure(s), ${p.deadInflicted || 0} mort(s)).`,
+          isHome,
+          teamColor,
+          teamName,
+          playerName: p.name || `Joueur #${p.number}`,
+          playerNumber: p.number,
+          playerType: p.type,
+        });
+      }
+      // 4b. KO infligés
+      if (p.koInflicted > 0) {
+        events.push({
+          type: 'ko_inflicted',
+          label: 'KO',
+          icon: '🥊',
+          color: '#EAB308',
+          text: `A infligé ${p.koInflicted} KO(s).`,
+          isHome,
+          teamColor,
+          teamName,
+          playerName: p.name || `Joueur #${p.number}`,
+          playerNumber: p.number,
+          playerType: p.type,
+        });
+      }
+      // 4c. Surfs infligés
+      if (p.pushouts > 0) {
+        events.push({
+          type: 'pushout',
+          label: 'Surf',
+          icon: '🌊',
+          color: '#06B6D4',
+          text: `A poussé ${p.pushouts} adversaire(s) dans le public.`,
+          isHome,
+          teamColor,
+          teamName,
+          playerName: p.name || `Joueur #${p.number}`,
+          playerNumber: p.number,
+          playerType: p.type,
+        });
+      }
+      // 4d. Expulsions subies
+      if (p.sustainedExpulsions > 0) {
+        events.push({
+          type: 'expulsion',
+          label: 'Expulsion',
+          icon: '🟥',
+          color: '#EF4444',
+          text: 'A été expulsé du terrain par l\'arbitre.',
           isHome,
           teamColor,
           teamName,
@@ -204,9 +261,12 @@ const MatchDetail: React.FC = () => {
     dead_sustained: 2,
     casualty_sustained: 3,
     casualty_inflicted: 4,
-    interception: 5,
-    pass: 6,
-    mvp: 7
+    ko_inflicted: 5,
+    pushout: 6,
+    expulsion: 7,
+    interception: 8,
+    pass: 9,
+    mvp: 10
   };
   events.sort((a, b) => (eventPriority[a.type] || 99) - (eventPriority[b.type] || 99));
 
@@ -431,12 +491,17 @@ const MatchDetail: React.FC = () => {
                 { label: 'Passes réussies', field: 'passes' },
                 { label: 'Yards de passes', field: 'yardsPassing' },
                 { label: 'Blessures infligées', field: 'casualtiesInflicted' },
+                { label: 'KOs infligés', field: 'koInflicted' },
                 { label: 'Morts infligés', field: 'deadInflicted' },
+                { label: 'Surfs (public)', field: 'pushouts' },
+                { label: 'Expulsions subies', field: 'sustainedExpulsions' },
+                { label: 'XP gagnés', field: 'xpGained' },
               ].map((stat) => {
                 const homeVal = aggregateStat(homePlayerStats, stat.field);
                 const awayVal = aggregateStat(awayPlayerStats, stat.field);
-                const total = homeVal + awayVal || 1;
-                const homePct = (homeVal / total) * 100;
+                const total = homeVal + awayVal;
+                const homePct = total > 0 ? (homeVal / total) * 100 : 0;
+                const showBar = total > 0;
 
                 return (
                   <Box key={stat.label}>
@@ -446,8 +511,8 @@ const MatchDetail: React.FC = () => {
                       <Typography variant="caption" sx={{ fontWeight: 700, color: awayRaceInfo.color }}>{awayVal}</Typography>
                     </Box>
                     <Box sx={{ height: 6, display: 'flex', borderRadius: 99, overflow: 'hidden', bgcolor: 'rgba(255,255,255,0.05)' }}>
-                      <Box sx={{ width: `${homePct}%`, bgcolor: homeRaceInfo.color }} />
-                      <Box sx={{ flex: 1, bgcolor: awayRaceInfo.color }} />
+                      {showBar && <Box sx={{ width: `${homePct}%`, bgcolor: homeRaceInfo.color }} />}
+                      {showBar && <Box sx={{ flex: 1, bgcolor: awayRaceInfo.color }} />}
                     </Box>
                   </Box>
                 );
@@ -485,6 +550,120 @@ const MatchDetail: React.FC = () => {
         </Grid>
 
       </Grid>
+
+      {/* ─── Player Statistics Tables ─── */}
+      <Paper
+        sx={{
+          p: 3,
+          mt: 4,
+          border: '1px solid rgba(148,163,184,0.08)',
+          borderRadius: 3.5,
+          bgcolor: 'rgba(15,23,42,0.4)',
+        }}
+      >
+        <Typography variant="h6" sx={{ fontWeight: 800, color: '#F8FAFC', mb: 2 }}>
+          🏃 Statistiques Individuelles des Joueurs
+        </Typography>
+
+        <Tabs
+          value={activeTab}
+          onChange={(e, val) => setActiveTab(val)}
+          sx={{
+            mb: 2,
+            borderBottom: '1px solid rgba(148,163,184,0.08)',
+            '& .MuiTab-root': {
+              color: '#64748B',
+              fontWeight: 700,
+              '&.Mui-selected': {
+                color: activeTab === 0 ? homeRaceInfo.color : awayRaceInfo.color,
+              },
+            },
+            '& .MuiTabs-indicator': {
+              backgroundColor: activeTab === 0 ? homeRaceInfo.color : awayRaceInfo.color,
+            },
+          }}
+        >
+          <Tab label={match.homeTeam?.name || 'Équipe Domicile'} />
+          <Tab label={match.awayTeam?.name || 'Équipe Extérieur'} />
+        </Tabs>
+
+        <TableContainer sx={{ maxHeight: 450, overflowX: 'auto' }}>
+          <Table stickyHeader size="small" sx={{ minWidth: 800 }}>
+            <TableHead>
+              <TableRow sx={{ '& th': { bgcolor: '#0B1329', color: '#64748B', fontWeight: 800, borderColor: 'rgba(148,163,184,0.08)' } }}>
+                <TableCell width="50">#</TableCell>
+                <TableCell>Nom</TableCell>
+                <TableCell>Type</TableCell>
+                <TableCell align="center">TD</TableCell>
+                <TableCell align="center">Passes</TableCell>
+                <TableCell align="center">Yards Course</TableCell>
+                <TableCell align="center">Yards Passe</TableCell>
+                <TableCell align="center">Blocages Réussis</TableCell>
+                <TableCell align="center">KO Infligés</TableCell>
+                <TableCell align="center">Sorties Infligées</TableCell>
+                <TableCell align="center">Morts Infligés</TableCell>
+                <TableCell align="center">Surfs</TableCell>
+                <TableCell align="center">Expulsions</TableCell>
+                <TableCell align="center">MVP</TableCell>
+                <TableCell align="center">XP</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {(activeTab === 0 ? homePlayerStats : awayPlayerStats).map((p: any) => (
+                <TableRow
+                  key={p.playerId}
+                  hover
+                  sx={{
+                    '&:hover': { bgcolor: 'rgba(255,255,255,0.02) !important' },
+                    '& td': { borderColor: 'rgba(148,163,184,0.05)', color: '#94A3B8' },
+                  }}
+                >
+                  <TableCell sx={{ fontWeight: 800, color: '#F8FAFC' }}>{p.number}</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: '#F8FAFC' }}>{p.name || `Joueur #${p.number}`}</TableCell>
+                  <TableCell sx={{ textTransform: 'capitalize' }}>
+                    {p.type ? p.type.replace(/^[a-z]+_/, '').replace(/([A-Z])/g, ' $1') : '-'}
+                  </TableCell>
+                  <TableCell align="center" sx={{ fontWeight: p.touchdowns > 0 ? 800 : 400, color: p.touchdowns > 0 ? '#00E676' : 'inherit' }}>
+                    {p.touchdowns || 0}
+                  </TableCell>
+                  <TableCell align="center">{p.passes || 0}</TableCell>
+                  <TableCell align="center">{p.yardsRunning || 0}</TableCell>
+                  <TableCell align="center">{p.yardsPassing || 0}</TableCell>
+                  <TableCell align="center">{p.blocksSucceeded || 0}</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: p.koInflicted > 0 ? 800 : 400, color: p.koInflicted > 0 ? '#EAB308' : 'inherit' }}>
+                    {p.koInflicted || 0}
+                  </TableCell>
+                  <TableCell align="center" sx={{ fontWeight: p.casualtiesInflicted > 0 ? 800 : 400, color: p.casualtiesInflicted > 0 ? '#D97706' : 'inherit' }}>
+                    {p.casualtiesInflicted || 0}
+                  </TableCell>
+                  <TableCell align="center" sx={{ fontWeight: p.deadInflicted > 0 ? 800 : 400, color: p.deadInflicted > 0 ? '#EF4444' : 'inherit' }}>
+                    {p.deadInflicted || 0}
+                  </TableCell>
+                  <TableCell align="center" sx={{ fontWeight: p.pushouts > 0 ? 800 : 400, color: p.pushouts > 0 ? '#06B6D4' : 'inherit' }}>
+                    {p.pushouts || 0}
+                  </TableCell>
+                  <TableCell align="center" sx={{ fontWeight: p.sustainedExpulsions > 0 ? 800 : 400, color: p.sustainedExpulsions > 0 ? '#EF4444' : 'inherit' }}>
+                    {p.sustainedExpulsions || 0}
+                  </TableCell>
+                  <TableCell align="center">
+                    {p.mvp ? <Chip label="MVP" size="small" sx={{ bgcolor: 'rgba(245,158,11,0.1)', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.2)', fontWeight: 800, height: 18, fontSize: '0.6rem' }} /> : '-'}
+                  </TableCell>
+                  <TableCell align="center" sx={{ fontWeight: p.xpGained > 0 ? 800 : 400, color: p.xpGained > 0 ? '#A855F7' : 'inherit' }}>
+                    +{p.xpGained || 0}
+                  </TableCell>
+                </TableRow>
+              ))}
+              {(activeTab === 0 ? homePlayerStats : awayPlayerStats).length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={15} align="center" sx={{ py: 4, color: '#64748B' }}>
+                    Aucun joueur enregistré pour cette équipe dans ce match.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
     </Box>
   );
 };

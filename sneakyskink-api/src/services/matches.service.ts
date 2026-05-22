@@ -1,5 +1,10 @@
+/**
+ * Service de gestion des matchs et de leurs statistiques détaillées.
+ */
+
 import { prisma } from '../lib/prisma.js';
 import { ApiError } from '../middlewares/error.middleware.js';
+
 
 export class MatchesService {
   static async getAllMatches(
@@ -147,6 +152,7 @@ export class MatchesService {
         koSustained: ps.koSustained,
         injuriesSustained: ps.injuriesSustained,
         deadSustained: ps.deadSustained,
+        sustainedExpulsions: ps.sustainedExpulsions,
         newCasualties: ps.newCasualties,
       }));
 
@@ -179,6 +185,7 @@ export class MatchesService {
         koSustained: ps.koSustained,
         injuriesSustained: ps.injuriesSustained,
         deadSustained: ps.deadSustained,
+        sustainedExpulsions: ps.sustainedExpulsions,
         newCasualties: ps.newCasualties,
       }));
 

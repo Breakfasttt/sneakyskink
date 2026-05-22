@@ -214,6 +214,7 @@ model PlayerMatchStats {
   koSustained         Int    @default(0) @map("ko_sustained")
   injuriesSustained   Int    @default(0) @map("injuries_sustained")
   deadSustained       Int    @default(0) @map("dead_sustained")
+  sustainedExpulsions Int    @default(0) @map("sustained_expulsions")
   
   // Blessure subie lors de ce match précis (ex: ["badly_hurt"])
   newCasualties       String[] @map("new_casualties")

@@ -1,3 +1,4 @@
+// Ingestion des statistiques détaillées des matchs
 import { Prisma } from 'sneakyskink-bdd';
 import { logger } from '../../utils/logger.js';
 
@@ -8,20 +9,46 @@ export interface RawMatchPlayerStats {
   armour_breaks?: number;
   tackles?: number;
   pushouts?: number;
+  pushouts_inflicted?: number;
   yards_running?: number;
   yards_passing?: number;
+  yards_rushing?: number;
   catches?: number;
   interceptions?: number;
   passes?: number;
+  
+  // Dégâts infligés
+  casualties_inflicted?: number;
   inflictedcasualties?: number;
+  
+  injuries_inflicted?: number;
   inflictedinjuries?: number;
+  
+  ko_inflicted?: number;
   inflictedko?: number;
+  
+  dead_inflicted?: number;
   deadinflicted?: number;
-  sustainedexpulsions?: number;
+  
+  // Dégâts subis
+  casualties_sustained?: number;
   sustainedcasualties?: number;
+  
+  ko_sustained?: number;
   sustainedko?: number;
+  
+  injuries_sustained?: number;
   sustainedinjuries?: number;
+  
+  dead_sustained?: number;
   sustaineddead?: number;
+  
+  // Expulsions
+  expulsions_sustained?: number;
+  sustained_expulsions?: number;
+  expulsions?: number;
+  sustainedexpulsions?: number;
+
   touchdowns?: number;
 }
 
@@ -201,7 +228,7 @@ export class MatchParser {
       passes: s.passes || 0,
       catches: s.catches || 0,
       interceptions: s.interceptions || 0,
-      yardsRunning: s.yards_running || 0,
+      yardsRunning: s.yards_running || s.yards_rushing || 0,
       yardsPassing: s.yards_passing || 0,
 
       // Stats physiques
@@ -209,19 +236,20 @@ export class MatchParser {
       blocksSustained: s.blocks_sustained || 0,
       armourBreaks: s.armour_breaks || 0,
       tackles: s.tackles || 0,
-      pushouts: s.pushouts || 0,
+      pushouts: s.pushouts_inflicted || s.pushouts || 0,
 
       // Dégâts infligés
-      casualtiesInflicted: s.inflictedcasualties || 0,
-      koInflicted: s.inflictedko || 0,
-      injuriesInflicted: s.inflictedinjuries || 0,
-      deadInflicted: s.deadinflicted || 0,
+      casualtiesInflicted: s.casualties_inflicted || s.inflictedcasualties || 0,
+      koInflicted: s.ko_inflicted || s.inflictedko || 0,
+      injuriesInflicted: s.injuries_inflicted || s.inflictedinjuries || 0,
+      deadInflicted: s.dead_inflicted || s.deadinflicted || 0,
 
       // Dégâts subis
-      casualtiesSustained: s.sustainedcasualties || 0,
-      koSustained: s.sustainedko || 0,
-      injuriesSustained: s.sustainedinjuries || 0,
-      deadSustained: s.sustaineddead || 0,
+      casualtiesSustained: s.casualties_sustained || s.sustainedcasualties || 0,
+      koSustained: s.ko_sustained || s.sustainedko || 0,
+      injuriesSustained: s.injuries_sustained || s.sustainedinjuries || 0,
+      deadSustained: s.dead_sustained || s.sustaineddead || 0,
+      sustainedExpulsions: s.expulsions_sustained || s.sustained_expulsions || s.expulsions || s.sustainedexpulsions || 0,
 
       // Blessures de ce match
       newCasualties: playerRaw.casualties?.NewCasualty || [],
