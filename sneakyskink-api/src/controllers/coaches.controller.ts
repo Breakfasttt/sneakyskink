@@ -6,7 +6,7 @@ export class CoachesController {
     try {
       const search = req.query.search as string | undefined;
 
-      const limit = Math.min(parseInt(req.query.limit as string || '20', 10), 100);
+      const limit = Math.min(parseInt(req.query.limit as string || '100', 10), 1000);
       const offset = Math.max(parseInt(req.query.offset as string || '0', 10), 0);
 
       const result = await CoachesService.getAllCoaches(search, limit, offset);

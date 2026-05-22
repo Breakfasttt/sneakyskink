@@ -147,7 +147,7 @@ const SearchResults: React.FC = () => {
                     {index > 0 && <Divider sx={{ borderColor: 'rgba(148,163,184,0.06)' }} />}
                     <ListItemButton onClick={() => navigate(`/coach/${c.id}`)} sx={{ py: 1.5, borderRadius: 2 }}>
                       <ListItemIcon sx={{ minWidth: 40, color: '#00E676' }}><CoachIcon /></ListItemIcon>
-                      <ListItemText primary={c.name} secondary={c.country} primaryTypographyProps={{ fontWeight: 700, color: '#F8FAFC' }} secondaryTypographyProps={{ fontSize: '0.75rem', color: '#64748B' }} />
+                      <ListItemText primary={c.name} primaryTypographyProps={{ fontWeight: 700, color: '#F8FAFC' }} />
                       <ArrowIcon sx={{ fontSize: 16, color: '#334155' }} />
                     </ListItemButton>
                   </React.Fragment>

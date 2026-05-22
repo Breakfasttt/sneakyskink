@@ -1,9 +1,3 @@
-/**
- * Page de recherche et d'affichage des compétitions.
- * Permet de filtrer par statut/format et d'importer une compétition
- * via son ID Cyanide si elle n'est pas encore enregistrée.
- */
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -19,18 +13,24 @@ import {
   Select,
   MenuItem,
   FormControl,
-  InputLabel,
   Button,
   Divider,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
 } from '@mui/material';
 import {
   Search as SearchIcon,
   SportsSoccer as CompetitionIcon,
   ArrowForward as ArrowIcon,
   EmojiEvents as LeagueIcon,
-  CalendarToday as DateIcon,
 } from '@mui/icons-material';
 import { api } from '../api';
+import { ListGridView } from '../components/ListGridView';
+import { ItemCard } from '../components/ItemCard';
 
 const Competitions: React.FC = () => {
   const navigate = useNavigate();
@@ -42,12 +42,13 @@ const Competitions: React.FC = () => {
   const [syncing, setSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
   const [syncError, setSyncError] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
+  const [sortBy, setSortBy] = useState<'name' | 'league' | 'status' | 'teams'>('name');
 
   useEffect(() => {
     setLoading(true);
     api.getCompetitions()
       .then((res: any) => {
-        // Defensive check: API might wrap it in { success: true, data: [...] }
         const list = res.data || res || [];
         setCompetitions(Array.isArray(list) ? list : []);
       })
@@ -80,6 +81,27 @@ const Competitions: React.FC = () => {
     const matchesStatus = statusFilter === 'ALL' ? true : comp.status === statusFilter;
     const matchesFormat = formatFilter === 'ALL' ? true : comp.format === formatFilter;
     return matchesSearch && matchesStatus && matchesFormat;
+  });
+
+  // Tri des compétitions côté client
+  const sortedCompetitions = [...filteredCompetitions].sort((a, b) => {
+    if (sortBy === 'league') {
+      const nameA = a.leagueName || '';
+      const nameB = b.leagueName || '';
+      const compare = nameA.localeCompare(nameB);
+      if (compare !== 0) return compare;
+      return (a.name || '').localeCompare(b.name || '');
+    } else if (sortBy === 'status') {
+      const compare = (a.status || '').localeCompare(b.status || '');
+      if (compare !== 0) return compare;
+      return (a.name || '').localeCompare(b.name || '');
+    } else if (sortBy === 'teams') {
+      const diff = (b.teamsCount ?? 0) - (a.teamsCount ?? 0);
+      if (diff !== 0) return diff;
+      return (a.name || '').localeCompare(b.name || '');
+    } else {
+      return (a.name || '').localeCompare(b.name || '');
+    }
   });
 
   const getStatusColor = (status: string) => {
@@ -116,252 +138,329 @@ const Competitions: React.FC = () => {
         </Box>
       </Box>
 
-      {/* Filters & Search */}
-      <Grid container spacing={2} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={6}>
-          <Paper
-            elevation={0}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              px: 2,
-              height: 48,
-              borderRadius: 3,
-              border: '1px solid rgba(148,163,184,0.12)',
-              bgcolor: 'rgba(21,29,48,0.8)',
-              '&:focus-within': {
-                border: '1px solid rgba(0,230,118,0.4)',
-              },
-              transition: 'all 0.2s',
-            }}
-          >
-            <SearchIcon sx={{ color: '#475569', mr: 1 }} />
-            <InputBase
-              fullWidth
-              placeholder="Rechercher par compétition ou ligue..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              sx={{ fontSize: '0.9rem', color: '#F8FAFC' }}
-            />
-          </Paper>
-        </Grid>
-
-        <Grid item xs={6} md={3}>
-          <FormControl fullWidth size="small">
-            <Select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              displayEmpty
-              sx={{
-                height: 48,
-                bgcolor: 'rgba(21,29,48,0.8)',
-                border: '1px solid rgba(148,163,184,0.12)',
-                borderRadius: 3,
-                color: '#F8FAFC',
-                '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
-                '&:hover .MuiOutlinedInput-notchedOutline': { border: 'none' },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { border: 'none' },
-              }}
-            >
-              <MenuItem value="ALL">Tous les statuts</MenuItem>
-              <MenuItem value="InProgress">En cours</MenuItem>
-              <MenuItem value="Scheduled">Planifiée</MenuItem>
-              <MenuItem value="Validated">Validée</MenuItem>
-              <MenuItem value="Played">Jouée</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-
-        <Grid item xs={6} md={3}>
-          <FormControl fullWidth size="small">
-            <Select
-              value={formatFilter}
-              onChange={(e) => setFormatFilter(e.target.value)}
-              displayEmpty
-              sx={{
-                height: 48,
-                bgcolor: 'rgba(21,29,48,0.8)',
-                border: '1px solid rgba(148,163,184,0.12)',
-                borderRadius: 3,
-                color: '#F8FAFC',
-                '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
-                '&:hover .MuiOutlinedInput-notchedOutline': { border: 'none' },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { border: 'none' },
-              }}
-            >
-              <MenuItem value="ALL">Tous les formats</MenuItem>
-              <MenuItem value="RoundRobin">Championnat</MenuItem>
-              <MenuItem value="Knockout">Élimination directe</MenuItem>
-              <MenuItem value="Wissen">Ronde suisse</MenuItem>
-              <MenuItem value="Ladder">Échelle</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-      </Grid>
-
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-          <CircularProgress sx={{ color: '#00E676' }} />
-        </Box>
-      ) : filteredCompetitions.length === 0 ? (
+      {/* Search Bar only */}
+      <Box sx={{ mb: 4 }}>
         <Paper
           elevation={0}
           sx={{
-            p: 6,
-            textAlign: 'center',
-            border: '1px dashed rgba(148,163,184,0.08)',
+            display: 'flex',
+            alignItems: 'center',
+            px: 2,
+            height: 48,
             borderRadius: 3,
-            bgcolor: 'rgba(15,23,42,0.4)',
+            border: '1px solid rgba(148,163,184,0.12)',
+            bgcolor: 'rgba(21,29,48,0.8)',
+            '&:focus-within': {
+              border: '1px solid rgba(0,230,118,0.4)',
+            },
+            transition: 'all 0.2s',
           }}
         >
-          <CompetitionIcon sx={{ color: '#334155', fontSize: 48, mb: 1.5 }} />
-          <Typography variant="subtitle1" sx={{ color: '#F8FAFC', fontWeight: 700 }}>
-            Aucune compétition trouvée
-          </Typography>
-          <Typography variant="body2" sx={{ color: '#64748B', mb: 3 }}>
-            Veuillez ajuster vos filtres de recherche.
-          </Typography>
+          <SearchIcon sx={{ color: '#475569', mr: 1 }} />
+          <InputBase
+            fullWidth
+            placeholder="Rechercher par compétition ou ligue..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            sx={{ fontSize: '0.9rem', color: '#F8FAFC' }}
+          />
+        </Paper>
+      </Box>
 
-          <Divider sx={{ my: 3, borderColor: 'rgba(148,163,184,0.08)' }} />
-
-          <Box sx={{ maxWidth: 480, mx: 'auto' }}>
-            <Typography variant="body2" sx={{ color: '#94A3B8', mb: 2, fontWeight: 600 }}>
-              Demander l'importation de cette compétition depuis les serveurs Cyanide :
-            </Typography>
-            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-              <Button
-                variant="contained"
-                disabled={syncing || !searchQuery.trim()}
-                onClick={handleSync}
+      {/* Grid/List unified view */}
+      <ListGridView
+        loading={loading}
+        isEmpty={sortedCompetitions.length === 0}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        sortOptions={[
+          { value: 'name', label: 'Nom' },
+          { value: 'league', label: 'Ligue' },
+          { value: 'status', label: 'Statut' },
+          { value: 'teams', label: 'Équipes' },
+        ]}
+        extraControls={
+          <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+            <FormControl size="small" sx={{ minWidth: 140 }}>
+              <Select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                displayEmpty
                 sx={{
-                  bgcolor: '#00E676',
-                  color: '#0F172A',
-                  fontWeight: 700,
-                  textTransform: 'none',
-                  borderRadius: 2,
-                  px: 3,
-                  py: 1,
-                  '&:hover': {
-                    bgcolor: '#00C853',
-                  },
-                  '&:disabled': {
-                    bgcolor: 'rgba(0,230,118,0.12)',
-                    color: 'rgba(255,255,255,0.3)',
-                  }
+                  height: 38,
+                  bgcolor: 'rgba(21,29,48,0.8)',
+                  border: '1px solid rgba(148,163,184,0.12)',
+                  borderRadius: 2.5,
+                  color: '#F8FAFC',
+                  fontSize: '0.8rem',
+                  '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
                 }}
               >
-                {syncing ? <CircularProgress size={20} sx={{ color: '#0F172A' }} /> : `Rechercher et importer "${searchQuery}"`}
-              </Button>
-            </Box>
-            {syncMessage && (
-              <Typography variant="body2" sx={{ color: syncError ? '#FF3D00' : '#00E676', fontWeight: 600, mt: 1, display: 'block' }}>
-                {syncMessage}
-              </Typography>
-            )}
+                <MenuItem value="ALL" sx={{ fontSize: '0.8rem' }}>Tous les statuts</MenuItem>
+                <MenuItem value="InProgress" sx={{ fontSize: '0.8rem' }}>En cours</MenuItem>
+                <MenuItem value="Scheduled" sx={{ fontSize: '0.8rem' }}>Planifiée</MenuItem>
+                <MenuItem value="Validated" sx={{ fontSize: '0.8rem' }}>Validée</MenuItem>
+                <MenuItem value="Played" sx={{ fontSize: '0.8rem' }}>Jouée</MenuItem>
+              </Select>
+            </FormControl>
+
+            <FormControl size="small" sx={{ minWidth: 140 }}>
+              <Select
+                value={formatFilter}
+                onChange={(e) => setFormatFilter(e.target.value)}
+                displayEmpty
+                sx={{
+                  height: 38,
+                  bgcolor: 'rgba(21,29,48,0.8)',
+                  border: '1px solid rgba(148,163,184,0.12)',
+                  borderRadius: 2.5,
+                  color: '#F8FAFC',
+                  fontSize: '0.8rem',
+                  '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+                }}
+              >
+                <MenuItem value="ALL" sx={{ fontSize: '0.8rem' }}>Tous les formats</MenuItem>
+                <MenuItem value="RoundRobin" sx={{ fontSize: '0.8rem' }}>Championnat</MenuItem>
+                <MenuItem value="Knockout" sx={{ fontSize: '0.8rem' }}>Élimination directe</MenuItem>
+                <MenuItem value="Wissen" sx={{ fontSize: '0.8rem' }}>Ronde suisse</MenuItem>
+                <MenuItem value="Ladder" sx={{ fontSize: '0.8rem' }}>Échelle</MenuItem>
+              </Select>
+            </FormControl>
           </Box>
-        </Paper>
-      ) : (
-        <Grid container spacing={2}>
-          {filteredCompetitions.map((comp) => {
-            const statusColor = getStatusColor(comp.status);
-            return (
-              <Grid item xs={12} sm={6} key={comp.id}>
-                <Paper
-                  onClick={() => navigate(`/competition/${comp.id}`)}
-                  elevation={0}
+        }
+        renderEmptyState={() => (
+          <Paper
+            elevation={0}
+            sx={{
+              p: 6,
+              textAlign: 'center',
+              border: '1px dashed rgba(148,163,184,0.08)',
+              borderRadius: 3,
+              bgcolor: 'rgba(15,23,42,0.4)',
+            }}
+          >
+            <CompetitionIcon sx={{ color: '#334155', fontSize: 48, mb: 1.5 }} />
+            <Typography variant="subtitle1" sx={{ color: '#F8FAFC', fontWeight: 700 }}>
+              Aucune compétition trouvée
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#64748B', mb: 3 }}>
+              Veuillez ajuster vos filtres de recherche.
+            </Typography>
+
+            <Divider sx={{ my: 3, borderColor: 'rgba(148,163,184,0.08)' }} />
+
+            <Box sx={{ maxWidth: 480, mx: 'auto' }}>
+              <Typography variant="body2" sx={{ color: '#94A3B8', mb: 2, fontWeight: 600 }}>
+                Demander l'importation de cette compétition depuis les serveurs Cyanide :
+              </Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                <Button
+                  variant="contained"
+                  disabled={syncing || !searchQuery.trim()}
+                  onClick={handleSync}
                   sx={{
-                    p: 2.5,
-                    borderRadius: 3,
-                    border: `1px solid rgba(148,163,184,0.08)`,
-                    background: 'linear-gradient(135deg, rgba(30,41,59,0.4) 0%, rgba(15,23,42,0.4) 100%)',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                    bgcolor: '#00E676',
+                    color: '#0F172A',
+                    fontWeight: 700,
+                    textTransform: 'none',
+                    borderRadius: 2,
+                    px: 3,
+                    py: 1,
                     '&:hover': {
-                      border: '1px solid rgba(0,230,118,0.3)',
-                      transform: 'translateY(-2px)',
-                      boxShadow: '0 8px 24px rgba(0,230,118,0.05)',
+                      bgcolor: '#00C853',
                     },
+                    '&:disabled': {
+                      bgcolor: 'rgba(0,230,118,0.12)',
+                      color: 'rgba(255,255,255,0.3)',
+                    }
                   }}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, minWidth: 0 }}>
-                    <Box
+                  {syncing ? <CircularProgress size={20} sx={{ color: '#0F172A' }} /> : `Rechercher et importer "${searchQuery}"`}
+                </Button>
+              </Box>
+              {syncMessage && (
+                <Typography variant="body2" sx={{ color: syncError ? '#FF3D00' : '#00E676', fontWeight: 600, mt: 1, display: 'block' }}>
+                  {syncMessage}
+                </Typography>
+              )}
+            </Box>
+          </Paper>
+        )}
+        renderList={() => (
+          <TableContainer
+            component={Paper}
+            elevation={0}
+            sx={{
+              borderRadius: 3,
+              border: '1px solid rgba(148,163,184,0.08)',
+              background: 'linear-gradient(135deg, rgba(30,41,59,0.4) 0%, rgba(15,23,42,0.4) 100%)',
+              overflow: 'hidden',
+            }}
+          >
+            <Table sx={{ minWidth: 600 }}>
+              <TableHead sx={{ bgcolor: 'rgba(15,23,42,0.6)', borderBottom: '1px solid rgba(148,163,184,0.12)' }}>
+                <TableRow>
+                  <TableCell sx={{ color: '#94A3B8', fontWeight: 700, borderBottom: 'none', py: 2, pl: 4 }}>Compétition</TableCell>
+                  <TableCell sx={{ color: '#94A3B8', fontWeight: 700, borderBottom: 'none', py: 2 }}>Ligue</TableCell>
+                  <TableCell align="center" sx={{ color: '#94A3B8', fontWeight: 700, borderBottom: 'none', py: 2 }}>Format</TableCell>
+                  <TableCell align="center" sx={{ color: '#94A3B8', fontWeight: 700, borderBottom: 'none', py: 2 }}>Statut</TableCell>
+                  <TableCell align="right" sx={{ color: '#94A3B8', fontWeight: 700, borderBottom: 'none', py: 2 }}>Équipes</TableCell>
+                  <TableCell align="right" sx={{ color: '#94A3B8', fontWeight: 700, borderBottom: 'none', py: 2, width: 80, pr: 4 }}></TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {sortedCompetitions.map((comp) => {
+                  const statusColor = getStatusColor(comp.status);
+                  return (
+                    <TableRow
+                      key={comp.id}
+                      onClick={() => navigate(`/competition/${comp.id}`)}
                       sx={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 2,
-                        bgcolor: 'rgba(59,130,246,0.06)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border: '1px solid rgba(59,130,246,0.15)',
-                        color: '#3B82F6',
-                        flexShrink: 0,
+                        cursor: 'pointer',
+                        transition: 'background-color 0.2s',
+                        '&:hover': {
+                          bgcolor: 'rgba(0, 230, 118, 0.04)',
+                        },
+                        '&:last-child td, &:last-child th': { border: 0 },
                       }}
                     >
-                      <CompetitionIcon sx={{ fontSize: 20 }} />
-                    </Box>
-
-                    <Box sx={{ minWidth: 0 }}>
-                      <Typography sx={{ fontWeight: 800, color: '#F8FAFC', fontSize: '0.95rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {comp.name}
-                      </Typography>
-
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mt: 0.5, flexWrap: 'wrap' }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#64748B' }}>
-                          <LeagueIcon sx={{ fontSize: 12, color: '#F59E0B' }} />
-                          <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                      <TableCell sx={{ borderBottom: '1px solid rgba(148,163,184,0.06)', py: 2, pl: 4 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <Box
+                            sx={{
+                              width: 36,
+                              height: 36,
+                              borderRadius: 1.5,
+                              bgcolor: 'rgba(59,130,246,0.06)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              border: '1px solid rgba(59,130,246,0.15)',
+                              color: '#3B82F6',
+                            }}
+                          >
+                            <CompetitionIcon sx={{ fontSize: 18 }} />
+                          </Box>
+                          <Typography sx={{ fontWeight: 700, color: '#F8FAFC' }}>
+                            {comp.name}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell sx={{ borderBottom: '1px solid rgba(148,163,184,0.06)', py: 2 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#94A3B8' }}>
+                          <LeagueIcon sx={{ fontSize: 14, color: '#F59E0B' }} />
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
                             {comp.leagueName}
                           </Typography>
                         </Box>
-
+                      </TableCell>
+                      <TableCell align="center" sx={{ borderBottom: '1px solid rgba(148,163,184,0.06)', py: 2 }}>
+                        <Typography variant="body2" sx={{ color: '#94A3B8', fontWeight: 500 }}>
+                          {comp.format === 'RoundRobin'
+                            ? 'Championnat'
+                            : comp.format === 'Knockout'
+                            ? 'Élimination directe'
+                            : comp.format === 'Wissen'
+                            ? 'Ronde suisse'
+                            : comp.format === 'Ladder'
+                            ? 'Échelle'
+                            : comp.format}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="center" sx={{ borderBottom: '1px solid rgba(148,163,184,0.06)', py: 2 }}>
                         <Chip
                           label={getStatusLabel(comp.status)}
                           size="small"
                           sx={{
                             height: 18,
-                            fontSize: '0.6rem',
+                            fontSize: '0.62rem',
                             fontWeight: 700,
                             bgcolor: alpha(statusColor, 0.08),
                             color: statusColor,
                             border: `1px solid ${alpha(statusColor, 0.15)}`,
                           }}
                         />
-
-                        {comp.teamsCount !== undefined && (
-                          <Typography variant="caption" sx={{ color: '#475569', fontWeight: 600 }}>
-                            {comp.teamsCount}/{comp.teamsMax ?? '∞'} équipes
-                          </Typography>
-                        )}
+                      </TableCell>
+                      <TableCell align="right" sx={{ borderBottom: '1px solid rgba(148,163,184,0.06)', py: 2 }}>
+                        <Typography variant="body2" sx={{ color: '#F8FAFC', fontWeight: 600 }}>
+                          {comp.teamsCount !== undefined ? `${comp.teamsCount}/${comp.teamsMax ?? '∞'}` : '-'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="right" sx={{ borderBottom: '1px solid rgba(148,163,184,0.06)', py: 2, pr: 4 }}>
+                        <IconButton
+                          size="small"
+                          sx={{
+                            color: '#64748B',
+                            '&:hover': { color: '#00E676' }
+                          }}
+                        >
+                          <ArrowIcon sx={{ fontSize: 16 }} />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+        renderGrid={() => (
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                sm: 'repeat(2, 1fr)',
+                md: 'repeat(3, 1fr)',
+              },
+              gap: 2,
+              width: '100%',
+            }}
+          >
+            {sortedCompetitions.map((comp) => {
+              const statusColor = getStatusColor(comp.status);
+              return (
+                <ItemCard
+                  key={comp.id}
+                  title={comp.name}
+                  onClick={() => navigate(`/competition/${comp.id}`)}
+                  icon={<CompetitionIcon sx={{ fontSize: 20 }} />}
+                  iconBgColor="rgba(59,130,246,0.06)"
+                  iconBorderColor="rgba(59,130,246,0.15)"
+                  iconColor="#3B82F6"
+                  subtitle={
+                    <>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#64748B' }}>
+                        <LeagueIcon sx={{ fontSize: 12, color: '#F59E0B' }} />
+                        <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                          {comp.leagueName}
+                        </Typography>
                       </Box>
-                    </Box>
-                  </Box>
-
-                  <IconButton
-                    sx={{
-                      color: '#334155',
-                      bgcolor: 'rgba(255,255,255,0.02)',
-                      border: '1px solid rgba(148,163,184,0.06)',
-                      borderRadius: 2,
-                      p: 0.75,
-                      transition: 'all 0.2s',
-                      '&:hover': {
-                        color: '#00E676',
-                        bgcolor: 'rgba(0,230,118,0.05)',
-                        border: '1px solid rgba(0,230,118,0.2)',
-                      }
-                    }}
-                  >
-                    <ArrowIcon sx={{ fontSize: 14 }} />
-                  </IconButton>
-                </Paper>
-              </Grid>
-            );
-          })}
-        </Grid>
-      )}
+                      <Chip
+                        label={getStatusLabel(comp.status)}
+                        size="small"
+                        sx={{
+                          height: 18,
+                          fontSize: '0.6rem',
+                          fontWeight: 700,
+                          bgcolor: alpha(statusColor, 0.08),
+                          color: statusColor,
+                          border: `1px solid ${alpha(statusColor, 0.15)}`,
+                        }}
+                      />
+                    </>
+                  }
+                  description={
+                    comp.teamsCount !== undefined ? `${comp.teamsCount}/${comp.teamsMax ?? '∞'} équipes` : undefined
+                  }
+                />
+              );
+            })}
+          </Box>
+        )}
+      />
     </Box>
   );
 };

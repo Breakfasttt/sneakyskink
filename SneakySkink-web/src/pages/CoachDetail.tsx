@@ -32,7 +32,6 @@ import {
   EmojiEvents as TrophyIcon,
   ArrowForward as ArrowIcon,
   Search as SearchIcon,
-  Public as PublicIcon,
   TrendingUp as WinrateIcon,
   Schedule as ClockIcon,
 } from '@mui/icons-material';
@@ -249,12 +248,6 @@ const CoachDetail: React.FC = () => {
             <Typography variant="h4" sx={{ fontWeight: 900, color: '#F8FAFC', letterSpacing: '-0.02em', mb: 0.5 }}>
               {coachData.name}
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: '#64748B' }}>
-              <PublicIcon sx={{ fontSize: 14 }} />
-              <Typography variant="caption" sx={{ fontWeight: 600 }}>
-                {coachData.country || 'Inconnu'}
-              </Typography>
-            </Box>
           </Box>
         </Box>
       </Paper>

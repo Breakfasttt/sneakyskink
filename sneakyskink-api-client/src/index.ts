@@ -101,7 +101,13 @@ export class SneakySkinkApiClient {
   /**
    * 🎯 Récupère les compétitions avec des filtres optionnels
    */
-  public async getCompetitions(params?: { leagueId?: string }): Promise<Competition[]> {
+  public async getCompetitions(params?: {
+    leagueId?: string;
+    format?: string;
+    status?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<Competition[]> {
     const res = await this.client.get('/competitions', { params });
     return res.data.data;
   }
@@ -133,7 +139,7 @@ export class SneakySkinkApiClient {
   /**
    * 👥 Récupère la liste globale de tous les coachs
    */
-  public async getCoaches(params?: { search?: string; limit?: number }): Promise<Coach[]> {
+  public async getCoaches(params?: { search?: string; limit?: number; offset?: number }): Promise<Coach[]> {
     const res = await this.client.get('/coaches', { params });
     return res.data.data;
   }
