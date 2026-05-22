@@ -21,6 +21,7 @@ import { MatchParser } from '../parsers/bb3/match.parser.js';
 import { logger } from '../utils/logger.js';
 import { MaintenanceService } from '../services/maintenance.service.js';
 import { ConsoleDashboard } from '../utils/dashboard.js';
+import { cyanideHealthService } from '../services/cyanide-health.service.js';
 
 export const harvesterWorker = new Worker<JobData>(
   QUEUE_NAME,
@@ -89,7 +90,7 @@ export async function handleFetchCoach(coachId: string) {
   
   // Appeler l'API de Cyanide via lookup (l'endpoint /coaches filtre mal par ID individuel)
   const response = await bb3ApiClient.get('/lookup', lookupParams);
-  const coachesList = response.coaches || [];
+  const coachesList = response?.coaches || [];
   
   if (coachesList.length === 0) {
     throw new Error(`Aucun coach trouvé avec l'identifiant/nom "${coachId}" via lookup sur l'API Cyanide.`);
@@ -132,13 +133,13 @@ export async function handleFetchLeague(leagueId: string, triggerPriority: 'high
   if (!isUuidOrId) {
     logger.info(`🔍 [Fetch] Résolution du nom de ligue "${leagueId}" via lookup...`);
     const lookupRes = await bb3ApiClient.get('/lookup', { league_name: leagueId, exact: 1 });
-    if (lookupRes.league && lookupRes.league.id) {
+    if (lookupRes?.league && lookupRes.league.id) {
       realLeagueId = lookupRes.league.id;
       logger.info(`🔍 [Fetch] Nom de ligue "${leagueId}" résolu en ID: ${realLeagueId}`);
     } else {
       // Fallback: essayer de chercher via /leagues
       const leaguesRes = await bb3ApiClient.get('/leagues', { league: leagueId, limit: 1 });
-      const matched = leaguesRes.leagues?.[0];
+      const matched = leaguesRes?.leagues?.[0];
       if (matched && matched.name?.toLowerCase() === leagueId.toLowerCase()) {
         realLeagueId = matched.id;
         logger.info(`🔍 [Fetch] Nom de ligue "${leagueId}" résolu via /leagues en ID: ${realLeagueId}`);
@@ -149,9 +150,22 @@ export async function handleFetchLeague(leagueId: string, triggerPriority: 'high
   }
 
   // A. Récupérer et sauvegarder les détails de la ligue
-  const leagueResponse = await bb3ApiClient.get('/league', { id: realLeagueId });
-  if (!leagueResponse.league) {
-    throw new Error(`Aucune ligue trouvée avec l'ID ${realLeagueId} sur l'API Cyanide.`);
+  let leagueResponse;
+  try {
+    leagueResponse = await bb3ApiClient.get('/league', { id: realLeagueId });
+    if (!leagueResponse || !leagueResponse.league) {
+      throw new Error(`Aucune ligue trouvée avec l'ID ${realLeagueId} sur l'API Cyanide.`);
+    }
+  } catch (error: any) {
+    if (error.message?.includes('retourné false') || error.message?.includes('Functional Error')) {
+      logger.warn(`⚠️ [Fetch] La ligue ${realLeagueId} a retourné une réponse vide/fausse de l'API Cyanide. Analyse de la santé de l'API...`);
+      ConsoleDashboard.addAlert('WARN', `Ligue ${realLeagueId} : réponse vide de l'API Cyanide.`);
+      cyanideHealthService.handleApiFailure(error.message).catch(err => {
+        logger.error(`❌ [Worker] Échec lors du diagnostic de l'API: ${err.message}`);
+      });
+      return;
+    }
+    throw error;
   }
 
   const leagueUpsert = LeagueParser.parseLeague(leagueResponse.league);
@@ -235,7 +249,7 @@ export async function handleFetchCompetition(competitionId: string, triggerPrior
     const lookupParams = isUuidOrId ? { competition_id: competitionId } : { competition_name: competitionId };
     const lookupRes = await bb3ApiClient.get('/lookup', { ...lookupParams, exact: 1 });
     
-    if (lookupRes.competition && lookupRes.competition.id && lookupRes.competition.league?.id) {
+    if (lookupRes?.competition && lookupRes.competition.id && lookupRes.competition.league?.id) {
       realCompetitionId = lookupRes.competition.id;
       const parentLeagueId = lookupRes.competition.league.id;
       
@@ -286,7 +300,7 @@ export async function handleFetchCompetition(competitionId: string, triggerPrior
   }
 
   const deltaResponse = await bb3ApiClient.get('/matches', deltaParams);
-  let deltaContests = deltaResponse.matches || [];
+  let deltaContests = deltaResponse?.matches || [];
   
   deltaContests = deltaContests.map((m: any) => ({
     ...m,
@@ -334,7 +348,7 @@ export async function handleFetchCompetition(competitionId: string, triggerPrior
 
     logger.info(`📅 [Fetch] Requête historique avec end=${endStr} (start=2023-01-01).`);
     const historyResponse = await bb3ApiClient.get('/matches', historyParams);
-    let historyContests = historyResponse.matches || [];
+    let historyContests = historyResponse?.matches || [];
 
     historyContests = historyContests.map((m: any) => ({
       ...m,
@@ -396,10 +410,23 @@ export async function handleFetchTeam(teamId: string, leagueId: string, triggerP
   logger.info(`🔍 [Fetch] Initialisation du roster complet de l'équipe ID ${teamId}...`);
   
   // Appeler le roster complet
-  const detailResponse = await bb3ApiClient.get('/team', { id: teamId, roster: 1, skills: 1, casualties: 1 });
-  if (!detailResponse.team) {
-    logger.warn(`⚠️ [Fetch] Impossible d'aspirer le roster de l'équipe ID ${teamId}.`);
-    return;
+  let detailResponse;
+  try {
+    detailResponse = await bb3ApiClient.get('/team', { id: teamId, roster: 1, skills: 1, casualties: 1 });
+    if (!detailResponse || !detailResponse.team) {
+      logger.warn(`⚠️ [Fetch] Impossible d'aspirer le roster de l'équipe ID ${teamId}.`);
+      return;
+    }
+  } catch (error: any) {
+    if (error.message?.includes('retourné false') || error.message?.includes('Functional Error')) {
+      logger.warn(`⚠️ [Fetch] L'équipe ID ${teamId} semble ne plus exister ou être inaccessible sur l'API Cyanide. Analyse de la santé de l'API...`);
+      ConsoleDashboard.addAlert('WARN', `Équipe ID ${teamId} introuvable sur Cyanide. Ignorée.`);
+      cyanideHealthService.handleApiFailure(error.message).catch(err => {
+        logger.error(`❌ [Worker] Échec lors du diagnostic de l'API: ${err.message}`);
+      });
+      return;
+    }
+    throw error;
   }
 
   // Détecter si le coach de l'équipe existe déjà en base de données.
@@ -466,11 +493,24 @@ export async function handleFetchMatch(matchId: string, competitionId: string, c
   }
 
   // Récupérer le payload détaillé du match
-  const matchDetailResponse = await bb3ApiClient.get('/match', { id: matchId, rosters: 1 });
-  if (!matchDetailResponse.match) {
-    logger.warn(`⚠️ [Fetch] Impossible d'aspirer la feuille de match ${matchId}. Tentative de sauvegarde en tant que match fantôme/abandonné...`);
-    await saveGhostMatch(contest, competitionId);
-    return;
+  let matchDetailResponse;
+  try {
+    matchDetailResponse = await bb3ApiClient.get('/match', { id: matchId, rosters: 1 });
+    if (!matchDetailResponse || !matchDetailResponse.match) {
+      logger.warn(`⚠️ [Fetch] Impossible d'aspirer la feuille de match ${matchId}. Tentative de sauvegarde en tant que match fantôme/abandonné...`);
+      await saveGhostMatch(contest, competitionId);
+      return;
+    }
+  } catch (error: any) {
+    if (error.message?.includes('retourné false') || error.message?.includes('Functional Error')) {
+      logger.warn(`⚠️ [Fetch] Le match ID ${matchId} semble ne plus exister ou être inaccessible sur l'API Cyanide. Analyse de la santé de l'API...`);
+      cyanideHealthService.handleApiFailure(error.message).catch(err => {
+        logger.error(`❌ [Worker] Échec lors du diagnostic de l'API: ${err.message}`);
+      });
+      await saveGhostMatch(contest, competitionId);
+      return;
+    }
+    throw error;
   }
 
   // Détecter si les coachs du match existent déjà en base de données.

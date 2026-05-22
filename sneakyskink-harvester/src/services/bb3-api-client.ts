@@ -59,6 +59,19 @@ export class BB3ApiClient {
    * @param params Les arguments sous forme de paires clé-valeur
    */
   public async get<T = any>(method: string, params: Record<string, any> = {}): Promise<T> {
+    const cleanMethod = method.replace(/^\/+|\/+$/g, '').toLowerCase();
+    if (cleanMethod !== 'status' && cleanMethod !== 'welcome') {
+      try {
+        const available = await redisConnection.get('sneakyskink:cyanide_api:available');
+        if (available === 'false') {
+          throw new CyanideFunctionalError(`Appel API bloqué : l'API de Cyanide est marquée comme indisponible.`);
+        }
+      } catch (err: any) {
+        if (err instanceof CyanideFunctionalError) throw err;
+        logger.warn(`⚠️ [BB3ApiClient] Impossible de lire l'état de santé dans Redis: ${err.message}`);
+      }
+    }
+
     let attempts = 0;
 
     while (attempts < BB3ApiClient.MAX_RETRIES) {
@@ -138,6 +151,12 @@ export class BB3ApiClient {
         // 4. Valider le corps de réponse
         // Parfois, l'API de Cyanide retourne du HTTP 200 mais avec un payload contenant une erreur (ex: {"error": "..."})
         const data = response.data;
+        if (data === false) {
+          // L'API Cyanide retourne false lorsque la ressource demandée n'existe pas ou est inaccessible
+          apiKeyManager.reportSuccess(activeKey);
+          throw new CyanideFunctionalError(`Ressource non trouvée ou inaccessible (l'API de Cyanide a retourné false)`);
+        }
+
         if (data && typeof data === 'object' && 'error' in data) {
           const errMsg = String(data.error).toLowerCase();
           if (errMsg.includes('key') || errMsg.includes('quota') || errMsg.includes('limit') || errMsg.includes('unauthorized')) {
@@ -221,6 +240,22 @@ export class BB3ApiClient {
     }
 
     throw new Error('Erreur inconnue dans la boucle d\'exécution du client API.');
+  }
+
+  /**
+   * Vérifie la santé générale de l'API de Cyanide en faisant un appel de test sur status.
+   * Retourne true si l'API répond correctement, false si elle retourne 'false' ou est inaccessible.
+   */
+  public async checkApiAvailability(): Promise<boolean> {
+    try {
+      const data = await this.get('status');
+      if (data && typeof data === 'object' && 'games' in data) {
+        return true;
+      }
+      return false;
+    } catch (error) {
+      return false;
+    }
   }
 }
 

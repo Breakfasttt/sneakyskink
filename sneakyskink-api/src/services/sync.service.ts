@@ -47,11 +47,14 @@ export class SyncService {
       harvesterRunning = false;
     }
 
-    // Check if Cyanide API is reachable
+    // Check if Cyanide API is reachable and marked available in Redis
     let cyanideOnline = false;
     try {
-      await axios.get('https://web.cyanide-studio.com/ws/cya/status/', { timeout: 4000 });
-      cyanideOnline = true;
+      const apiAvailableVal = await redisConnection.get('sneakyskink:cyanide_api:available');
+      if (apiAvailableVal !== 'false') {
+        await axios.get('https://web.cyanide-studio.com/ws/cya/status/', { timeout: 4000 });
+        cyanideOnline = true;
+      }
     } catch (err: any) {
       if (err.response) {
         cyanideOnline = true; // Got a response (even 400/403), so the server is reachable!

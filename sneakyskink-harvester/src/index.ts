@@ -3,6 +3,7 @@ import { redisConnection, harvesterWorker, initScheduler } from './queue/index.j
 import { logger } from './utils/logger.js';
 import { ConsoleDashboard } from './utils/dashboard.js';
 import { apiKeyManager } from './services/api-key-manager.js';
+import { cyanideHealthService } from './services/cyanide-health.service.js';
 
 async function bootstrap() {
   // Lancer le dashboard TUI immédiatement
@@ -78,6 +79,10 @@ async function bootstrap() {
     
     ConsoleDashboard.updateStatus('worker', 'IDLE');
     logger.info('✅ [Worker] Worker démarré et à l\'écoute des jobs.');
+
+    // 3.5. Initialiser le service de santé de l'API de Cyanide
+    cyanideHealthService.setWorker(harvesterWorker);
+    await cyanideHealthService.initialize();
 
     // 4. Démarrer le Scheduler de synchronisation périodique
     ConsoleDashboard.updateStatus('scheduler', 'INITIALIZING');
