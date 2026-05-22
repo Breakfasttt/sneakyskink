@@ -152,6 +152,33 @@ export class MatchParser {
     const homeStats = homeTeamRaw.statistics || {};
     const awayStats = awayTeamRaw.statistics || {};
 
+    // Détection du forfait : un match complet a 1 MVP par équipe.
+    // Si une équipe a 0 MVP, c'est un forfait.
+    let homeMvpCount = 0;
+    let awayMvpCount = 0;
+
+    if (homeTeamRaw.roster) {
+      for (const p of homeTeamRaw.roster) {
+        if (p.mvp) homeMvpCount++;
+      }
+    }
+    if (awayTeamRaw.roster) {
+      for (const p of awayTeamRaw.roster) {
+        if (p.mvp) awayMvpCount++;
+      }
+    }
+
+    const isForfeit = homeMvpCount === 0 || awayMvpCount === 0;
+    let forfeitTeamId: string | null = null;
+
+    if (isForfeit) {
+      if (homeMvpCount === 0 && awayMvpCount > 0) {
+        forfeitTeamId = homeTeamRaw.idteamlisting;
+      } else if (awayMvpCount === 0 && homeMvpCount > 0) {
+        forfeitTeamId = awayTeamRaw.idteamlisting;
+      }
+    }
+
     const createData: Prisma.MatchCreateInput = {
       id,
       startedAt,
@@ -175,7 +202,12 @@ export class MatchParser {
       awayScore,
       homeStats,
       awayStats,
+      isForfeit,
     };
+
+    if (forfeitTeamId) {
+      createData.forfeitTeam = { connect: { id: forfeitTeamId } };
+    }
 
     if (homeCoachId) {
       createData.homeCoach = { connect: { id: homeCoachId } };
@@ -194,6 +226,8 @@ export class MatchParser {
       awayScore,
       homeStats,
       awayStats,
+      isForfeit,
+      forfeitTeam: forfeitTeamId ? { connect: { id: forfeitTeamId } } : { disconnect: true },
     };
 
     return {

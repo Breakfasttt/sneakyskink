@@ -92,6 +92,7 @@ model Team {
   players           Player[]
   homeMatches       Match[]  @relation("HomeTeam")
   awayMatches       Match[]  @relation("AwayTeam")
+  forfeitMatches    Match[]  @relation("ForfeitTeam")
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("last_update")
 
@@ -168,6 +169,10 @@ model Match {
   homeStats       Json?              @map("home_stats") // Payload brut des stats globales de l'équipe domicile
   awayStats       Json?              @map("away_stats") // Payload brut des stats globales de l'équipe extérieur
   
+  isForfeit       Boolean            @default(false) @map("is_forfeit")
+  forfeitTeamId   String?            @map("forfeit_team_id")
+  forfeitTeam     Team?              @relation("ForfeitTeam", fields: [forfeitTeamId], references: [id])
+
   playerStats     PlayerMatchStats[]
   createdAt       DateTime           @default(now()) @map("created_at")
   updatedAt       DateTime           @updatedAt @map("last_update")

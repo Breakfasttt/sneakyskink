@@ -1,9 +1,4 @@
-/**
- * Service de gestion de la synchronisation de la file d'attente
- * et de la configuration du rythme des appels (Rate Pacing).
- */
-
-import { queueCoachFetch, queueLeagueFetch, harvesterQueue, redisConnection } from '../lib/queue.js';
+import { queueCoachFetch, queueLeagueFetch, queueCompetitionFetch, harvesterQueue, redisConnection } from '../lib/queue.js';
 import { logger } from '../lib/logger.js';
 import axios from 'axios';
 import { prisma } from '../lib/prisma.js';
@@ -26,6 +21,16 @@ export class SyncService {
     return {
       success: true,
       message: `La demande de synchronisation pour la ligue ${leagueId} a été ajoutée à la file d'attente (priorité Haute).`,
+      enqueuedAt: new Date(),
+    };
+  }
+
+  static async syncCompetition(competitionId: string) {
+    logger.info(`⚡ [Sync Service] Demande de synchronisation à la demande pour la compétition : ${competitionId}`);
+    await queueCompetitionFetch(competitionId, 'high');
+    return {
+      success: true,
+      message: `La demande de synchronisation pour la compétition ${competitionId} a été ajoutée à la file d'attente (priorité Haute).`,
       enqueuedAt: new Date(),
     };
   }

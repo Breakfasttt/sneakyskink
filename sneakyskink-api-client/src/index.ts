@@ -201,6 +201,14 @@ export class SneakySkinkApiClient {
   }
 
   /**
+   * ⚡ Déclenche une synchronisation asynchrone pour une compétition spécifique
+   */
+  public async syncCompetition(id: string): Promise<{ success: boolean; jobId: string }> {
+    const res = await this.client.post(`/sync/competition/${id}`);
+    return res.data;
+  }
+
+  /**
    * ⚡ Modifie la priorité d'une ligue (ajoute ou enlève des ligues prioritaires)
    */
   public async setLeaguePriority(id: string, isPriority: boolean): Promise<{ success: boolean; message: string; league: League }> {

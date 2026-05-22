@@ -319,35 +319,6 @@ const Home: React.FC = () => {
         <StatCard value={stats.leagues} label="Ligues" icon={<LeagueIcon sx={{ fontSize: 15 }} />} accent="#F59E0B" onClick={() => navigate('/ligues')} />
         <StatCard value={stats.competitions} label="Compétitions" icon={<CompetitionIcon sx={{ fontSize: 15 }} />} accent="#3B82F6" onClick={() => navigate('/competitions')} />
         <StatCard value={stats.coaches} label="Coachs" icon={<CoachIcon sx={{ fontSize: 15 }} />} accent="#00E676" onClick={() => navigate('/coachs')} />
-        {/* Synchro CTA */}
-        <Box
-          onClick={() => navigate('/synchro')}
-          sx={{
-            flex: 1,
-            minWidth: { xs: '100%', sm: 150 },
-            p: 2,
-            cursor: 'pointer',
-            borderRadius: 2.5,
-            border: '1px dashed rgba(255,61,0,0.3)',
-            bgcolor: 'rgba(255,61,0,0.04)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 1.5,
-            transition: 'all 0.25s',
-            '&:hover': {
-              border: '1px dashed rgba(255,61,0,0.6)',
-              bgcolor: 'rgba(255,61,0,0.08)',
-              transform: 'translateY(-3px)',
-              boxShadow: glow('#FF3D00'),
-            },
-          }}
-        >
-          <SyncIcon sx={{ color: '#FF3D00', fontSize: 20 }} />
-          <Typography sx={{ color: '#FF3D00', fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-            Demander une synchro
-          </Typography>
-        </Box>
       </Box>
 
       {/* ── Activity Chart ───────────────────────────────────────────────── */}
@@ -366,7 +337,6 @@ const Home: React.FC = () => {
           { label: 'Toutes les ligues', path: '/ligues', color: '#F59E0B' },
           { label: 'Compétitions', path: '/competitions', color: '#3B82F6' },
           { label: 'Coachs', path: '/coachs', color: '#00E676' },
-          { label: 'Synchroniser', path: '/synchro', color: '#FF3D00' },
         ].map(item => (
           <Chip
             key={item.path}

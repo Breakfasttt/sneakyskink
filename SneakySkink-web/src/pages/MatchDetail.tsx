@@ -383,7 +383,7 @@ const MatchDetail: React.FC = () => {
 
           {/* Scoreboard */}
           <Grid item xs={12} sm={4} sx={{ textAlign: 'center' }}>
-            <Box sx={{ display: 'inline-flex', flexDirection: 'column', gap: 1 }}>
+            <Box sx={{ display: 'inline-flex', flexDirection: 'column', gap: 1, alignItems: 'center' }}>
               <Box sx={{ px: 4, py: 1.5, borderRadius: 3, bgcolor: 'rgba(15,23,42,0.6)', border: '1px solid rgba(148,163,184,0.1)' }}>
                 <Typography sx={{ fontWeight: 950, fontSize: '2.8rem', color: '#00E676', letterSpacing: '0.1em', lineHeight: 1 }}>
                   {match.homeTeam?.score} - {match.awayTeam?.score}
@@ -392,6 +392,26 @@ const MatchDetail: React.FC = () => {
               <Typography variant="caption" sx={{ color: '#475569', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                 Journée {match.round}
               </Typography>
+              {match.isForfeit && (
+                <Chip
+                  label={
+                    match.forfeitTeamId 
+                      ? `FORFAIT : ${match.forfeitTeamId === match.homeTeam.id ? match.homeTeam.name : match.awayTeam.name}` 
+                      : "DOUBLE FORFAIT"
+                  }
+                  size="small"
+                  sx={{
+                    fontWeight: 800,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    bgcolor: 'rgba(239, 68, 68, 0.08)',
+                    color: '#EF4444',
+                    border: '1px solid rgba(239, 68, 68, 0.2)',
+                    fontSize: '0.65rem',
+                    py: 0.5,
+                  }}
+                />
+              )}
             </Box>
           </Grid>
 

@@ -84,31 +84,39 @@ export const harvesterWorker = new Worker<JobData>(
 export async function handleFetchCoach(coachId: string) {
   logger.info(`🔍 [Fetch] Récupération du coach ${coachId}...`);
   
+  const isUuidOrId = /^[0-9a-fA-F-]{10,}$/.test(coachId) || /^\d+$/.test(coachId);
+  const lookupParams = isUuidOrId ? { coach_id: coachId } : { coach_name: coachId };
+  
   // Appeler l'API de Cyanide via lookup (l'endpoint /coaches filtre mal par ID individuel)
-  const response = await bb3ApiClient.get('/lookup', { coach_id: coachId });
+  const response = await bb3ApiClient.get('/lookup', lookupParams);
   const coachesList = response.coaches || [];
   
   if (coachesList.length === 0) {
-    throw new Error(`Aucun coach trouvé avec l'ID ${coachId} via lookup sur l'API Cyanide.`);
+    throw new Error(`Aucun coach trouvé avec l'identifiant/nom "${coachId}" via lookup sur l'API Cyanide.`);
   }
 
   const rawCoach = coachesList[0];
-  const upsertArgs = TeamParser.parseCoach(rawCoach, coachId);
+  const realCoachId = (rawCoach.idcoach || rawCoach.id || (isUuidOrId ? coachId : null))?.toString();
+  if (!realCoachId) {
+    throw new Error(`Impossible d'obtenir l'ID réel du coach pour "${coachId}".`);
+  }
+
+  const upsertArgs = TeamParser.parseCoach(rawCoach, realCoachId);
 
   // Vérifier si le coach existe déjà pour ne pas notifier de fausses insertions
   const coachExists = await prisma.coach.findUnique({
-    where: { id: coachId },
+    where: { id: realCoachId },
     select: { id: true }
   });
 
   // Sauvegarder en base de données
   await prisma.coach.upsert(upsertArgs);
   if (!coachExists) {
-    logger.info(`💾 [DB] Coach ${upsertArgs.create.name} (${coachId}) inséré.`);
-    ConsoleDashboard.setLastInserted('Coach (Créé)', `Nom: "${upsertArgs.create.name}" (${coachId})`);
+    logger.info(`💾 [DB] Coach ${upsertArgs.create.name} (${realCoachId}) inséré.`);
+    ConsoleDashboard.setLastInserted('Coach (Créé)', `Nom: "${upsertArgs.create.name}" (${realCoachId})`);
   } else {
-    logger.debug(`💾 [DB] Coach ${upsertArgs.create.name} (${coachId}) mis à jour.`);
-    ConsoleDashboard.setLastInserted('Coach (Maj)', `Nom: "${upsertArgs.create.name}" (${coachId})`);
+    logger.debug(`💾 [DB] Coach ${upsertArgs.create.name} (${realCoachId}) mis à jour.`);
+    ConsoleDashboard.setLastInserted('Coach (Maj)', `Nom: "${upsertArgs.create.name}" (${realCoachId})`);
   }
 }
 
@@ -118,27 +126,49 @@ export async function handleFetchCoach(coachId: string) {
 export async function handleFetchLeague(leagueId: string, triggerPriority: 'high' | 'medium' | 'low' = 'medium') {
   logger.info(`🔍 [Fetch] Récupération des détails de la ligue ${leagueId}...`);
   
+  const isUuidOrId = /^[0-9a-fA-F-]{10,}$/.test(leagueId) || /^\d+$/.test(leagueId);
+  let realLeagueId = leagueId;
+
+  if (!isUuidOrId) {
+    logger.info(`🔍 [Fetch] Résolution du nom de ligue "${leagueId}" via lookup...`);
+    const lookupRes = await bb3ApiClient.get('/lookup', { league_name: leagueId, exact: 1 });
+    if (lookupRes.league && lookupRes.league.id) {
+      realLeagueId = lookupRes.league.id;
+      logger.info(`🔍 [Fetch] Nom de ligue "${leagueId}" résolu en ID: ${realLeagueId}`);
+    } else {
+      // Fallback: essayer de chercher via /leagues
+      const leaguesRes = await bb3ApiClient.get('/leagues', { league: leagueId, limit: 1 });
+      const matched = leaguesRes.leagues?.[0];
+      if (matched && matched.name?.toLowerCase() === leagueId.toLowerCase()) {
+        realLeagueId = matched.id;
+        logger.info(`🔍 [Fetch] Nom de ligue "${leagueId}" résolu via /leagues en ID: ${realLeagueId}`);
+      } else {
+        throw new Error(`Impossible de résoudre la ligue "${leagueId}" sur l'API Cyanide.`);
+      }
+    }
+  }
+
   // A. Récupérer et sauvegarder les détails de la ligue
-  const leagueResponse = await bb3ApiClient.get('/league', { id: leagueId });
+  const leagueResponse = await bb3ApiClient.get('/league', { id: realLeagueId });
   if (!leagueResponse.league) {
-    throw new Error(`Aucune ligue trouvée avec l'ID ${leagueId} sur l'API Cyanide.`);
+    throw new Error(`Aucune ligue trouvée avec l'ID ${realLeagueId} sur l'API Cyanide.`);
   }
 
   const leagueUpsert = LeagueParser.parseLeague(leagueResponse.league);
 
   // Vérifier si la ligue existe déjà pour ne pas notifier de fausses insertions
   const leagueExists = await prisma.league.findUnique({
-    where: { id: leagueId },
+    where: { id: realLeagueId },
     select: { id: true }
   });
 
   await prisma.league.upsert(leagueUpsert);
   if (!leagueExists) {
-    logger.info(`💾 [DB] Ligue "${leagueUpsert.create.name}" (${leagueId}) insérée.`);
-    ConsoleDashboard.setLastInserted('Ligue (Créée)', `Nom: "${leagueUpsert.create.name}" (${leagueId})`);
+    logger.info(`💾 [DB] Ligue "${leagueUpsert.create.name}" (${realLeagueId}) insérée.`);
+    ConsoleDashboard.setLastInserted('Ligue (Créée)', `Nom: "${leagueUpsert.create.name}" (${realLeagueId})`);
   } else {
-    logger.debug(`💾 [DB] Ligue "${leagueUpsert.create.name}" (${leagueId}) mise à jour.`);
-    ConsoleDashboard.setLastInserted('Ligue (Maj)', `Nom: "${leagueUpsert.create.name}" (${leagueId})`);
+    logger.debug(`💾 [DB] Ligue "${leagueUpsert.create.name}" (${realLeagueId}) mise à jour.`);
+    ConsoleDashboard.setLastInserted('Ligue (Maj)', `Nom: "${leagueUpsert.create.name}" (${realLeagueId})`);
   }
 
   // B. Si la ligue n'est pas active, on s'arrête là
@@ -148,12 +178,12 @@ export async function handleFetchLeague(leagueId: string, triggerPriority: 'high
   }
 
   // C. Récupérer et sauvegarder les compétitions associées
-  logger.info(`🔍 [Fetch] Récupération des compétitions pour la ligue ${leagueId}...`);
-  const compsResponse = await bb3ApiClient.get('/competitions', { league: leagueId });
+  logger.info(`🔍 [Fetch] Récupération des compétitions pour la ligue ${realLeagueId}...`);
+  const compsResponse = await bb3ApiClient.get('/competitions', { league: realLeagueId });
   const competitions = compsResponse.competitions || [];
 
   for (const rawComp of competitions) {
-    const compUpsert = LeagueParser.parseCompetition(rawComp, leagueId);
+    const compUpsert = LeagueParser.parseCompetition(rawComp, realLeagueId);
 
     // Vérifier si la compétition existe déjà pour ne pas notifier de fausses insertions
     const compExists = await prisma.competition.findUnique({
@@ -177,12 +207,12 @@ export async function handleFetchLeague(leagueId: string, triggerPriority: 'high
   }
 
   // E. Enfiler la récupération des rosters détaillés de chaque équipe de la ligue
-  logger.info(`🔍 [Fetch] Récupération des équipes inscrites dans la ligue ${leagueId}...`);
-  const teamsResponse = await bb3ApiClient.get('/teams', { league: leagueId });
+  logger.info(`🔍 [Fetch] Récupération des équipes inscrites dans la ligue ${realLeagueId}...`);
+  const teamsResponse = await bb3ApiClient.get('/teams', { league: realLeagueId });
   const teams = teamsResponse.teams || [];
 
   for (const t of teams) {
-    await queueTeamFetch(t.id.toString(), leagueId, triggerPriority);
+    await queueTeamFetch(t.id.toString(), realLeagueId, triggerPriority);
   }
 }
 
@@ -192,26 +222,62 @@ export async function handleFetchLeague(leagueId: string, triggerPriority: 'high
 export async function handleFetchCompetition(competitionId: string, triggerPriority: 'high' | 'medium' | 'low' = 'medium') {
   logger.info(`🔍 [Fetch] Récupération des matchs pour la compétition ${competitionId}...`);
 
-  // Récupérer les informations de synchronisation historique de la compétition
-  const competition = await prisma.competition.findUnique({
+  const isUuidOrId = /^[0-9a-fA-F-]{10,}$/.test(competitionId) || /^\d+$/.test(competitionId);
+  let realCompetitionId = competitionId;
+  let competition = await prisma.competition.findUnique({
     where: { id: competitionId },
     select: { historySynced: true, historyLastDate: true }
   });
 
   if (!competition) {
-    logger.warn(`⚠️ [Fetch] Compétition ${competitionId} introuvable en base.`);
+    // Résoudre et importer via lookup
+    logger.info(`🔍 [Fetch] Compétition ${competitionId} absente de la base. Tentative de résolution via lookup...`);
+    const lookupParams = isUuidOrId ? { competition_id: competitionId } : { competition_name: competitionId };
+    const lookupRes = await bb3ApiClient.get('/lookup', { ...lookupParams, exact: 1 });
+    
+    if (lookupRes.competition && lookupRes.competition.id && lookupRes.competition.league?.id) {
+      realCompetitionId = lookupRes.competition.id;
+      const parentLeagueId = lookupRes.competition.league.id;
+      
+      logger.info(`🔍 [Fetch] Compétition résolue : "${lookupRes.competition.name}" (${realCompetitionId}). Ligue parente : ${parentLeagueId}`);
+      
+      // Importer d'abord la ligue parente (cela va créer la compétition en BDD)
+      await handleFetchLeague(parentLeagueId, triggerPriority);
+      
+      // Re-vérifier si elle existe maintenant
+      competition = await prisma.competition.findUnique({
+        where: { id: realCompetitionId },
+        select: { historySynced: true, historyLastDate: true }
+      });
+    } else {
+      throw new Error(`Impossible de trouver la compétition "${competitionId}" via lookup.`);
+    }
+  } else if (!isUuidOrId) {
+    // Si elle existe déjà mais que competitionId était le nom, on résout simplement l'ID localement
+    const localComp = await prisma.competition.findFirst({
+      where: { name: competitionId },
+      select: { id: true, historySynced: true, historyLastDate: true }
+    });
+    if (localComp) {
+      realCompetitionId = localComp.id;
+      competition = localComp;
+    }
+  }
+
+  if (!competition) {
+    logger.warn(`⚠️ [Fetch] Compétition ${competitionId} introuvable en base après tentatives d'importation.`);
     return;
   }
 
   // Étape A : Synchronisation Delta (Nouveaux Matchs vers le futur)
-  logger.info(`🔍 [Fetch] Étape A : Synchronisation Delta pour la compétition ${competitionId}...`);
+  logger.info(`🔍 [Fetch] Étape A : Synchronisation Delta pour la compétition ${realCompetitionId}...`);
   const lastMatch = await prisma.match.findFirst({
-    where: { competitionId },
+    where: { competitionId: realCompetitionId },
     orderBy: { startedAt: 'desc' },
     select: { startedAt: true }
   });
 
-  const deltaParams: any = { competition_id: competitionId, limit: 100 };
+  const deltaParams: any = { competition_id: realCompetitionId, limit: 100 };
   if (lastMatch?.startedAt) {
     deltaParams.start = lastMatch.startedAt.toISOString().split('T')[0];
     logger.info(`📅 [Fetch] Dernier match trouvé le ${deltaParams.start}. Mode Delta activé.`);
@@ -234,17 +300,17 @@ export async function handleFetchCompetition(competitionId: string, triggerPrior
     if (!matchId) continue;
     const existing = await prisma.match.findUnique({ where: { id: matchId } });
     if (!existing) {
-      await queueMatchFetch(matchId, competitionId, c, triggerPriority);
+      await queueMatchFetch(matchId, realCompetitionId, c, triggerPriority);
     }
   }
 
   // Étape B : Synchronisation Historique (Rattrapage vers le passé)
   if (!competition.historySynced) {
-    logger.info(`🔍 [Fetch] Étape B : Rattrapage historique pour la compétition ${competitionId}...`);
+    logger.info(`🔍 [Fetch] Étape B : Rattrapage historique pour la compétition ${realCompetitionId}...`);
     
     // Trouver le match le plus ancien enregistré localement
     const firstLocalMatch = await prisma.match.findFirst({
-      where: { competitionId },
+      where: { competitionId: realCompetitionId },
       orderBy: { startedAt: 'asc' },
       select: { startedAt: true }
     });
@@ -260,7 +326,7 @@ export async function handleFetchCompetition(competitionId: string, triggerPrior
 
     const endStr = endDate.toISOString().split('T')[0];
     const historyParams = {
-      competition_id: competitionId,
+      competition_id: realCompetitionId,
       start: '2023-01-01', // Début de BB3
       end: endStr,
       limit: 100
@@ -276,9 +342,9 @@ export async function handleFetchCompetition(competitionId: string, triggerPrior
     }));
 
     if (historyContests.length === 0) {
-      logger.info(`🏁 [Fetch] Aucun match historique retourné. Rattrapage terminé pour la compétition ${competitionId}.`);
+      logger.info(`🏁 [Fetch] Aucun match historique retourné. Rattrapage terminé pour la compétition ${realCompetitionId}.`);
       await prisma.competition.update({
-        where: { id: competitionId },
+        where: { id: realCompetitionId },
         data: { historySynced: true }
       });
     } else {
@@ -299,7 +365,7 @@ export async function handleFetchCompetition(competitionId: string, triggerPrior
 
         const existing = await prisma.match.findUnique({ where: { id: matchId } });
         if (!existing) {
-          await queueMatchFetch(matchId, competitionId, c, triggerPriority);
+          await queueMatchFetch(matchId, realCompetitionId, c, triggerPriority);
           historyEnqueuedCount++;
         }
       }
@@ -316,7 +382,7 @@ export async function handleFetchCompetition(competitionId: string, triggerPrior
 
       logger.info(`💾 [Fetch] Mise à jour de historyLastDate = ${targetDate.toISOString()} pour le prochain cycle.`);
       await prisma.competition.update({
-        where: { id: competitionId },
+        where: { id: realCompetitionId },
         data: { historyLastDate: targetDate }
       });
     }

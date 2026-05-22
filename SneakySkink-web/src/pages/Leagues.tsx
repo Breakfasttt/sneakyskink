@@ -1,3 +1,9 @@
+/**
+ * Page de recherche et de consultation des ligues.
+ * Permet de lister les ligues et de demander l'importation
+ * d'une ligue non encore référencée via son ID Cyanide.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -12,6 +18,8 @@ import {
   FormControlLabel,
   Chip,
   IconButton,
+  Button,
+  Divider,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -29,6 +37,9 @@ const Leagues: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showInactive, setShowInactive] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
+  const [syncError, setSyncError] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -40,6 +51,25 @@ const Leagues: React.FC = () => {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  const handleSync = async () => {
+    const nameToSync = searchQuery.trim();
+    if (!nameToSync) return;
+    setSyncing(true);
+    setSyncMessage(null);
+    setSyncError(false);
+    try {
+      await api.syncLeague(nameToSync);
+      setSyncMessage(
+        "Demande d'importation envoyée. Le traitement en arrière-plan n'est pas instantané et dépend de la file d'attente du serveur. L'élément apparaîtra dans la liste une fois importé."
+      );
+    } catch (err: any) {
+      setSyncError(true);
+      setSyncMessage("Une erreur est survenue lors de la demande d'importation.");
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const filteredLeagues = leagues.filter((league) => {
     const matchesSearch = league.name?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -125,9 +155,47 @@ const Leagues: React.FC = () => {
           <Typography variant="subtitle1" sx={{ color: '#F8FAFC', fontWeight: 700 }}>
             Aucune ligue trouvée
           </Typography>
-          <Typography variant="body2" sx={{ color: '#64748B' }}>
+          <Typography variant="body2" sx={{ color: '#64748B', mb: 3 }}>
             Essayez de modifier votre recherche ou d'activer le filtre des ligues inactives.
           </Typography>
+
+          <Divider sx={{ my: 3, borderColor: 'rgba(148,163,184,0.08)' }} />
+
+          <Box sx={{ maxWidth: 480, mx: 'auto' }}>
+            <Typography variant="body2" sx={{ color: '#94A3B8', mb: 2, fontWeight: 600 }}>
+              Demander l'importation de cette ligue depuis les serveurs Cyanide :
+            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+              <Button
+                variant="contained"
+                disabled={syncing || !searchQuery.trim()}
+                onClick={handleSync}
+                sx={{
+                  bgcolor: '#00E676',
+                  color: '#0F172A',
+                  fontWeight: 700,
+                  textTransform: 'none',
+                  borderRadius: 2,
+                  px: 3,
+                  py: 1,
+                  '&:hover': {
+                    bgcolor: '#00C853',
+                  },
+                  '&:disabled': {
+                    bgcolor: 'rgba(0,230,118,0.12)',
+                    color: 'rgba(255,255,255,0.3)',
+                  }
+                }}
+              >
+                {syncing ? <CircularProgress size={20} sx={{ color: '#0F172A' }} /> : `Rechercher et importer "${searchQuery}"`}
+              </Button>
+            </Box>
+            {syncMessage && (
+              <Typography variant="body2" sx={{ color: syncError ? '#FF3D00' : '#00E676', fontWeight: 600, mt: 1, display: 'block' }}>
+                {syncMessage}
+              </Typography>
+            )}
+          </Box>
         </Paper>
       ) : (
         <Grid container spacing={2}>

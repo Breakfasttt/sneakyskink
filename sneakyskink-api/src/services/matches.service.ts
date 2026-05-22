@@ -68,6 +68,8 @@ export class MatchesService {
       leagueName: match.league.name,
       competitionId: match.competitionId,
       competitionName: match.competition.name,
+      isForfeit: match.isForfeit,
+      forfeitTeamId: match.forfeitTeamId,
       homeTeam: {
         id: match.homeTeamId,
         name: match.homeTeam.name,
@@ -201,6 +203,8 @@ export class MatchesService {
       competitionId: match.competitionId,
       competitionName: match.competition.name,
       competitionFormat: match.competition.format,
+      isForfeit: match.isForfeit,
+      forfeitTeamId: match.forfeitTeamId,
       homeTeam: {
         id: match.homeTeamId,
         name: match.homeTeam.name,

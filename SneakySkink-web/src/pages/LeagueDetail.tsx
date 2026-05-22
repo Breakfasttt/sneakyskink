@@ -44,8 +44,6 @@ const LeagueDetail: React.FC = () => {
   const [league, setLeague] = useState<any>(null);
   const [leagueStats, setLeagueStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [syncing, setSyncing] = useState(false);
-  const [syncSuccess, setSyncSuccess] = useState(false);
   const [showAllCompetitions, setShowAllCompetitions] = useState(false);
 
   useEffect(() => {
@@ -59,21 +57,6 @@ const LeagueDetail: React.FC = () => {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [id]);
-
-  const handleSync = async () => {
-    if (!id) return;
-    setSyncing(true);
-    setSyncSuccess(false);
-    try {
-      await api.syncLeague(id);
-      setSyncSuccess(true);
-      setTimeout(() => setSyncSuccess(false), 3000);
-    } catch {
-      // Ignore
-    } finally {
-      setSyncing(false);
-    }
-  };
 
   // Filtrer les compétitions (masquer les terminées/inactives si showAllCompetitions = false)
   const filteredCompetitions = useMemo(() => {
@@ -178,29 +161,6 @@ const LeagueDetail: React.FC = () => {
               </Box>
             </Box>
           </Box>
-
-          <Button
-            onClick={handleSync}
-            disabled={syncing || !league.active}
-            variant="outlined"
-            startIcon={syncing ? <CircularProgress size={16} sx={{ color: 'inherit' }} /> : <SyncIcon />}
-            sx={{
-              borderColor: syncSuccess ? '#00E676' : 'rgba(0,230,118,0.3)',
-              color: '#00E676',
-              bgcolor: 'rgba(0,230,118,0.04)',
-              fontWeight: 700,
-              textTransform: 'none',
-              borderRadius: 2.5,
-              px: 2.5,
-              py: 1,
-              '&:hover': {
-                borderColor: '#00E676',
-                bgcolor: 'rgba(0,230,118,0.08)',
-              },
-            }}
-          >
-            {syncing ? 'Synchronisation...' : syncSuccess ? 'Sync demandée !' : 'Synchroniser la Ligue'}
-          </Button>
         </Box>
       </Paper>
 

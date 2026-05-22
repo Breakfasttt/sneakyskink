@@ -36,6 +36,20 @@ export class SyncController {
     }
   }
 
+  static async syncCompetition(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = req.params.id as string;
+      if (!id) {
+        throw new ApiError(400, "L'identifiant de la compétition est obligatoire.");
+      }
+
+      const result = await SyncService.syncCompetition(id);
+      res.status(202).json(result); // 202 Accepted pour les traitements asynchrones
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async getQueueStatus(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await SyncService.getQueueStatus();

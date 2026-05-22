@@ -1,0 +1,1469 @@
+{
+  "size": [
+    15609,
+    38,
+    231,
+    245,
+    332,
+    174,
+    5
+  ],
+  "match": {
+    "id": "937105d7-4f77-11f1-a124-bc2411305479",
+    "started": "2026-05-14 09:30:42",
+    "finished": "2026-05-14 09:41:04",
+    "idleague": "00000000-0000-0000-0000-000000000025",
+    "leaguename": "Official league",
+    "idcompetition": "4e24c5e3-3347-11f1-903a-d8bbc1d7001d",
+    "competitionname": "OPEN_LADDER_SEASON_11",
+    "stadium": null,
+    "round": 1,
+    "platform": "pc",
+    "coaches": [
+      {
+        "idcoach": "e6ae5a3d-f086-11ef-a124-bc2411305479",
+        "coachname": "Vizky"
+      },
+      {
+        "idcoach": "55b7baa6-b1c4-11ed-b1d4-020000a4d571",
+        "coachname": "breakyt"
+      }
+    ],
+    "teams": [
+      {
+        "idteamlisting": "1055d712-4f6c-11f1-a124-bc2411305479",
+        "idraces": 17,
+        "teamname": "The Ol'Necro",
+        "teamlogo": "Logo_Necromantic_04",
+        "value": 1000,
+        "score": 1,
+        "inflictedpasses": 0,
+        "inflictedcatches": 0,
+        "inflictedinterceptions": 0,
+        "inflictedtouchdowns": 0,
+        "inflictedcasualties": 2,
+        "inflictedtackles": 1,
+        "inflictedko": 1,
+        "inflictedinjuries": 4,
+        "inflicteddead": 0,
+        "inflictedmetersrunning": 0,
+        "inflictedmeterspassing": 0,
+        "inflictedpushouts": 0,
+        "sustainedexpulsions": 0,
+        "sustainedcasualties": 0,
+        "sustainedko": 1,
+        "sustainedinjuries": 1,
+        "sustaineddead": 0,
+        "roster": [
+          {
+            "id": "1a4a5330-4f6c-11f1-a124-bc2411305479",
+            "number": 1,
+            "type": "necromanticHorror_fleshGolem",
+            "name": "Lunn 'Pustules'",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 4,
+              "st": 4,
+              "ag": 4,
+              "pa": null,
+              "av": 10
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": null,
+                "bonuses": null,
+                "maluses": null
+              },
+              "av": {
+                "value": 10,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "ko_inflicted": 1,
+              "blocks_succeeded": 1,
+              "armour_breaks": 1,
+              "injuries_inflicted": 1
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "stand firm",
+                "regeneration",
+                "thick skull"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "1a59df5d-4f6c-11f1-a124-bc2411305479",
+            "number": 2,
+            "type": "necromanticHorror_fleshGolem",
+            "name": "André 'The blood of Arkhan'",
+            "level": 1,
+            "xp": 2,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 4,
+              "st": 4,
+              "ag": 4,
+              "pa": null,
+              "av": 10
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": null,
+                "bonuses": null,
+                "maluses": null
+              },
+              "av": {
+                "value": 10,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "blocks_succeeded": 2,
+              "blocks_sustained": 1
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "stand firm",
+                "regeneration",
+                "thick skull"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "1a6904c8-4f6c-11f1-a124-bc2411305479",
+            "number": 3,
+            "type": "necromanticHorror_ghoulRunner",
+            "name": "Anton 'Bedsore'",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 7,
+              "st": 3,
+              "ag": 3,
+              "pa": 4,
+              "av": 8
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 7,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 8,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": [],
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "dodge"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "1a788397-4f6c-11f1-a124-bc2411305479",
+            "number": 4,
+            "type": "necromanticHorror_ghoulRunner",
+            "name": "Alberic 'Evil Eye'",
+            "level": 2,
+            "xp": 0,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 7,
+              "st": 3,
+              "ag": 3,
+              "pa": 4,
+              "av": 8
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 7,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 8,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": [],
+            "skills": {
+              "AcquiredSkills": [
+                "block"
+              ],
+              "InnateSkills": [
+                "dodge"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "1a87a792-4f6c-11f1-a124-bc2411305479",
+            "number": 5,
+            "type": "necromanticHorror_wraith",
+            "name": "Boris 'The blood of Arkhan'",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 6,
+              "st": 3,
+              "ag": 3,
+              "pa": null,
+              "av": 9
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 6,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": null,
+                "bonuses": null,
+                "maluses": null
+              },
+              "av": {
+                "value": 9,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "blocks_succeeded": 1,
+              "blocks_sustained": 1,
+              "ko_sustained": 1,
+              "injuries_sustained": 1
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "sidestep",
+                "foul appearance",
+                "regeneration",
+                "no hands",
+                "block"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "1a9728d1-4f6c-11f1-a124-bc2411305479",
+            "number": 6,
+            "type": "necromanticHorror_wraith",
+            "name": "Geoffroi 'Evil Eye'",
+            "level": 1,
+            "xp": 2,
+            "xp_gain": 6,
+            "matchplayed": 1,
+            "mvp": true,
+            "attributes": {
+              "ma": 6,
+              "st": 3,
+              "ag": 3,
+              "pa": null,
+              "av": 9
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 6,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": null,
+                "bonuses": null,
+                "maluses": null
+              },
+              "av": {
+                "value": 9,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "spp_gained": 6,
+              "blitz_done": 2,
+              "casualties_inflicted": 1,
+              "injuries_inflicted": 2,
+              "blocks_succeeded": 2,
+              "armour_breaks": 2,
+              "stun_inflicted": 1
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "sidestep",
+                "foul appearance",
+                "regeneration",
+                "no hands",
+                "block"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "1aa67ad6-4f6c-11f1-a124-bc2411305479",
+            "number": 7,
+            "type": "necromanticHorror_zombie",
+            "name": "Volkmar 'Evil Eye'",
+            "level": 1,
+            "xp": 4,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 4,
+              "st": 3,
+              "ag": 4,
+              "pa": null,
+              "av": 9
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": null,
+                "bonuses": null,
+                "maluses": null
+              },
+              "av": {
+                "value": 9,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": [],
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "regeneration"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "1ab5d570-4f6c-11f1-a124-bc2411305479",
+            "number": 8,
+            "type": "necromanticHorror_zombie",
+            "name": "Norman 'Bad luck'",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 4,
+              "st": 3,
+              "ag": 4,
+              "pa": null,
+              "av": 9
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": null,
+                "bonuses": null,
+                "maluses": null
+              },
+              "av": {
+                "value": 9,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "blocks_sustained": 1
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "regeneration"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "1ac550d9-4f6c-11f1-a124-bc2411305479",
+            "number": 9,
+            "type": "necromanticHorror_zombie",
+            "name": "Geoffroi 'Apoca lips'",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 2,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 4,
+              "st": 3,
+              "ag": 4,
+              "pa": null,
+              "av": 9
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": null,
+                "bonuses": null,
+                "maluses": null
+              },
+              "av": {
+                "value": 9,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "spp_gained": 2,
+              "blocks_succeeded": 1,
+              "casualties_inflicted": 1,
+              "armour_breaks": 1,
+              "injuries_inflicted": 1
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "regeneration"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "1ad49f83-4f6c-11f1-a124-bc2411305479",
+            "number": 10,
+            "type": "necromanticHorror_zombie",
+            "name": "Vincent 'Necrosis'",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 4,
+              "st": 3,
+              "ag": 4,
+              "pa": null,
+              "av": 9
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": null,
+                "bonuses": null,
+                "maluses": null
+              },
+              "av": {
+                "value": 9,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": [],
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "regeneration"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "1ae3f646-4f6c-11f1-a124-bc2411305479",
+            "number": 11,
+            "type": "necromanticHorror_zombie",
+            "name": "Louen 'Winter Gust'",
+            "level": 1,
+            "xp": 2,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 4,
+              "st": 3,
+              "ag": 4,
+              "pa": null,
+              "av": 9
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": null,
+                "bonuses": null,
+                "maluses": null
+              },
+              "av": {
+                "value": 9,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": [],
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "regeneration"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          }
+        ]
+      },
+      {
+        "idteamlisting": "4bc3a28c-40b7-11f1-a124-bc2411305479",
+        "idraces": 8,
+        "teamname": "Korrida",
+        "teamlogo": "Logo_ChaosChosen_07",
+        "value": 950,
+        "score": 0,
+        "inflictedpasses": 0,
+        "inflictedcatches": 1,
+        "inflictedinterceptions": 0,
+        "inflictedtouchdowns": 0,
+        "inflictedcasualties": 0,
+        "inflictedtackles": 0,
+        "inflictedko": 1,
+        "inflictedinjuries": 1,
+        "inflicteddead": 0,
+        "inflictedmetersrunning": 10,
+        "inflictedmeterspassing": 0,
+        "inflictedpushouts": 0,
+        "sustainedexpulsions": 0,
+        "sustainedcasualties": 3,
+        "sustainedko": 1,
+        "sustainedinjuries": 5,
+        "sustaineddead": 0,
+        "roster": [
+          {
+            "id": "53fc9e31-40b7-11f1-a124-bc2411305479",
+            "number": 1,
+            "type": "chaosChosen_minotaur",
+            "name": "Kos-tume",
+            "level": 2,
+            "xp": 0,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 5,
+              "st": 5,
+              "ag": 4,
+              "pa": null,
+              "av": 9
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 5,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 5,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": null,
+                "bonuses": null,
+                "maluses": null
+              },
+              "av": {
+                "value": 9,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "blitz_done": 2
+            },
+            "skills": {
+              "AcquiredSkills": [
+                "juggernaut"
+              ],
+              "InnateSkills": [
+                "unchannelled fury",
+                "frenzy",
+                "loner (4+)",
+                "mighty blow (+1)",
+                "horns",
+                "thick skull"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "54301aca-40b7-11f1-a124-bc2411305479",
+            "number": 2,
+            "type": "chaosChosen_beastmanRunner",
+            "name": "Kos-métique",
+            "level": 1,
+            "xp": 3,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 6,
+              "st": 3,
+              "ag": 3,
+              "pa": 4,
+              "av": 9
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 6,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 9,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "catch_up_ball_try": 1,
+              "catch_up_ball_success": 1,
+              "jumpover_try": 1,
+              "jumpover_success": 1,
+              "yards_running": 10
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "horns"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "558a472c-40b7-11f1-a124-bc2411305479",
+            "number": 3,
+            "type": "chaosChosen_beastmanRunner",
+            "name": "Kos-y",
+            "level": 1,
+            "xp": 2,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 6,
+              "st": 3,
+              "ag": 3,
+              "pa": 4,
+              "av": 9
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 6,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 9,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "blocks_sustained": 1,
+              "ko_sustained": 1,
+              "injuries_sustained": 1
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "horns"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "5559c795-40b7-11f1-a124-bc2411305479",
+            "number": 4,
+            "type": "chaosChosen_beastmanRunner",
+            "name": "Kos tarika",
+            "level": 2,
+            "xp": 1,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 6,
+              "st": 3,
+              "ag": 3,
+              "pa": 4,
+              "av": 9
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 6,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 9,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "blocks_sustained": 1,
+              "injuries_sustained": 1
+            },
+            "skills": {
+              "AcquiredSkills": [
+                "tackle"
+              ],
+              "InnateSkills": [
+                "horns"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "f02c8515-40ba-11f1-a124-bc2411305479",
+            "number": 5,
+            "type": "chaosChosen_beastmanRunner",
+            "name": "Kos-monote",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 6,
+              "st": 3,
+              "ag": 3,
+              "pa": 4,
+              "av": 9
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 6,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 9,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": [],
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "horns"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "54f8d3a0-40b7-11f1-a124-bc2411305479",
+            "number": 6,
+            "type": "chaosChosen_beastmanRunner",
+            "name": "Kos inus",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 6,
+              "st": 3,
+              "ag": 3,
+              "pa": 4,
+              "av": 9
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 6,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 9,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "blitz_done": 1,
+              "injuries_inflicted": 1,
+              "ko_inflicted": 1,
+              "blocks_succeeded": 2,
+              "blocks_sustained": 1,
+              "armour_breaks": 1
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "horns"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "5529848b-40b7-11f1-a124-bc2411305479",
+            "number": 7,
+            "type": "chaosChosen_beastmanRunner",
+            "name": "Kos aque",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 6,
+              "st": 3,
+              "ag": 3,
+              "pa": 4,
+              "av": 9
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 6,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 9,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "blocks_sustained": 1,
+              "casualties_sustained": 1,
+              "injuries_sustained": 1
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "horns"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": [
+                "badly_hurt"
+              ]
+            }
+          },
+          {
+            "id": "5496b868-40b7-11f1-a124-bc2411305479",
+            "number": 8,
+            "type": "chaosChosen_beastmanRunner",
+            "name": "Kos-taud",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 6,
+              "st": 3,
+              "ag": 3,
+              "pa": 4,
+              "av": 9
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 6,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 9,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "blocks_succeeded": 1,
+              "dodge_try": 1,
+              "casualties_sustained": 1,
+              "injuries_sustained": 1
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "horns"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": [
+                "seriously_hurt"
+              ]
+            }
+          },
+          {
+            "id": "55eb9238-40b7-11f1-a124-bc2411305479",
+            "number": 9,
+            "type": "chaosChosen_beastmanRunner",
+            "name": "Kos-tard",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 6,
+              "st": 3,
+              "ag": 3,
+              "pa": 4,
+              "av": 9
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 6,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 9,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": [],
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "horns"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "320b7c8a-4f77-11f1-a124-bc2411305479",
+            "number": 10,
+            "type": "chaosChosen_beastmanRunner",
+            "name": "Kos-mique",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 6,
+              "st": 3,
+              "ag": 3,
+              "pa": 4,
+              "av": 9
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 6,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 9,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "dodge_try": 1,
+              "blocks_sustained": 2,
+              "dodge_success": 1
+            },
+            "skills": {
+              "AcquiredSkills": [],
+              "InnateSkills": [
+                "horns"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": []
+            }
+          },
+          {
+            "id": "066640a8-4f79-11f1-a124-bc2411305479",
+            "number": 11,
+            "type": "chaosChosen_beastmanRunner",
+            "name": "Zaarak",
+            "level": 1,
+            "xp": 0,
+            "xp_gain": 0,
+            "matchplayed": 1,
+            "mvp": false,
+            "attributes": {
+              "ma": 6,
+              "st": 3,
+              "ag": 3,
+              "pa": 4,
+              "av": 9
+            },
+            "attributes_ex": {
+              "ma": {
+                "value": 6,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "st": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "ag": {
+                "value": 3,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "pa": {
+                "value": 4,
+                "bonuses": 0,
+                "maluses": 0
+              },
+              "av": {
+                "value": 9,
+                "bonuses": 0,
+                "maluses": 0
+              }
+            },
+            "stats": {
+              "blocks_sustained": 1,
+              "casualties_sustained": 1,
+              "injuries_sustained": 1
+            },
+            "skills": {
+              "AcquiredSkills": [
+                "loner (4+)"
+              ],
+              "InnateSkills": [
+                "horns"
+              ]
+            },
+            "casualties": {
+              "PreviousCasualty": [],
+              "NewCasualty": [
+                "badly_hurt"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "uuid": "937105d7-4f77-11f1-a124-bc2411305479",
+  "coaches": [
+    {
+      "name": "Vizky",
+      "created": "2025-02-21 19:06:06",
+      "id": "e6ae5a3d-f086-11ef-a124-bc2411305479",
+      "lastlang": "english"
+    },
+    {
+      "name": "breakyt",
+      "created": "2023-02-21 08:47:13",
+      "id": "55b7baa6-b1c4-11ed-b1d4-020000a4d571",
+      "lastlang": "english"
+    }
+  ],
+  "teams": [
+    {
+      "name": "The Ol'Necro",
+      "value": 1270,
+      "cash": 215000,
+      "created": "2026-05-14 08:08:17",
+      "id": "1055d712-4f6c-11f1-a124-bc2411305479"
+    },
+    {
+      "name": "Korrida",
+      "value": 1010,
+      "cash": 0,
+      "created": "2026-04-25 14:59:01",
+      "id": "4bc3a28c-40b7-11f1-a124-bc2411305479"
+    }
+  ],
+  "urls": {
+    "images": {
+      "logos": "https://images.cyanide-studio.com/bb3/logos/",
+      "races": "https://images.cyanide-studio.com/bb3/races/",
+      "portraits": "https://images.cyanide-studio.com/bb3/portraits/",
+      "skills": "https://images.cyanide-studio.com/bb3/skillicons/",
+      "stadiums": "https://images.cyanide-studio.com/bb3/stadiums/"
+    }
+  },
+  "meta": {
+    "platform": "pc",
+    "user": "Breakyt",
+    "game": "bb3",
+    "method": "match",
+    "format": "json",
+    "services": "https://web.cyanide-studio.com/ws/?key=c480e8c8ebc9bc9c34d48b9e03efb9c2&bb=3"
+  },
+  "promotional_content": false
+}

@@ -28,7 +28,6 @@ import {
 } from '@mui/material';
 import {
   Person as CoachIcon,
-  CloudSync as SyncIcon,
   SportsSoccer as MatchIcon,
   EmojiEvents as TrophyIcon,
   ArrowForward as ArrowIcon,
@@ -57,8 +56,6 @@ const CoachDetail: React.FC = () => {
   const [coachData, setCoachData] = useState<any>(null);
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [syncing, setSyncing] = useState(false);
-  const [syncSuccess, setSyncSuccess] = useState(false);
   const [oppSearch, setOppSearch] = useState('');
   const [oppPage, setOppPage] = useState(1);
   const oppLimit = 5;
@@ -74,21 +71,6 @@ const CoachDetail: React.FC = () => {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [id]);
-
-  const handleSync = async () => {
-    if (!id) return;
-    setSyncing(true);
-    setSyncSuccess(false);
-    try {
-      await api.syncCoach(id);
-      setSyncSuccess(true);
-      setTimeout(() => setSyncSuccess(false), 3000);
-    } catch {
-      // Ignore
-    } finally {
-      setSyncing(false);
-    }
-  };
 
   // ─── Calculs Statistiques Frontend ────────────────────────────────────────
 
@@ -275,29 +257,6 @@ const CoachDetail: React.FC = () => {
             </Box>
           </Box>
         </Box>
-
-        <Button
-          onClick={handleSync}
-          disabled={syncing}
-          variant="outlined"
-          startIcon={syncing ? <CircularProgress size={16} sx={{ color: 'inherit' }} /> : <SyncIcon />}
-          sx={{
-            borderColor: syncSuccess ? '#00E676' : 'rgba(0,230,118,0.3)',
-            color: '#00E676',
-            bgcolor: 'rgba(0,230,118,0.04)',
-            fontWeight: 700,
-            textTransform: 'none',
-            borderRadius: 2.5,
-            px: 2.5,
-            py: 1,
-            '&:hover': {
-              borderColor: '#00E676',
-              bgcolor: 'rgba(0,230,118,0.08)',
-            },
-          }}
-        >
-          {syncing ? 'Synchronisation...' : syncSuccess ? 'Sync demandée !' : 'Synchroniser le Coach'}
-        </Button>
       </Paper>
 
       {/* ─── Stats Grid ─── */}

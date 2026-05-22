@@ -46,6 +46,8 @@ export class StatsService {
         startedAt: true,
         homeTeamId: true,
         awayTeamId: true,
+        isForfeit: true,
+        forfeitTeamId: true,
         homeCoach: { select: { id: true, name: true } },
         awayCoach: { select: { id: true, name: true } },
         homeTeam: { select: { name: true, raceId: true } },
@@ -138,12 +140,9 @@ export class StatsService {
         if (raceId) rosterUsage[raceId].losses++;
       }
 
-      // Concession / Forfait subi ou commis
-      const myStats = isHome ? m.homeStats : m.awayStats;
-      if (myStats && typeof myStats === 'object') {
-        if ((myStats as any).conceded === true) {
-          forfeits++;
-        }
+      // Concession / Forfait commis
+      if (m.isForfeit && m.forfeitTeamId === myTeamId) {
+        forfeits++;
       }
     }
 
@@ -262,6 +261,8 @@ export class StatsService {
         startedAt: true,
         homeTeamId: true,
         awayTeamId: true,
+        isForfeit: true,
+        forfeitTeamId: true,
         homeTeam: { select: { name: true, raceId: true } },
         awayTeam: { select: { name: true, raceId: true } },
         competition: { select: { name: true } },
@@ -303,9 +304,7 @@ export class StatsService {
     const rosterUsage: { [raceId: number]: { raceId: number; matches: number; wins: number; draws: number; losses: number } } = {};
     
     for (const m of matches) {
-      const homeConceded = m.homeStats && typeof m.homeStats === 'object' && (m.homeStats as any).conceded === true;
-      const awayConceded = m.awayStats && typeof m.awayStats === 'object' && (m.awayStats as any).conceded === true;
-      if (homeConceded || awayConceded) {
+      if (m.isForfeit) {
         forfeits++;
       }
 
@@ -397,6 +396,8 @@ export class StatsService {
         startedAt: true,
         homeCoachId: true,
         awayCoachId: true,
+        isForfeit: true,
+        forfeitTeamId: true,
         homeCoach: { select: { name: true } },
         awayCoach: { select: { name: true } },
         homeTeamId: true,
@@ -422,9 +423,7 @@ export class StatsService {
         lastActivity = m.startedAt;
       }
 
-      const homeConceded = m.homeStats && typeof m.homeStats === 'object' && (m.homeStats as any).conceded === true;
-      const awayConceded = m.awayStats && typeof m.awayStats === 'object' && (m.awayStats as any).conceded === true;
-      if (homeConceded || awayConceded) {
+      if (m.isForfeit) {
         forfeits++;
       }
 
@@ -539,10 +538,7 @@ export class StatsService {
       prisma.match.count({
         where: {
           ...where,
-          OR: [
-            { homeStats: { path: ['conceded'], equals: true } },
-            { awayStats: { path: ['conceded'], equals: true } },
-          ],
+          isForfeit: true,
         },
       }),
       prisma.playerMatchStats.aggregate({
@@ -588,6 +584,8 @@ export class StatsService {
           startedAt: true,
           homeScore: true,
           awayScore: true,
+          isForfeit: true,
+          forfeitTeamId: true,
           homeTeam: { select: { name: true, raceId: true } },
           awayTeam: { select: { name: true, raceId: true } },
           league: { select: { name: true } },
@@ -822,8 +820,7 @@ export class StatsService {
       else if (myScore === oppScore) draws++;
       else losses++;
 
-      const myStats = isHome ? m.homeStats : m.awayStats;
-      if (myStats && typeof myStats === 'object' && (myStats as any).conceded === true) {
+      if (m.isForfeit && m.forfeitTeamId === teamId) {
         forfeits++;
       }
     }
