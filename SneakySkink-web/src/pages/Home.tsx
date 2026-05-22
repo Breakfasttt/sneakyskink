@@ -54,6 +54,8 @@ const StatCard: React.FC<StatCardProps> = ({ value, label, icon, accent, onClick
       backdropFilter: 'blur(12px)',
       display: 'flex',
       flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
       gap: 0.5,
       transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
       position: 'relative',
@@ -84,7 +86,7 @@ const StatCard: React.FC<StatCardProps> = ({ value, label, icon, accent, onClick
     {value === null ? (
       <Skeleton variant="text" width={48} height={34} sx={{ bgcolor: 'rgba(255,255,255,0.06)' }} />
     ) : (
-      <Typography sx={{ fontWeight: 900, fontSize: '1.6rem', color: '#F8FAFC', lineHeight: 1, letterSpacing: '-0.02em' }}>
+      <Typography sx={{ fontWeight: 900, fontSize: '1.6rem', color: '#F8FAFC', lineHeight: 1, letterSpacing: '-0.02em', textAlign: 'center' }}>
         {value.toLocaleString('fr-FR')}
       </Typography>
     )}
@@ -102,10 +104,10 @@ const Home: React.FC = () => {
   const searchRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [stats, setStats] = useState<{ leagues: number | null; competitions: number | null; coaches: number | null }>({
-    leagues: null, competitions: null, coaches: null,
+  const [stats, setStats] = useState<{ leagues: number | null; competitions: number | null; coaches: number | null; matches: number | null }>({
+    leagues: null, competitions: null, coaches: null, matches: null,
   });
-  const [recentMatches, setRecentMatches] = useState<{ startedAt: string }[]>([]);
+  const [recentMatches, setRecentMatches] = useState<{ id: string; startedAt: string }[]>([]);
   const [activityLoading, setActivityLoading] = useState(true);
 
   useEffect(() => {
@@ -114,7 +116,8 @@ const Home: React.FC = () => {
       setStats({
         leagues: statsObj?.leagues ?? null,
         competitions: statsObj?.competitions ?? null,
-        coaches: statsObj?.coaches ?? null
+        coaches: statsObj?.coaches ?? null,
+        matches: statsObj?.matches ?? null,
       });
     }).catch(() => {});
 
@@ -319,6 +322,7 @@ const Home: React.FC = () => {
         <StatCard value={stats.leagues} label="Ligues" icon={<LeagueIcon sx={{ fontSize: 15 }} />} accent="#F59E0B" onClick={() => navigate('/ligues')} />
         <StatCard value={stats.competitions} label="Compétitions" icon={<CompetitionIcon sx={{ fontSize: 15 }} />} accent="#3B82F6" onClick={() => navigate('/competitions')} />
         <StatCard value={stats.coaches} label="Coachs" icon={<CoachIcon sx={{ fontSize: 15 }} />} accent="#00E676" onClick={() => navigate('/coachs')} />
+        <StatCard value={stats.matches} label="Matchs" icon={<CompetitionIcon sx={{ fontSize: 15 }} />} accent="#EC4899" onClick={recentMatches.length > 0 ? () => navigate(`/match/${recentMatches[0].id}`) : undefined} />
       </Box>
 
       {/* ── Activity Chart ───────────────────────────────────────────────── */}
@@ -330,33 +334,6 @@ const Home: React.FC = () => {
         </Box>
       )}
 
-      {/* ── Quick Links ──────────────────────────────────────────────────── */}
-      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
-        <Typography variant="caption" sx={{ color: '#334155', mr: 0.5 }}>Accès rapide ·</Typography>
-        {[
-          { label: 'Toutes les ligues', path: '/ligues', color: '#F59E0B' },
-          { label: 'Compétitions', path: '/competitions', color: '#3B82F6' },
-          { label: 'Coachs', path: '/coachs', color: '#00E676' },
-        ].map(item => (
-          <Chip
-            key={item.path}
-            label={item.label}
-            size="small"
-            onClick={() => navigate(item.path)}
-            sx={{
-              bgcolor: alpha(item.color, 0.08),
-              color: item.color,
-              border: `1px solid ${alpha(item.color, 0.2)}`,
-              fontWeight: 600,
-              fontSize: '0.72rem',
-              height: 26,
-              borderRadius: 99,
-              '&:hover': { bgcolor: alpha(item.color, 0.16), transform: 'scale(1.04)' },
-              transition: 'all 0.2s',
-            }}
-          />
-        ))}
-      </Box>
     </Box>
   );
 };

@@ -28,6 +28,8 @@ import {
   CloudSync as SyncIcon,
   OnlinePrediction as OnlineIcon,
   Layers as QueueIcon,
+  SportsSoccer as CompetitionIcon,
+  Person as CoachIcon,
 } from '@mui/icons-material';
 import { api } from '../api';
 
@@ -66,9 +68,9 @@ export const Layout: React.FC = () => {
   // Determine current active navigation index
   const getNavIndex = () => {
     const path = location.pathname;
-    if (path.startsWith('/ligues') || path.startsWith('/competitions')) return 1;
-    if (path.startsWith('/search') || path.startsWith('/coach')) return 2;
-    if (path.startsWith('/synchro')) return 3;
+    if (path.startsWith('/ligues') || path.startsWith('/ligue/')) return 1;
+    if (path.startsWith('/competitions') || path.startsWith('/competition/')) return 2;
+    if (path.startsWith('/coachs') || path.startsWith('/coach/')) return 3;
     return 0; // default to dashboard
   };
 
@@ -83,10 +85,10 @@ export const Layout: React.FC = () => {
         navigate('/ligues');
         break;
       case 2:
-        navigate('/search');
+        navigate('/competitions');
         break;
       case 3:
-        navigate('/synchro');
+        navigate('/coachs');
         break;
       default:
         navigate('/');
@@ -96,16 +98,8 @@ export const Layout: React.FC = () => {
   const navigationItems = [
     { label: 'Accueil', icon: <DashboardIcon />, path: '/' },
     { label: 'Ligues', icon: <TrophyIcon />, path: '/ligues' },
-    { label: 'Recherche', icon: <SearchIcon />, path: '/search' },
-    {
-      label: 'Synchro',
-      icon: (
-        <Badge badgeContent={queueCount} color="error" overlap="circular">
-          <SyncIcon />
-        </Badge>
-      ),
-      path: '/synchro',
-    },
+    { label: 'Compétitions', icon: <CompetitionIcon />, path: '/competitions' },
+    { label: 'Coachs', icon: <CoachIcon />, path: '/coachs' },
   ];
 
   return (
