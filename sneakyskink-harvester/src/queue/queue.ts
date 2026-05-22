@@ -31,7 +31,7 @@ export const harvesterQueue = new Queue<JobData>(QUEUE_NAME, {
   connection: redisConnection,
   defaultJobOptions: {
     removeOnComplete: true,
-    removeOnFail: { count: 1000 },
+    removeOnFail: true,
     attempts: 3,
     backoff: {
       type: 'exponential',
@@ -53,17 +53,17 @@ export function calculateJobPriority(type: JobType, triggerPriority: 'high' | 'm
     case 'fetch-coach':
       base = 10;
       break;
-    case 'fetch-league':
-      base = 20;
+    case 'fetch-match':
+      base = 20; // Priorité haute pour traiter les feuilles de match dès leur détection
       break;
     case 'fetch-competition':
       base = 30;
       break;
-    case 'fetch-match':
+    case 'fetch-league':
       base = 40;
       break;
     case 'fetch-team':
-      base = 50;
+      base = 50; // Les équipes (rosters complets) en dernier car c'est le traitement le plus lourd
       break;
   }
   const offset = triggerPriority === 'high' ? -2 : triggerPriority === 'low' ? 2 : 0;
@@ -78,7 +78,10 @@ export async function queueLeagueFetch(leagueId: string, priority: 'high' | 'med
   await harvesterQueue.add(
     `fetch-league-${leagueId}`,
     { type: 'fetch-league', id: leagueId, priority },
-    { priority: calculateJobPriority('fetch-league', priority) }
+    { 
+      priority: calculateJobPriority('fetch-league', priority),
+      jobId: `fetch-league-${leagueId}`
+    }
   );
 }
 
@@ -90,7 +93,10 @@ export async function queueCompetitionFetch(competitionId: string, priority: 'hi
   await harvesterQueue.add(
     `fetch-competition-${competitionId}`,
     { type: 'fetch-competition', id: competitionId, priority },
-    { priority: calculateJobPriority('fetch-competition', priority) }
+    { 
+      priority: calculateJobPriority('fetch-competition', priority),
+      jobId: `fetch-competition-${competitionId}`
+    }
   );
 }
 
@@ -102,7 +108,10 @@ export async function queueCoachFetch(coachId: string, priority: 'high' | 'mediu
   await harvesterQueue.add(
     `fetch-coach-${coachId}`,
     { type: 'fetch-coach', id: coachId, priority },
-    { priority: calculateJobPriority('fetch-coach', priority) }
+    { 
+      priority: calculateJobPriority('fetch-coach', priority),
+      jobId: `fetch-coach-${coachId}`
+    }
   );
 }
 
@@ -114,7 +123,10 @@ export async function queueTeamFetch(teamId: string, leagueId: string, priority:
   await harvesterQueue.add(
     `fetch-team-${teamId}`,
     { type: 'fetch-team', id: teamId, leagueId, priority },
-    { priority: calculateJobPriority('fetch-team', priority) }
+    { 
+      priority: calculateJobPriority('fetch-team', priority),
+      jobId: `fetch-team-${teamId}`
+    }
   );
 }
 
@@ -126,7 +138,10 @@ export async function queueMatchFetch(matchId: string, competitionId: string, co
   await harvesterQueue.add(
     `fetch-match-${matchId}`,
     { type: 'fetch-match', id: matchId, competitionId, contest, priority },
-    { priority: calculateJobPriority('fetch-match', priority) }
+    { 
+      priority: calculateJobPriority('fetch-match', priority),
+      jobId: `fetch-match-${matchId}`
+    }
   );
 }
 

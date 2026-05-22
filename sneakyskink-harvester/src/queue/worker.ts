@@ -20,6 +20,7 @@ import { TeamParser } from '../parsers/bb3/team.parser.js';
 import { MatchParser } from '../parsers/bb3/match.parser.js';
 import { logger } from '../utils/logger.js';
 import { MaintenanceService } from '../services/maintenance.service.js';
+import { ConsoleDashboard } from '../utils/dashboard.js';
 
 export const harvesterWorker = new Worker<JobData>(
   QUEUE_NAME,
@@ -94,9 +95,21 @@ export async function handleFetchCoach(coachId: string) {
   const rawCoach = coachesList[0];
   const upsertArgs = TeamParser.parseCoach(rawCoach, coachId);
 
+  // Vérifier si le coach existe déjà pour ne pas notifier de fausses insertions
+  const coachExists = await prisma.coach.findUnique({
+    where: { id: coachId },
+    select: { id: true }
+  });
+
   // Sauvegarder en base de données
   await prisma.coach.upsert(upsertArgs);
-  logger.info(`💾 [DB] Coach ${upsertArgs.create.name} (${coachId}) sauvegardé.`);
+  if (!coachExists) {
+    logger.info(`💾 [DB] Coach ${upsertArgs.create.name} (${coachId}) inséré.`);
+    ConsoleDashboard.setLastInserted('Coach (Créé)', `Nom: "${upsertArgs.create.name}" (${coachId})`);
+  } else {
+    logger.debug(`💾 [DB] Coach ${upsertArgs.create.name} (${coachId}) mis à jour.`);
+    ConsoleDashboard.setLastInserted('Coach (Maj)', `Nom: "${upsertArgs.create.name}" (${coachId})`);
+  }
 }
 
 /**
@@ -112,8 +125,21 @@ export async function handleFetchLeague(leagueId: string, triggerPriority: 'high
   }
 
   const leagueUpsert = LeagueParser.parseLeague(leagueResponse.league);
+
+  // Vérifier si la ligue existe déjà pour ne pas notifier de fausses insertions
+  const leagueExists = await prisma.league.findUnique({
+    where: { id: leagueId },
+    select: { id: true }
+  });
+
   await prisma.league.upsert(leagueUpsert);
-  logger.info(`💾 [DB] Ligue "${leagueUpsert.create.name}" (${leagueId}) sauvegardée.`);
+  if (!leagueExists) {
+    logger.info(`💾 [DB] Ligue "${leagueUpsert.create.name}" (${leagueId}) insérée.`);
+    ConsoleDashboard.setLastInserted('Ligue (Créée)', `Nom: "${leagueUpsert.create.name}" (${leagueId})`);
+  } else {
+    logger.debug(`💾 [DB] Ligue "${leagueUpsert.create.name}" (${leagueId}) mise à jour.`);
+    ConsoleDashboard.setLastInserted('Ligue (Maj)', `Nom: "${leagueUpsert.create.name}" (${leagueId})`);
+  }
 
   // B. Si la ligue n'est pas active, on s'arrête là
   if (!leagueUpsert.create.active) {
@@ -128,8 +154,21 @@ export async function handleFetchLeague(leagueId: string, triggerPriority: 'high
 
   for (const rawComp of competitions) {
     const compUpsert = LeagueParser.parseCompetition(rawComp, leagueId);
+
+    // Vérifier si la compétition existe déjà pour ne pas notifier de fausses insertions
+    const compExists = await prisma.competition.findUnique({
+      where: { id: rawComp.id },
+      select: { id: true }
+    });
+
     await prisma.competition.upsert(compUpsert);
-    logger.info(`💾 [DB] Compétition "${compUpsert.create.name}" sauvegardée.`);
+    if (!compExists) {
+      logger.info(`💾 [DB] Compétition "${compUpsert.create.name}" insérée.`);
+      ConsoleDashboard.setLastInserted('Compétition (Créée)', `Nom: "${compUpsert.create.name}" (${rawComp.id}) - Statut: ${compUpsert.create.status}`);
+    } else {
+      logger.debug(`💾 [DB] Compétition "${compUpsert.create.name}" mise à jour.`);
+      ConsoleDashboard.setLastInserted('Compétition (Maj)', `Nom: "${compUpsert.create.name}" (${rawComp.id}) - Statut: ${compUpsert.create.status}`);
+    }
 
     // D. Si la compétition est active (InProgress ou Scheduled), on planifie automatiquement une synchronisation des matchs
     if (compUpsert.create.status === 'InProgress' || compUpsert.create.status === 'Scheduled') {
@@ -311,6 +350,12 @@ export async function handleFetchTeam(teamId: string, leagueId: string, triggerP
     }
   }
 
+  // Vérifier si l'équipe existe déjà pour ne pas notifier de fausses insertions
+  const teamExists = await prisma.team.findUnique({
+    where: { id: teamId },
+    select: { id: true }
+  });
+
   // Transaction Prisma pour insérer le coach, l'équipe et ses joueurs
   await prisma.$transaction(async (tx: any) => {
     // 1. Sauvegarder le coach
@@ -329,7 +374,13 @@ export async function handleFetchTeam(teamId: string, leagueId: string, triggerP
     }
   });
 
-  logger.info(`💾 [DB] Équipe "${detailResponse.team.name}" et ses ${detailResponse.roster?.length || 0} joueurs initialisés en BD.`);
+  if (!teamExists) {
+    logger.info(`💾 [DB] Équipe "${detailResponse.team.name}" et ses ${detailResponse.roster?.length || 0} joueurs insérés.`);
+    ConsoleDashboard.setLastInserted('Équipe (Créée)', `Nom: "${detailResponse.team.name}" (${teamId}) - Roster: ${detailResponse.roster?.length || 0} joueurs`);
+  } else {
+    logger.debug(`💾 [DB] Équipe "${detailResponse.team.name}" et ses ${detailResponse.roster?.length || 0} joueurs mis à jour.`);
+    ConsoleDashboard.setLastInserted('Équipe (Maj)', `Nom: "${detailResponse.team.name}" (${teamId}) - Roster: ${detailResponse.roster?.length || 0} joueurs`);
+  }
 }
 
 /**
@@ -344,6 +395,7 @@ export async function handleFetchMatch(matchId: string, competitionId: string, c
   });
   if (existing) {
     logger.info(`ℹ️ [Fetch] Match ${matchId} déjà enregistré.`);
+    ConsoleDashboard.setLastInserted('Match (Existe)', `ID: ${matchId}`);
     return;
   }
 
@@ -419,7 +471,7 @@ export async function handleFetchMatch(matchId: string, competitionId: string, c
       const players = team.roster || [];
       for (const p of players) {
         // A. S'assurer que le joueur existe dans la table Player (si manquant)
-        const playerUpsert = TeamParser.parsePlayer(p, team.idteamlisting);
+        const playerUpsert = TeamParser.parsePlayer(p, team.idteamlisting, rawMatch.id);
         await tx.player.upsert(playerUpsert);
 
         // B. Enregistrer ses statistiques pour ce match précis
@@ -428,14 +480,35 @@ export async function handleFetchMatch(matchId: string, competitionId: string, c
           data: statsData,
         });
 
-        // C. Mettre à jour sa fiche de vie globale (XP, niveau, blessures)
-        const lifeUpdate = MatchParser.preparePlayerLifeUpdate(p);
-        await tx.player.update(lifeUpdate);
+        // C. Mettre à jour sa fiche de vie globale (XP, niveau, blessures) uniquement si aucun match plus récent n'a été enregistré
+        const matchStartedAt = new Date(rawMatch.started.replace(' ', 'T'));
+        const playerId = (p.id || `temp-${team.idteamlisting}-match-${rawMatch.id}-${p.number}`).toString();
+
+        const newerMatchStats = await tx.playerMatchStats.findFirst({
+          where: {
+            playerId: playerId,
+            match: {
+              startedAt: { gt: matchStartedAt }
+            }
+          },
+          select: { id: true }
+        });
+
+        if (!newerMatchStats) {
+          const lifeUpdate = MatchParser.preparePlayerLifeUpdate(p, team.idteamlisting, rawMatch.id);
+          await tx.player.update(lifeUpdate);
+        } else {
+          logger.info(`ℹ️ [Fetch] Fiche de vie du joueur ${playerId} non mise à jour car un match plus récent existe déjà.`);
+        }
       }
     }
   });
 
   logger.info(`💾 [DB] Match ${matchId} importé avec succès et fiches de vie des joueurs mises à jour.`);
+
+  // Enregistrer le match inséré dans le tableau de bord
+  const matchInfo = `${rawMatch.coaches?.[0]?.coachname || 'Inconnu'} vs ${rawMatch.coaches?.[1]?.coachname || 'Inconnu'} (${rawMatch.teams?.[0]?.teamname} vs ${rawMatch.teams?.[1]?.teamname}) - Score: ${rawMatch.teams?.[0]?.score}-${rawMatch.teams?.[1]?.score}`;
+  ConsoleDashboard.setLastInserted('Match (Créé)', `ID: ${matchId} - ${matchInfo}`);
 }
 
 
@@ -471,6 +544,9 @@ async function saveGhostMatch(c: any, competitionId: string) {
       select: { leagueId: true }
     });
     if (!comp) return;
+    const homeScore = home.team.score || 0;
+    const awayScore = away.team.score || 0;
+    const status = c.contest_status || c.status || 'ABANDONED';
 
     await prisma.$transaction(async (tx: any) => {
       // 1. Upsert Coaches
@@ -516,9 +592,6 @@ async function saveGhostMatch(c: any, competitionId: string) {
       // 3. Create the Match
       const matchDateStr = c.match_date || c.started;
       const startedAt = matchDateStr ? new Date(matchDateStr.replace(' ', 'T') + 'Z') : new Date();
-      const homeScore = home.team.score || 0;
-      const awayScore = away.team.score || 0;
-      const status = c.contest_status || c.status || 'ABANDONED';
 
       await tx.match.upsert({
         where: { id: matchId },
@@ -547,6 +620,9 @@ async function saveGhostMatch(c: any, competitionId: string) {
     });
 
     logger.info(`👻 [DB] Match fantôme/abandonné ${matchId} enregistré avec succès.`);
+
+    // Enregistrer le match fantôme/abandonné dans le tableau de bord
+    ConsoleDashboard.setLastInserted('Match (Fantôme)', `ID: ${matchId} - ${home.coach?.name || 'Inconnu'} vs ${away.coach?.name || 'Inconnu'} (${home.team?.name} vs ${away.team?.name}) - Score: ${homeScore}-${awayScore} (${status})`);
   } catch (error: any) {
     logger.error(`❌ [DB] Échec sauvegarde match fantôme ${c.match_id} : ${error.message}`);
   }

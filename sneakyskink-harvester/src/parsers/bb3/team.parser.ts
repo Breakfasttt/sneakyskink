@@ -152,8 +152,10 @@ export class TeamParser {
   /**
    * Parse un joueur brut en objet d'écriture Prisma
    */
-  static parsePlayer(raw: RawPlayer, teamId: string): Prisma.PlayerUpsertArgs {
-    const id = raw.id;
+  static parsePlayer(raw: RawPlayer, teamId: string, matchId?: string): Prisma.PlayerUpsertArgs {
+    // Si l'ID du joueur est absent ou nul (ex: mercenaire/journalier), générer un ID déterministe unique
+    const suffix = matchId ? `match-${matchId}` : 'roster';
+    const id = (raw.id || `temp-${teamId}-${suffix}-${raw.number}`).toString();
     const name = raw.name !== undefined && raw.name !== null ? raw.name.toString() : 'Joueur sans nom';
     const number = raw.number;
     const value = raw.value || 0;

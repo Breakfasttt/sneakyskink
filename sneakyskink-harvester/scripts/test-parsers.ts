@@ -42,7 +42,7 @@ async function main() {
     logger.info(`  👉 Parsing du roster (${rawTeamDetail.roster?.length || 0} joueurs)...`);
     const players = rawTeamDetail.roster || [];
     if (players.length > 0) {
-      const playerUpsert = TeamParser.parsePlayer(players[0], rawTeamDetail.team.id);
+      const playerUpsert = TeamParser.parsePlayer(players[0], rawTeamDetail.team.id, 'test-match-id');
       console.log(`    ✅ Premier joueur parse : ID = ${playerUpsert.where.id}, Nom = ${playerUpsert.create.name}, Positional = ${playerUpsert.create.type}, Niveau = ${playerUpsert.create.level}`);
       console.log(`       Stats physiques : MA = ${playerUpsert.create.ma}, ST = ${playerUpsert.create.st}, AG = ${playerUpsert.create.ag}, PA = ${playerUpsert.create.pa}, AV = ${playerUpsert.create.av}`);
       console.log(`       Compétences innées (${(playerUpsert.create.innateSkills as string[])?.length || 0}) :`, playerUpsert.create.innateSkills);
@@ -79,7 +79,7 @@ async function main() {
       console.log(`       Blocages réussis = ${stats.blocksSucceeded}, Touchdowns = ${stats.touchdowns}`);
       console.log(`       Nouvelle blessure subie lors de ce match :`, stats.newCasualties);
 
-      const lifeUpdate = MatchParser.preparePlayerLifeUpdate(firstPlayer);
+      const lifeUpdate = MatchParser.preparePlayerLifeUpdate(firstPlayer, rawMatchDetail.match.teams[0].idteamlisting, rawMatchDetail.match.id);
       console.log(`    ✅ Préparation de la mise à jour de vie du joueur :`);
       console.log(`       Niveau = ${lifeUpdate.data.level}, Compétences innées = ${(lifeUpdate.data.innateSkills as string[])?.length || 0}`);
     }

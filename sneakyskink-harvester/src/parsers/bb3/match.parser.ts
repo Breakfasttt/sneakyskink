@@ -185,10 +185,12 @@ export class MatchParser {
     teamId: string
   ): Prisma.PlayerMatchStatsCreateManyInput {
     const s = playerRaw.stats || {};
+    // Si l'ID du joueur est absent ou nul (ex: mercenaire/journalier), générer un ID déterministe unique
+    const playerId = (playerRaw.id || `temp-${teamId}-match-${matchId}-${playerRaw.number}`).toString();
 
     return {
       matchId,
-      playerId: playerRaw.id,
+      playerId,
       teamId,
       matchPlayed: playerRaw.matchplayed === 1,
       mvp: playerRaw.mvp || false,
@@ -229,9 +231,12 @@ export class MatchParser {
   /**
    * Prépare la mise à jour des statistiques de vie d'un joueur (XP, niveau, blessures courantes)
    */
-  static preparePlayerLifeUpdate(playerRaw: RawMatchPlayer): Prisma.PlayerUpdateArgs {
+  static preparePlayerLifeUpdate(playerRaw: RawMatchPlayer, teamId: string, matchId?: string): Prisma.PlayerUpdateArgs {
     const xp = (playerRaw.xp || 0) + (playerRaw.xp_gain || 0);
     const level = playerRaw.level || 1;
+    // Si l'ID du joueur est absent ou nul (ex: mercenaire/journalier), générer un ID déterministe unique
+    const suffix = matchId ? `match-${matchId}` : 'roster';
+    const playerId = (playerRaw.id || `temp-${teamId}-${suffix}-${playerRaw.number}`).toString();
 
     // Blessures combinées de la fiche
     const activeCasualties = playerRaw.casualties?.NewCasualty || [];
@@ -253,7 +258,7 @@ export class MatchParser {
     }
 
     return {
-      where: { id: playerRaw.id },
+      where: { id: playerId },
       data,
     };
   }

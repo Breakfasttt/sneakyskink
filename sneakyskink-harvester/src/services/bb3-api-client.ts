@@ -11,11 +11,21 @@ import { ConsoleDashboard } from '../utils/dashboard.js';
 import { ActivityTracker } from '../utils/activity-tracker.js';
 import { redisConnection } from '../queue/connection.js';
 
+export class CyanideFunctionalError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'CyanideFunctionalError';
+  }
+}
+
 export class BB3ApiClient {
   private axiosInstance: AxiosInstance;
   private lastRequestTime = 0;
   /** Quand actif, le pacing est ignoré pour toutes les requêtes (mode maintenance) */
   private maintenanceMode = false;
+  private lastPacingBypassCheck = 0;
+  private cachedPacingBypass = false;
+  private static readonly BYPASS_CACHE_TTL = 5000; // 5 secondes
   private static readonly BASE_URL = 'https://web.cyanide-studio.com/ws/';
   private static readonly MAX_RETRIES = 3;
   private static readonly TIMEOUT_MS = 60000; // 60 secondes (les serveurs Cyanide peuvent être lents)
@@ -81,14 +91,17 @@ export class BB3ApiClient {
         // 2.5. Régulation du rythme (Rate Pacing) — ignoré en mode maintenance ou si bypass temporaire dans Redis
         let isBypassed = this.maintenanceMode;
         if (!isBypassed) {
-          try {
-            const bypass = await redisConnection.get('sneakyskink:bypass_pacing');
-            if (bypass) {
-              isBypassed = true;
+          const nowBypass = Date.now();
+          if (nowBypass - this.lastPacingBypassCheck > BB3ApiClient.BYPASS_CACHE_TTL) {
+            try {
+              const bypass = await redisConnection.get('sneakyskink:bypass_pacing');
+              this.cachedPacingBypass = !!bypass;
+              this.lastPacingBypassCheck = nowBypass;
+            } catch (err: any) {
+              logger.warn(`⚠️ [BB3ApiClient] Erreur de lecture du bypass de pacing dans Redis: ${err.message}`);
             }
-          } catch (err: any) {
-            logger.warn(`⚠️ [BB3ApiClient] Erreur de lecture du bypass de pacing dans Redis: ${err.message}`);
           }
+          isBypassed = this.cachedPacingBypass;
         }
         if (isBypassed) {
           ConsoleDashboard.setPacing(-1, -1);
@@ -126,7 +139,13 @@ export class BB3ApiClient {
         // Parfois, l'API de Cyanide retourne du HTTP 200 mais avec un payload contenant une erreur (ex: {"error": "..."})
         const data = response.data;
         if (data && typeof data === 'object' && 'error' in data) {
-          throw new Error(`Cyanide API Error Payload: ${data.error}`);
+          const errMsg = String(data.error).toLowerCase();
+          if (errMsg.includes('key') || errMsg.includes('quota') || errMsg.includes('limit') || errMsg.includes('unauthorized')) {
+            throw new Error(`Cyanide API Error Payload: ${data.error}`);
+          }
+          // C'est une erreur fonctionnelle (ex: ressource non trouvée). La clé a fonctionné.
+          apiKeyManager.reportSuccess(activeKey);
+          throw new CyanideFunctionalError(`Cyanide API Functional Error: ${data.error}`);
         }
 
         // Signaler la dernière réponse reçue au Dashboard
@@ -153,6 +172,12 @@ export class BB3ApiClient {
         logger.warn(
           `⚠️ [BB3ApiClient] Échec de la tentative ${attempts}/${BB3ApiClient.MAX_RETRIES} sur [${method}] avec la clé [${maskedKey}]. Erreur : ${error.message}`
         );
+
+        // Si c'est une erreur fonctionnelle, on ne pénalise pas la clé et on ne réessaie pas (resource inexistante)
+        if (error instanceof CyanideFunctionalError) {
+          logger.error(`❌ [BB3ApiClient] Erreur fonctionnelle détectée sur [${method}] : ${error.message}`);
+          throw error;
+        }
 
         // 6. Analyser l'erreur pour appliquer la bonne stratégie de Cooldown
         let isRateLimit = false;

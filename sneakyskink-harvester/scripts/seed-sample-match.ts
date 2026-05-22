@@ -36,7 +36,7 @@ async function main() {
         name: rawMatch.leaguename || 'Official league',
         logo: 'Logo_BlackOrc_01',
         gamerCount: 1,
-        active: true,
+        active: false,
       },
       update: {},
     });
@@ -117,7 +117,7 @@ async function main() {
         const players = team.roster || [];
         for (const p of players) {
           // I. S'assurer que le joueur existe dans la table Player (si manquant)
-          const playerUpsert = TeamParser.parsePlayer(p, team.idteamlisting);
+          const playerUpsert = TeamParser.parsePlayer(p, team.idteamlisting, rawMatch.id);
           await tx.player.upsert(playerUpsert);
 
           // II. Enregistrer ses statistiques pour ce match précis
@@ -127,7 +127,7 @@ async function main() {
           });
 
           // III. Mettre à jour sa fiche de vie globale (XP, niveau, blessures)
-          const lifeUpdate = MatchParser.preparePlayerLifeUpdate(p);
+          const lifeUpdate = MatchParser.preparePlayerLifeUpdate(p, team.idteamlisting, rawMatch.id);
           await tx.player.update(lifeUpdate);
         }
       }

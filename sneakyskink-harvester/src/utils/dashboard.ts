@@ -34,6 +34,9 @@ export class ConsoleDashboard {
 
   private static currentActivity = 'Démarrage en cours...';
   private static lastResponse = 'Aucune';
+  private static lastInsertedType = 'Aucun';
+  private static lastInsertedTime = '';
+  private static lastInsertedDetails = '';
   private static alertHistory: string[] = [];
   private static readonly MAX_ALERTS = 8;
   private static renderTimer: NodeJS.Timeout | null = null;
@@ -149,6 +152,15 @@ export class ConsoleDashboard {
   }
 
   /**
+   * Enregistre le dernier élément inséré en base de données.
+   */
+  public static setLastInserted(type: string, details: string): void {
+    this.lastInsertedType = type;
+    this.lastInsertedTime = new Date().toLocaleTimeString('fr-FR');
+    this.lastInsertedDetails = details;
+  }
+
+  /**
    * Ajoute une alerte (Warning/Error) persistante dans le panneau du bas.
    */
   public static addAlert(level: 'WARN' | 'ERROR' | 'FATAL', message: string): void {
@@ -226,12 +238,17 @@ export class ConsoleDashboard {
         out += `  ⏳ PACING: Prêt !\n`;
       }
 
-      // 5. Activité compacte et réponse (2 lignes)
+      // 5. Activité compacte, réponse et dernier élément inséré (3 lignes)
       out += `  ⚡ ACT: ${this.currentActivity.substring(0, cols - 12)}\n`;
       out += `  📥 RES: ${this.lastResponse.substring(0, cols - 12)}\n`;
+      if (this.lastInsertedType !== 'Aucun') {
+        out += `  💾 BDD: [${this.lastInsertedTime}] ${this.lastInsertedType} - ${this.lastInsertedDetails.substring(0, cols - 20)}\n`;
+      } else {
+        out += `  💾 BDD: Aucun élément synchronisé\n`;
+      }
 
       // 6. Alertes compactes (reste des lignes)
-      const usedLines = 8;
+      const usedLines = 9;
       const maxAlertLines = Math.max(1, rows - usedLines);
       out += `  ⚠️ ERRORS (${this.alertHistory.length}):\n`;
       if (this.alertHistory.length === 0) {
@@ -296,11 +313,20 @@ export class ConsoleDashboard {
       out += `  > \x1B[32m${this.lastResponse}\x1B[0m\n`;
       out += separator;
 
+      // 5.5. Dernier élément inséré/mis à jour en BDD
+      out += `  💾 DERNIER ÉLÉMENT SYNCHRONISÉ EN BDD:\n`;
+      if (this.lastInsertedType === 'Aucun') {
+        out += `  > Aucun élément synchronisé depuis le démarrage.\n`;
+      } else {
+        out += `  > [${this.lastInsertedTime}] \x1B[35m${this.lastInsertedType}\x1B[0m: ${this.lastInsertedDetails}\n`;
+      }
+      out += separator;
+
       // 6. Warnings & Erreurs détectés
       out += `  ⚠️ WARNINGS & ERRORS DETECTED (Historique récent):\n`;
 
       // Calculer la hauteur fixe pour les alertes pour éviter tout scrolling.
-      const usedLines = showBanner ? 26 : 21;
+      const usedLines = showBanner ? 29 : 24;
       const maxAlertLines = Math.max(2, rows - usedLines);
 
       if (this.alertHistory.length === 0) {
@@ -330,3 +356,21 @@ export class ConsoleDashboard {
   }
 }
 export default ConsoleDashboard;
+
+// Code de diagnostic pour détecter le chargement multiple de la classe
+import fs from 'fs';
+if (!(globalThis as any).__dashboards) {
+  (globalThis as any).__dashboards = [];
+}
+(globalThis as any).__dashboards.push(ConsoleDashboard);
+try {
+  fs.appendFileSync('logs/harvester.log', JSON.stringify({
+    level: 30,
+    time: Date.now(),
+    pid: process.pid,
+    msg: `[DIAGNOSTIC] ConsoleDashboard chargé. Instance #${(globalThis as any).__dashboards.length}. Stack: ${new Error().stack?.replace(/\n/g, ' | ')}`
+  }) + '\n');
+} catch (e) {
+  // Ignorer
+}
+

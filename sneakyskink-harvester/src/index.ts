@@ -18,6 +18,33 @@ async function bootstrap() {
     ConsoleDashboard.updateStatus('db', 'OK');
     logger.info('✅ [Database] PostgreSQL connecté avec succès !');
 
+    // Récupérer le dernier élément inséré dans la base de données pour l'afficher sur le dashboard
+    try {
+      const [lastMatch, lastTeam, lastComp, lastLeague, lastCoach] = await Promise.all([
+        prisma.match.findFirst({ orderBy: { createdAt: 'desc' }, select: { createdAt: true, id: true, homeTeam: { select: { name: true } }, awayTeam: { select: { name: true } }, homeScore: true, awayScore: true } }),
+        prisma.team.findFirst({ orderBy: { createdAt: 'desc' }, select: { createdAt: true, id: true, name: true } }),
+        prisma.competition.findFirst({ orderBy: { createdAt: 'desc' }, select: { createdAt: true, id: true, name: true, status: true } }),
+        prisma.league.findFirst({ orderBy: { createdAt: 'desc' }, select: { createdAt: true, id: true, name: true } }),
+        prisma.coach.findFirst({ orderBy: { createdAt: 'desc' }, select: { createdAt: true, id: true, name: true } })
+      ]);
+
+      const candidates = [
+        { type: 'Match', date: lastMatch?.createdAt, details: lastMatch ? `ID: ${lastMatch.id} - ${lastMatch.homeTeam?.name || 'Inconnu'} vs ${lastMatch.awayTeam?.name || 'Inconnu'} (${lastMatch.homeScore}-${lastMatch.awayScore})` : '' },
+        { type: 'Équipe', date: lastTeam?.createdAt, details: lastTeam ? `Nom: "${lastTeam.name}" (${lastTeam.id})` : '' },
+        { type: 'Compétition', date: lastComp?.createdAt, details: lastComp ? `Nom: "${lastComp.name}" (${lastComp.id}) - Statut: ${lastComp.status}` : '' },
+        { type: 'Ligue', date: lastLeague?.createdAt, details: lastLeague ? `Nom: "${lastLeague.name}" (${lastLeague.id})` : '' },
+        { type: 'Coach', date: lastCoach?.createdAt, details: lastCoach ? `Nom: "${lastCoach.name}" (${lastCoach.id})` : '' }
+      ].filter(c => c.date);
+
+      if (candidates.length > 0) {
+        candidates.sort((a, b) => b.date!.getTime() - a.date!.getTime());
+        const latest = candidates[0];
+        ConsoleDashboard.setLastInserted(latest.type, latest.details);
+      }
+    } catch (e: any) {
+      logger.warn(`⚠️ [Database] Impossible d'initialiser le dernier élément inséré : ${e.message}`);
+    }
+
     // 2. Tester la connexion à Redis
     ConsoleDashboard.updateStatus('redis', 'CONNECTING');
     logger.info('🔌 [Redis] Connexion à Redis...');

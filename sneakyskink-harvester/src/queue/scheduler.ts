@@ -4,6 +4,7 @@ import { logger } from '../utils/logger.js';
 import { env } from '../config/environment.js';
 import { ActivityTracker } from '../utils/activity-tracker.js';
 import { bb3ApiClient } from '../services/bb3-api-client.js';
+import { ConsoleDashboard } from '../utils/dashboard.js';
 
 /**
  * Déclenche une synchronisation immédiate de toutes les ligues actives de la BDD
@@ -55,6 +56,10 @@ export async function triggerPeriodicSync() {
           gamerCount,
         }
       });
+
+      if (!existingLeague) {
+        ConsoleDashboard.setLastInserted('Ligue (Découverte)', `Nom: "${name}" (${id}) - Joueurs: ${gamerCount}`);
+      }
     }
   } catch (err: any) {
     logger.error(`❌ [Scheduler] Erreur lors de la découverte automatique des ligues : ${err.message}`);
