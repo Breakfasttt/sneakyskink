@@ -412,6 +412,22 @@ const MatchDetail: React.FC = () => {
                   }}
                 />
               )}
+              {match.isPenalties && (
+                <Chip
+                  label="TIRS AU BUT"
+                  size="small"
+                  sx={{
+                    fontWeight: 800,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    bgcolor: 'rgba(59, 130, 246, 0.08)',
+                    color: '#3B82F6',
+                    border: '1px solid rgba(59, 130, 246, 0.2)',
+                    fontSize: '0.65rem',
+                    py: 0.5,
+                  }}
+                />
+              )}
             </Box>
           </Grid>
 

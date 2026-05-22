@@ -86,6 +86,7 @@ export interface RawMatchTeam {
   idraces: number;
   teamlogo: string;
   score: number;
+  inflictedtouchdowns?: number | null;
   roster?: RawMatchPlayer[] | null;
   statistics?: any | null;
 }
@@ -179,6 +180,14 @@ export class MatchParser {
       }
     }
 
+    // Détection des tirs au but (pénaltys) : scores différents, touchdowns infligés identiques, et 1 MVP par équipe
+    const homeInflictedTouchdowns = homeTeamRaw.inflictedtouchdowns ?? 0;
+    const awayInflictedTouchdowns = awayTeamRaw.inflictedtouchdowns ?? 0;
+    const isPenalties = homeScore !== awayScore &&
+      homeInflictedTouchdowns === awayInflictedTouchdowns &&
+      homeMvpCount === 1 &&
+      awayMvpCount === 1;
+
     const createData: Prisma.MatchCreateInput = {
       id,
       startedAt,
@@ -203,6 +212,7 @@ export class MatchParser {
       homeStats,
       awayStats,
       isForfeit,
+      isPenalties,
     };
 
     if (forfeitTeamId) {
@@ -227,6 +237,7 @@ export class MatchParser {
       homeStats,
       awayStats,
       isForfeit,
+      isPenalties,
       forfeitTeam: forfeitTeamId ? { connect: { id: forfeitTeamId } } : { disconnect: true },
     };
 

@@ -70,6 +70,7 @@ export class MatchesService {
       competitionName: match.competition.name,
       isForfeit: match.isForfeit,
       forfeitTeamId: match.forfeitTeamId,
+      isPenalties: match.isPenalties,
       homeTeam: {
         id: match.homeTeamId,
         name: match.homeTeam.name,
@@ -205,6 +206,7 @@ export class MatchesService {
       competitionFormat: match.competition.format,
       isForfeit: match.isForfeit,
       forfeitTeamId: match.forfeitTeamId,
+      isPenalties: match.isPenalties,
       homeTeam: {
         id: match.homeTeamId,
         name: match.homeTeam.name,
