@@ -80,8 +80,39 @@ const MatchDetail: React.FC = () => {
   const homePlayerStats = match.homeTeam?.players || [];
   const awayPlayerStats = match.awayTeam?.players || [];
 
-  const aggregateStat = (statsList: any[], field: string) => {
-    return statsList.reduce((acc, curr) => acc + (curr[field] || 0), 0);
+  const getPlayerStat = (p: any, field: string) => {
+    if (field === 'casualtiesSustained') {
+      return p.casualtiesSustained || (p.newCasualties ? p.newCasualties.length : 0);
+    }
+    if (field === 'deadSustained') {
+      return p.deadSustained || (p.newCasualties && p.newCasualties.includes('dead') ? 1 : 0);
+    }
+    return p[field] || 0;
+  };
+
+  const aggregateStat = (statsList: any[], field: string, opposingStatsList: any[] = []) => {
+    if (field === 'casualtiesInflicted') {
+      const dbSum = statsList.reduce((acc, curr) => acc + (curr.casualtiesInflicted || 0), 0);
+      if (dbSum === 0 && opposingStatsList.length > 0) {
+        return opposingStatsList.reduce((acc, curr) => acc + getPlayerStat(curr, 'casualtiesSustained'), 0);
+      }
+      return dbSum;
+    }
+    if (field === 'deadInflicted') {
+      const dbSum = statsList.reduce((acc, curr) => acc + (curr.deadInflicted || 0), 0);
+      if (dbSum === 0 && opposingStatsList.length > 0) {
+        return opposingStatsList.reduce((acc, curr) => acc + getPlayerStat(curr, 'deadSustained'), 0);
+      }
+      return dbSum;
+    }
+    if (field === 'koInflicted') {
+      const dbSum = statsList.reduce((acc, curr) => acc + (curr.koInflicted || 0), 0);
+      if (dbSum === 0 && opposingStatsList.length > 0) {
+        return opposingStatsList.reduce((acc, curr) => acc + (curr.koSustained || 0), 0);
+      }
+      return dbSum;
+    }
+    return statsList.reduce((acc, curr) => acc + getPlayerStat(curr, field), 0);
   };
 
   // Extraction et tri des événements marquants pour la timeline
@@ -122,13 +153,16 @@ const MatchDetail: React.FC = () => {
         });
       }
       // 3. Blessures subies
-      else if (p.newCasualties && p.newCasualties.length > 0) {
+      else if ((p.newCasualties && p.newCasualties.length > 0) || p.casualtiesSustained > 0) {
+        const casualtyText = p.newCasualties && p.newCasualties.length > 0
+          ? `Blessure subie : ${p.newCasualties.join(', ')}`
+          : 'Blessure subie sur le terrain.';
         events.push({
           type: 'casualty_sustained',
           label: 'Blessure',
           icon: '🤕',
           color: '#F43F5E',
-          text: `Blessure subie : ${p.newCasualties.join(', ')}`,
+          text: casualtyText,
           isHome,
           teamColor,
           teamName,
@@ -491,14 +525,17 @@ const MatchDetail: React.FC = () => {
                 { label: 'Passes réussies', field: 'passes' },
                 { label: 'Yards de passes', field: 'yardsPassing' },
                 { label: 'Blessures infligées', field: 'casualtiesInflicted' },
+                { label: 'Blessures subies', field: 'casualtiesSustained' },
                 { label: 'KOs infligés', field: 'koInflicted' },
+                { label: 'KOs subis', field: 'koSustained' },
                 { label: 'Morts infligés', field: 'deadInflicted' },
+                { label: 'Morts subis', field: 'deadSustained' },
                 { label: 'Surfs (public)', field: 'pushouts' },
                 { label: 'Expulsions subies', field: 'sustainedExpulsions' },
                 { label: 'XP gagnés', field: 'xpGained' },
               ].map((stat) => {
-                const homeVal = aggregateStat(homePlayerStats, stat.field);
-                const awayVal = aggregateStat(awayPlayerStats, stat.field);
+                const homeVal = aggregateStat(homePlayerStats, stat.field, awayPlayerStats);
+                const awayVal = aggregateStat(awayPlayerStats, stat.field, homePlayerStats);
                 const total = homeVal + awayVal;
                 const homePct = total > 0 ? (homeVal / total) * 100 : 0;
                 const showBar = total > 0;
@@ -619,7 +656,11 @@ const MatchDetail: React.FC = () => {
                   }}
                 >
                   <TableCell sx={{ fontWeight: 800, color: '#F8FAFC' }}>{p.number}</TableCell>
-                  <TableCell sx={{ fontWeight: 700, color: '#F8FAFC' }}>{p.name || `Joueur #${p.number}`}</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: '#F8FAFC', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <span>{p.name || `Joueur #${p.number}`}</span>
+                    {getPlayerStat(p, 'deadSustained') > 0 && <span title="Mort">💀</span>}
+                    {getPlayerStat(p, 'deadSustained') === 0 && getPlayerStat(p, 'casualtiesSustained') > 0 && <span title="Blessé">🤕</span>}
+                  </TableCell>
                   <TableCell sx={{ textTransform: 'capitalize' }}>
                     {p.type ? p.type.replace(/^[a-z]+_/, '').replace(/([A-Z])/g, ' $1') : '-'}
                   </TableCell>
