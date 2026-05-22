@@ -17,6 +17,7 @@ model League {
   logo         String?
   gamerCount   Int?          @map("gamer_count")
   active       Boolean       @default(true)
+  isPriority   Boolean       @default(false) @map("is_priority")
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt @map("last_update")
   competitions Competition[]
@@ -26,21 +27,23 @@ model League {
 }
 
 model Competition {
-  id                 String   @id // UUID retourné par Cyanide
+  id                 String    @id // UUID retourné par Cyanide
   name               String
-  format             String   // "Knockout" | "RoundRobin" | "Wissen" | "Ladder"
-  status             String   // "InProgress" | "Scheduled" | "Played" | "Validated"
+  format             String    // "Knockout" | "RoundRobin" | "Wissen" | "Ladder"
+  status             String    // "InProgress" | "Scheduled" | "Played" | "Validated"
   round              Int?
-  roundsCount        Int?     @map("rounds_count")
-  turnDuration       Int      @map("turn_duration")
-  timeBonusDuration  Int      @map("time_bonus_duration")
-  teamsMax           Int?     @map("teams_max")
-  teamsCount         Int?     @map("teams_count")
-  leagueId           String   @map("league_id")
-  league             League   @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  roundsCount        Int?      @map("rounds_count")
+  turnDuration       Int       @map("turn_duration")
+  timeBonusDuration  Int       @map("time_bonus_duration")
+  teamsMax           Int?      @map("teams_max")
+  teamsCount         Int?      @map("teams_count")
+  leagueId           String    @map("league_id")
+  league             League    @relation(fields: [leagueId], references: [id], onDelete: Cascade)
   matches            Match[]
-  createdAt          DateTime @default(now()) @map("created_at")
-  updatedAt          DateTime @updatedAt @map("last_update")
+  historySynced      Boolean   @default(false) @map("history_synced")
+  historyLastDate    DateTime? @map("history_last_date")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("last_update")
 
   @@map("competitions")
 }

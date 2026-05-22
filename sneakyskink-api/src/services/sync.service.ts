@@ -6,6 +6,8 @@
 import { queueCoachFetch, queueLeagueFetch, harvesterQueue, redisConnection } from '../lib/queue.js';
 import { logger } from '../lib/logger.js';
 import axios from 'axios';
+import { prisma } from '../lib/prisma.js';
+import { ApiError } from '../middlewares/error.middleware.js';
 
 export class SyncService {
   static async syncCoach(coachId: string) {
@@ -140,6 +142,32 @@ export class SyncService {
     return {
       success: true,
       message: 'Le rate pacing normal a été réactivé avec succès.',
+    };
+  }
+
+  /**
+   * Modifie la priorité d'une ligue dans la base de données locale.
+   */
+  static async setLeaguePriority(leagueId: string, isPriority: boolean) {
+    logger.info(`⚡ [Sync Service] Modification de la priorité de la ligue ${leagueId} : ${isPriority}`);
+    
+    const league = await prisma.league.findUnique({
+      where: { id: leagueId }
+    });
+    
+    if (!league) {
+      throw new ApiError(404, `Ligue introuvable avec l'identifiant ${leagueId}`);
+    }
+
+    const updatedLeague = await prisma.league.update({
+      where: { id: leagueId },
+      data: { isPriority }
+    });
+
+    return {
+      success: true,
+      message: `La priorité de la ligue ${leagueId} a été mise à jour avec succès à ${isPriority}.`,
+      league: updatedLeague
     };
   }
 }

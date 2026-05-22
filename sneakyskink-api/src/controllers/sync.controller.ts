@@ -71,4 +71,23 @@ export class SyncController {
       next(error);
     }
   }
+
+  static async setLeaguePriority(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = req.params.id as string;
+      if (!id) {
+        throw new ApiError(400, "L'identifiant de la ligue est obligatoire.");
+      }
+
+      const { isPriority } = req.body;
+      if (typeof isPriority !== 'boolean') {
+        throw new ApiError(400, "Le champ 'isPriority' doit être un booléen.");
+      }
+
+      const result = await SyncService.setLeaguePriority(id, isPriority);
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
 }

@@ -153,54 +153,134 @@ export async function handleFetchLeague(leagueId: string, triggerPriority: 'high
 export async function handleFetchCompetition(competitionId: string, triggerPriority: 'high' | 'medium' | 'low' = 'medium') {
   logger.info(`🔍 [Fetch] Récupération des matchs pour la compétition ${competitionId}...`);
 
-  // 1. Chercher le dernier match importé pour cette compétition (Delta Sync)
+  // Récupérer les informations de synchronisation historique de la compétition
+  const competition = await prisma.competition.findUnique({
+    where: { id: competitionId },
+    select: { historySynced: true, historyLastDate: true }
+  });
+
+  if (!competition) {
+    logger.warn(`⚠️ [Fetch] Compétition ${competitionId} introuvable en base.`);
+    return;
+  }
+
+  // Étape A : Synchronisation Delta (Nouveaux Matchs vers le futur)
+  logger.info(`🔍 [Fetch] Étape A : Synchronisation Delta pour la compétition ${competitionId}...`);
   const lastMatch = await prisma.match.findFirst({
     where: { competitionId },
     orderBy: { startedAt: 'desc' },
     select: { startedAt: true }
   });
 
-  const params: any = { competition_id: competitionId, limit: 100 };
-  
+  const deltaParams: any = { competition_id: competitionId, limit: 100 };
   if (lastMatch?.startedAt) {
-    // L'API `/matches` accepte le format YYYY-MM-DD
-    params.start = lastMatch.startedAt.toISOString().split('T')[0];
-    logger.info(`📅 [Fetch] Dernier match trouvé le ${params.start}. Mode Delta activé.`);
+    deltaParams.start = lastMatch.startedAt.toISOString().split('T')[0];
+    logger.info(`📅 [Fetch] Dernier match trouvé le ${deltaParams.start}. Mode Delta activé.`);
   } else {
     logger.info(`📅 [Fetch] Aucun match précédent trouvé. Synchronisation globale.`);
   }
 
-  // 2. Récupérer la liste des matchs joués via /matches
-  const response = await bb3ApiClient.get('/matches', params);
-  let contests = response.matches || [];
+  const deltaResponse = await bb3ApiClient.get('/matches', deltaParams);
+  let deltaContests = deltaResponse.matches || [];
   
-  // Formatage de compatibilité pour la boucle existante
-  contests = contests.map((m: any) => ({
+  deltaContests = deltaContests.map((m: any) => ({
     ...m,
     match_id: m.id || m.uuid
   }));
   
-  logger.info(`📊 [Fetch] ${contests.length} matchs trouvés dans la compétition.`);
+  logger.info(`📊 [Fetch] Delta Sync : ${deltaContests.length} matchs trouvés.`);
 
-  for (const c of contests) {
+  for (const c of deltaContests) {
     const matchId = c.match_id;
-    if (!matchId) {
-      // Match pas encore joué ou planifié
-      continue;
+    if (!matchId) continue;
+    const existing = await prisma.match.findUnique({ where: { id: matchId } });
+    if (!existing) {
+      await queueMatchFetch(matchId, competitionId, c, triggerPriority);
     }
+  }
 
-    // A. Vérifier si le match est déjà enregistré en BDD
-    const existing = await prisma.match.findUnique({
-      where: { id: matchId },
+  // Étape B : Synchronisation Historique (Rattrapage vers le passé)
+  if (!competition.historySynced) {
+    logger.info(`🔍 [Fetch] Étape B : Rattrapage historique pour la compétition ${competitionId}...`);
+    
+    // Trouver le match le plus ancien enregistré localement
+    const firstLocalMatch = await prisma.match.findFirst({
+      where: { competitionId },
+      orderBy: { startedAt: 'asc' },
+      select: { startedAt: true }
     });
 
-    if (existing) {
-      // Match déjà importé et immuable, pas besoin de gaspiller des appels d'API !
-      continue;
+    let endDate: Date;
+    if (competition.historyLastDate) {
+      endDate = competition.historyLastDate;
+    } else if (firstLocalMatch?.startedAt) {
+      endDate = firstLocalMatch.startedAt;
+    } else {
+      endDate = new Date();
     }
 
-    // Enfiler le job d'aspiration détaillé du match
-    await queueMatchFetch(matchId, competitionId, c, triggerPriority);
+    const endStr = endDate.toISOString().split('T')[0];
+    const historyParams = {
+      competition_id: competitionId,
+      start: '2023-01-01', // Début de BB3
+      end: endStr,
+      limit: 100
+    };
+
+    logger.info(`📅 [Fetch] Requête historique avec end=${endStr} (start=2023-01-01).`);
+    const historyResponse = await bb3ApiClient.get('/matches', historyParams);
+    let historyContests = historyResponse.matches || [];
+
+    historyContests = historyContests.map((m: any) => ({
+      ...m,
+      match_id: m.id || m.uuid
+    }));
+
+    if (historyContests.length === 0) {
+      logger.info(`🏁 [Fetch] Aucun match historique retourné. Rattrapage terminé pour la compétition ${competitionId}.`);
+      await prisma.competition.update({
+        where: { id: competitionId },
+        data: { historySynced: true }
+      });
+    } else {
+      let historyEnqueuedCount = 0;
+      let minDate: Date | null = null;
+
+      for (const c of historyContests) {
+        const matchId = c.match_id;
+        if (!matchId) continue;
+
+        const matchDateStr = c.started || c.match_date || c.date;
+        if (matchDateStr) {
+          const matchDate = new Date(matchDateStr.replace(' ', 'T') + 'Z');
+          if (!minDate || matchDate < minDate) {
+            minDate = matchDate;
+          }
+        }
+
+        const existing = await prisma.match.findUnique({ where: { id: matchId } });
+        if (!existing) {
+          await queueMatchFetch(matchId, competitionId, c, triggerPriority);
+          historyEnqueuedCount++;
+        }
+      }
+
+      logger.info(`📊 [Fetch] Rattrapage Historique : ${historyContests.length} matchs retournés, ${historyEnqueuedCount} nouveaux enfilés.`);
+
+      let targetDate = minDate || new Date(endDate.getTime() - 24 * 60 * 60 * 1000);
+      const nextEndStr = targetDate.toISOString().split('T')[0];
+
+      if (nextEndStr === endStr) {
+        targetDate = new Date(targetDate.getTime() - 24 * 60 * 60 * 1000);
+        logger.info(`🔄 [Fetch] La date de fin calculée est identique à la précédente (${endStr}). Recul d'un jour forcé.`);
+      }
+
+      logger.info(`💾 [Fetch] Mise à jour de historyLastDate = ${targetDate.toISOString()} pour le prochain cycle.`);
+      await prisma.competition.update({
+        where: { id: competitionId },
+        data: { historyLastDate: targetDate }
+      });
+    }
   }
 }
 

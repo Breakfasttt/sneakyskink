@@ -79,7 +79,7 @@ export class SneakySkinkApiClient {
    */
   public async getLeagues(): Promise<League[]> {
     const res = await this.client.get('/leagues');
-    return res.data;
+    return res.data.data;
   }
 
   /**
@@ -87,7 +87,7 @@ export class SneakySkinkApiClient {
    */
   public async searchCyanideLeagues(query: string): Promise<any> {
     const res = await this.client.get('/leagues/cyanide/search', { params: { query } });
-    return res.data;
+    return res.data.data;
   }
 
   /**
@@ -95,7 +95,7 @@ export class SneakySkinkApiClient {
    */
   public async getLeague(id: string): Promise<League & { competitions: Competition[] }> {
     const res = await this.client.get(`/leagues/${id}`);
-    return res.data;
+    return res.data.data;
   }
 
   /**
@@ -103,7 +103,7 @@ export class SneakySkinkApiClient {
    */
   public async getCompetitions(params?: { leagueId?: string }): Promise<Competition[]> {
     const res = await this.client.get('/competitions', { params });
-    return res.data;
+    return res.data.data;
   }
 
   /**
@@ -111,7 +111,7 @@ export class SneakySkinkApiClient {
    */
   public async getCompetition(id: string): Promise<Competition & { league: League }> {
     const res = await this.client.get(`/competitions/${id}`);
-    return res.data;
+    return res.data.data;
   }
 
   /**
@@ -119,7 +119,7 @@ export class SneakySkinkApiClient {
    */
   public async getTeams(params?: { search?: string; race?: number }): Promise<Team[]> {
     const res = await this.client.get('/teams', { params });
-    return res.data;
+    return res.data.data;
   }
 
   /**
@@ -127,7 +127,7 @@ export class SneakySkinkApiClient {
    */
   public async getTeam(id: string): Promise<Team & { coach: Coach; players: Player[] }> {
     const res = await this.client.get(`/teams/${id}`);
-    return res.data;
+    return res.data.data;
   }
 
   /**
@@ -135,7 +135,7 @@ export class SneakySkinkApiClient {
    */
   public async getCoaches(params?: { search?: string; limit?: number }): Promise<Coach[]> {
     const res = await this.client.get('/coaches', { params });
-    return res.data;
+    return res.data.data;
   }
 
   /**
@@ -143,7 +143,7 @@ export class SneakySkinkApiClient {
    */
   public async getCoach(id: string): Promise<Coach & { teams: Team[] }> {
     const res = await this.client.get(`/coaches/${id}`, { params: { includeTeams: true } });
-    return res.data;
+    return res.data.data;
   }
 
   /**
@@ -151,7 +151,7 @@ export class SneakySkinkApiClient {
    */
   public async getMatches(params?: { page?: number; limit?: number; search?: string }): Promise<Match[]> {
     const res = await this.client.get('/matches', { params });
-    return res.data;
+    return res.data.data;
   }
 
   /**
@@ -165,7 +165,7 @@ export class SneakySkinkApiClient {
     }
   > {
     const res = await this.client.get(`/matches/${id}`);
-    return res.data;
+    return res.data.data;
   }
 
   /**
@@ -201,11 +201,19 @@ export class SneakySkinkApiClient {
   }
 
   /**
+   * ⚡ Modifie la priorité d'une ligue (ajoute ou enlève des ligues prioritaires)
+   */
+  public async setLeaguePriority(id: string, isPriority: boolean): Promise<{ success: boolean; message: string; league: League }> {
+    const res = await this.client.post(`/sync/league/${id}/priority`, { isPriority });
+    return res.data;
+  }
+
+  /**
    * 📊 Récupère les statistiques globales
    */
   public async getGlobalStats(): Promise<GlobalStats> {
     const res = await this.client.get('/stats/global');
-    return res.data;
+    return res.data.data;
   }
 
   /**
@@ -213,7 +221,7 @@ export class SneakySkinkApiClient {
    */
   public async getActivityStats(): Promise<any> {
     const res = await this.client.get('/stats/activity');
-    return res.data;
+    return res.data.data;
   }
 
   /**
@@ -221,7 +229,7 @@ export class SneakySkinkApiClient {
    */
   public async getCoachStats(id: string): Promise<any> {
     const res = await this.client.get(`/stats/coach/${id}`);
-    return res.data;
+    return res.data.data;
   }
 
   /**
@@ -229,7 +237,7 @@ export class SneakySkinkApiClient {
    */
   public async getCompetitionStats(id: string): Promise<any> {
     const res = await this.client.get(`/stats/competition/${id}`);
-    return res.data;
+    return res.data.data;
   }
 
   /**
@@ -237,7 +245,7 @@ export class SneakySkinkApiClient {
    */
   public async getLeagueStats(id: string): Promise<any> {
     const res = await this.client.get(`/stats/league/${id}`);
-    return res.data;
+    return res.data.data;
   }
 
   /**
@@ -245,7 +253,7 @@ export class SneakySkinkApiClient {
    */
   public async getTeamStats(id: string): Promise<any> {
     const res = await this.client.get(`/stats/team/${id}`);
-    return res.data;
+    return res.data.data;
   }
 
   /**
@@ -253,6 +261,6 @@ export class SneakySkinkApiClient {
    */
   public async getPlayerStats(id: string): Promise<any> {
     const res = await this.client.get(`/stats/player/${id}`);
-    return res.data;
+    return res.data.data;
   }
 }

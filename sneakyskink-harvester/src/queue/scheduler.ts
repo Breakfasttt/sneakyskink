@@ -3,6 +3,7 @@ import { queueLeagueFetch, harvesterQueue } from './queue.js';
 import { logger } from '../utils/logger.js';
 import { env } from '../config/environment.js';
 import { ActivityTracker } from '../utils/activity-tracker.js';
+import { bb3ApiClient } from '../services/bb3-api-client.js';
 
 /**
  * Déclenche une synchronisation immédiate de toutes les ligues actives de la BDD
@@ -12,19 +13,71 @@ export async function triggerPeriodicSync() {
   // Marquer l'activité pour éviter que le détecteur d'inactivité ne s'active immédiatement
   ActivityTracker.touch();
 
+  // A. Étape de découverte automatique des ligues actives via l'API Cyanide /leagues avec gamers_count=15
+  logger.info('🔍 [Scheduler] Découverte automatique des ligues actives sur Cyanide (gamers_count=15)...');
+  try {
+    const leaguesResponse = await bb3ApiClient.get('/leagues', { gamers_count: 15 });
+    const discoveredLeagues = leaguesResponse.leagues || [];
+    logger.info(`🔍 [Scheduler] ${discoveredLeagues.length} ligues découvertes sur l'API Cyanide.`);
+
+    for (const rawLeague of discoveredLeagues) {
+      const id = rawLeague.id;
+      if (!id) continue;
+      const name = rawLeague.name !== undefined && rawLeague.name !== null ? rawLeague.name.toString() : 'Ligue sans nom';
+      const logo = rawLeague.logo || null;
+      const gamerCount = rawLeague.gamer_count ?? rawLeague.team_count ?? 0;
+
+      // Déterminer si elle est officielle ou non
+      const isOfficial = name.toLowerCase().includes('official league');
+
+      // Si la ligue existe déjà, on ne veut pas écraser active ou isPriority si l'utilisateur les a configurés
+      const existingLeague = await prisma.league.findUnique({
+        where: { id },
+        select: { active: true, isPriority: true }
+      });
+
+      const isPriority = existingLeague ? existingLeague.isPriority : isOfficial;
+      const shouldBeActive = existingLeague ? existingLeague.active : true;
+
+      await prisma.league.upsert({
+        where: { id },
+        create: {
+          id,
+          name,
+          logo,
+          gamerCount,
+          active: shouldBeActive,
+          isPriority,
+        },
+        update: {
+          name,
+          logo,
+          gamerCount,
+        }
+      });
+    }
+  } catch (err: any) {
+    logger.error(`❌ [Scheduler] Erreur lors de la découverte automatique des ligues : ${err.message}`);
+  }
+
+  // B. Planifier la mise à jour des ligues actives enregistrées
   try {
     // Récupérer toutes les ligues marquées comme actives
     const activeLeagues = await prisma.league.findMany({
       where: { active: true },
-      select: { id: true, name: true },
+      select: { id: true, name: true, isPriority: true },
     });
 
     logger.info(`📊 [Scheduler] ${activeLeagues.length} ligues actives trouvées en base de données.`);
 
     for (const league of activeLeagues) {
       logger.info(`➕ [Scheduler] Planification de la mise à jour pour la ligue "${league.name}" (${league.id})`);
-      // Enfiler le job de mise à jour avec une priorité moyenne (cycle régulier configurable)
-      await queueLeagueFetch(league.id, 'medium');
+      
+      const isOfficial = league.name.toLowerCase().includes('official league');
+      const priority = (isOfficial || league.isPriority) ? 'high' : 'medium';
+      
+      // Enfiler le job de mise à jour avec la priorité appropriée
+      await queueLeagueFetch(league.id, priority);
     }
 
     logger.info('✅ [Scheduler] Tous les jobs de synchronisation ont été planifiés.');
