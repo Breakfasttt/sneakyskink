@@ -39,6 +39,13 @@ Cyanide encapsule parfois les erreurs applicatives au sein de réponses HTTP ave
 ```
 *Le Harvester doit impérativement inspecter le corps de la réponse pour détecter la présence d'une clé `"error"` ou `"errorMessage"`, même si le code HTTP retourné est 200.*
 
+> [!IMPORTANT]
+> **Retour littéral `false` (Dépassement de Quota / Clé Invalide) :**
+> En cas de dépassement de quota (Rate Limit horaire/journalier atteint) ou si la clé API utilisée est invalide/expirée, l'API de Cyanide ne renvoie pas un code HTTP 429 ou 401, ni même un JSON décrivant l'erreur.
+> Elle retourne un unique booléen **`false`** brut à la place de l'objet ou de la liste attendus, avec un statut HTTP `200 OK`.
+> Le Harvester intercepte ce cas particulier pour lancer un diagnostic de santé global et suspendre l'aspiration si nécessaire.
+
+
 ### 1.3. Quotas et Résilience (Rate Limiting)
 L'API de Cyanide applique des limitations d'appels (quotas) par clé :
 * **Limite horaire :** 1 000 requêtes.

@@ -47,20 +47,38 @@ export class SyncService {
       harvesterRunning = false;
     }
 
-    // Check if Cyanide API is reachable and marked available in Redis
+    // Check if Cyanide API status in Redis
+    let cyanideStatus: 'OK' | 'QUOTA_EXCEEDED' | 'DOWN' = 'OK';
     let cyanideOnline = false;
     try {
       const apiAvailableVal = await redisConnection.get('sneakyskink:cyanide_api:available');
-      if (apiAvailableVal !== 'false') {
-        await axios.get('https://web.cyanide-studio.com/ws/cya/status/', { timeout: 4000 });
-        cyanideOnline = true;
-      }
-    } catch (err: any) {
-      if (err.response) {
-        cyanideOnline = true; // Got a response (even 400/403), so the server is reachable!
+      if (apiAvailableVal === 'DOWN') {
+        cyanideStatus = 'DOWN';
+      } else if (apiAvailableVal === 'QUOTA_EXCEEDED') {
+        cyanideStatus = 'QUOTA_EXCEEDED';
+      } else if (apiAvailableVal === 'false') {
+        cyanideStatus = 'DOWN'; // Rétrocompatibilité
       } else {
-        cyanideOnline = false; // Connection timeout or network error
+        // Pour s'assurer de sa disponibilité réelle (si c'est marqué OK ou null/undefined), on ping le status
+        try {
+          await axios.get('https://web.cyanide-studio.com/ws/cya/status/', { timeout: 4000 });
+          cyanideStatus = 'OK';
+        } catch (err: any) {
+          if (err.response) {
+            if (err.response.status === 429) {
+              cyanideStatus = 'QUOTA_EXCEEDED';
+            } else {
+              cyanideStatus = 'OK'; // Réponse reçue
+            }
+          } else {
+            cyanideStatus = 'DOWN'; // Pas de réponse du tout
+          }
+        }
       }
+      cyanideOnline = (cyanideStatus === 'OK' || cyanideStatus === 'QUOTA_EXCEEDED');
+    } catch (err: any) {
+      cyanideStatus = 'DOWN';
+      cyanideOnline = false;
     }
 
     // Fetch active and waiting/prioritized jobs for monitoring
@@ -109,6 +127,7 @@ export class SyncService {
       hasPendingCalls: ((counts.waiting || 0) + (counts.prioritized || 0)) > 0 || counts.active > 0,
       harvesterRunning,
       cyanideOnline,
+      cyanideStatus,
       activeJobs,
       waitingJobs,
       pacingBypassed,

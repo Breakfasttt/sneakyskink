@@ -1,17 +1,18 @@
 /**
- * Commentaires en-tête : Service de surveillance de la santé de l'API de Cyanide.
- * Gère la mise en pause et la reprise du worker, l'état dans Redis et le test toutes les 15 minutes.
+ * Service de surveillance de la santé de l'API de Cyanide.
+ * Gère la mise en pause et la reprise du worker, l'état dans Redis et le test toutes les heures.
  */
 
 import { redisConnection } from '../queue/connection.js';
 import { bb3ApiClient } from './bb3-api-client.js';
+import { apiKeyManager } from './api-key-manager.js';
 import { logger } from '../utils/logger.js';
 import { ConsoleDashboard } from '../utils/dashboard.js';
 
 export class CyanideHealthService {
   private worker: any = null;
   private checkInterval: NodeJS.Timeout | null = null;
-  private static readonly CHECK_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
+  private static readonly CHECK_INTERVAL_MS = 60 * 60 * 1000; // 1 heure (60 minutes)
   private static readonly REDIS_KEY = 'sneakyskink:cyanide_api:available';
   private static readonly REDIS_SINCE_KEY = 'sneakyskink:cyanide_api:unavailable_since';
 
@@ -31,17 +32,18 @@ export class CyanideHealthService {
     
     // Lire le statut en cache
     const availableVal = await redisConnection.get(CyanideHealthService.REDIS_KEY);
-    const isCurrentlyAvailable = availableVal !== 'false';
+    const isCurrentlyAvailable = availableVal === 'OK' || availableVal === 'true' || availableVal === null || availableVal === undefined;
 
     if (!isCurrentlyAvailable) {
       logger.warn('⚠️ [CyanideHealth] L\'API Cyanide était marquée indisponible lors du dernier arrêt. Application de la pause...');
-      await this.pauseHarvester('Restauration du statut indisponible au démarrage.');
+      const oldStatus = (availableVal === 'false' || availableVal === 'DOWN') ? 'DOWN' : 'QUOTA_EXCEEDED';
+      await this.pauseHarvester('Restauration du statut indisponible au démarrage.', oldStatus);
     } else {
       // S'assurer que le statut est bien synchronisé
-      await redisConnection.set(CyanideHealthService.REDIS_KEY, 'true');
+      await redisConnection.set(CyanideHealthService.REDIS_KEY, 'OK');
     }
 
-    // Toujours démarrer le scheduler de vérification périodique de 15 minutes
+    // Toujours démarrer le scheduler de vérification périodique d'une heure
     this.startPeriodicCheck();
   }
 
@@ -50,18 +52,18 @@ export class CyanideHealthService {
    */
   public async isApiAvailable(): Promise<boolean> {
     const val = await redisConnection.get(CyanideHealthService.REDIS_KEY);
-    return val !== 'false';
+    return val === 'OK' || val === 'true' || val === null || val === undefined;
   }
 
   /**
    * Met en pause le Harvester (Worker BullMQ + statut Redis).
    */
-  public async pauseHarvester(reason: string): Promise<void> {
+  public async pauseHarvester(reason: string, status: 'QUOTA_EXCEEDED' | 'DOWN'): Promise<void> {
     const now = Date.now();
-    logger.warn(`🚨 [CyanideHealth] Mise en pause du Harvester. Raison : ${reason}`);
+    logger.warn(`🚨 [CyanideHealth] Mise en pause du Harvester. Raison : ${reason} (Statut: ${status})`);
     
     // 1. Mettre à jour Redis
-    await redisConnection.set(CyanideHealthService.REDIS_KEY, 'false');
+    await redisConnection.set(CyanideHealthService.REDIS_KEY, status);
     const existingSince = await redisConnection.get(CyanideHealthService.REDIS_SINCE_KEY);
     if (!existingSince) {
       await redisConnection.set(CyanideHealthService.REDIS_SINCE_KEY, new Date(now).toISOString());
@@ -77,7 +79,7 @@ export class CyanideHealthService {
       }
     }
 
-    ConsoleDashboard.addAlert('ERROR', `API Cyanide indisponible ! Harvester mis en pause.`);
+    ConsoleDashboard.addAlert('ERROR', `API Cyanide indisponible (${status}) ! Harvester mis en pause.`);
     ConsoleDashboard.updateStatus('worker', 'PAUSED');
   }
 
@@ -88,8 +90,15 @@ export class CyanideHealthService {
     logger.info('✅ [CyanideHealth] Rétablissement de l\'API Cyanide. Reprise du Harvester...');
 
     // 1. Mettre à jour Redis
-    await redisConnection.set(CyanideHealthService.REDIS_KEY, 'true');
+    await redisConnection.set(CyanideHealthService.REDIS_KEY, 'OK');
     await redisConnection.del(CyanideHealthService.REDIS_SINCE_KEY);
+
+    // 1.5. Réinitialiser les quotas car l'API est à nouveau disponible
+    try {
+      await apiKeyManager.resetAllQuotas();
+    } catch (err: any) {
+      logger.error(`❌ [CyanideHealth] Échec de la réinitialisation des quotas : ${err.message}`);
+    }
 
     // 2. Reprendre le worker BullMQ
     if (this.worker) {
@@ -117,37 +126,37 @@ export class CyanideHealthService {
     logger.info('🔍 [CyanideHealth] Échec détecté sur une requête. Lancement du diagnostic de santé de l\'API...');
     
     // Faire un appel de test sur le endpoint status
-    const isHealthy = await bb3ApiClient.checkApiAvailability();
-    if (!isHealthy) {
-      await this.pauseHarvester(`Échec de la requête de test général. Erreur d'origine: ${errorMsg}`);
+    const status = await bb3ApiClient.checkApiAvailability();
+    if (status !== 'OK') {
+      await this.pauseHarvester(`Échec de la requête de test général. Erreur d'origine: ${errorMsg}`, status);
     } else {
       logger.info(`🔍 [CyanideHealth] Diagnostic : L'API générale répond correctement. L'échec précédent était probablement local ou temporaire.`);
     }
   }
 
   /**
-   * Démarre la vérification périodique toutes les 15 minutes.
+   * Démarre la vérification périodique toutes les heures.
    */
   private startPeriodicCheck(): void {
     if (this.checkInterval) {
       clearInterval(this.checkInterval);
     }
 
-    // Tester l'API toutes les 15 minutes
+    // Tester l'API toutes les heures
     this.checkInterval = setInterval(async () => {
       logger.info('⏰ [CyanideHealth] Cycle de vérification automatique de la santé de l\'API...');
       
       const isCurrentlyAvailable = await this.isApiAvailable();
-      const isHealthy = await bb3ApiClient.checkApiAvailability();
+      const status = await bb3ApiClient.checkApiAvailability();
 
-      if (!isCurrentlyAvailable && isHealthy) {
+      if (!isCurrentlyAvailable && status === 'OK') {
         // L'API était indisponible mais est revenue à la vie
         await this.resumeHarvester();
-      } else if (isCurrentlyAvailable && !isHealthy) {
+      } else if (isCurrentlyAvailable && status !== 'OK') {
         // L'API était disponible mais vient de tomber en panne
-        await this.pauseHarvester('Vérification automatique périodique en échec.');
+        await this.pauseHarvester('Vérification automatique périodique en échec.', status);
       } else {
-        logger.info(`⏰ [CyanideHealth] Santé de l'API stable (Disponible: ${isCurrentlyAvailable}, Test de connexion: ${isHealthy ? 'OK' : 'KO'})`);
+        logger.info(`⏰ [CyanideHealth] Santé de l'API stable (Disponible: ${isCurrentlyAvailable}, Statut actuel: ${status})`);
       }
     }, CyanideHealthService.CHECK_INTERVAL_MS);
     

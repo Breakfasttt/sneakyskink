@@ -13,6 +13,8 @@ interface ApiKeyStatus {
 }
 
 export class ApiKeyManager {
+  private isInitialized = false;
+  private initPromise: Promise<void> | null = null;
   private keysStatus: Map<string, ApiKeyStatus> = new Map();
   public static readonly HOURLY_LIMIT = 1000;
   public static readonly DAILY_LIMIT = 10000;
@@ -40,44 +42,79 @@ export class ApiKeyManager {
   }
 
   /**
+   * Garantit que l'initialisation du gestionnaire de clés est terminée.
+   */
+  public async ensureInitialized(): Promise<void> {
+    if (this.isInitialized) return;
+    if (this.initPromise) return this.initPromise;
+    await this.initialize();
+  }
+
+  /**
    * Initialise le gestionnaire en restaurant l'état des quotas depuis Redis.
    */
   public async initialize(): Promise<void> {
-    logger.info('🔑 [ApiKeyManager] Restauration des quotas depuis Redis...');
-    const now = Date.now();
+    if (this.isInitialized) return;
+    if (this.initPromise) return this.initPromise;
 
-    for (const [key, status] of this.keysStatus.entries()) {
-      const maskedKey = this.mask(key);
-      try {
-        const redisKey = `sneakyskink:quota:status:${this.mask(key)}`;
-        const cached = await redisConnection.get(redisKey);
+    this.initPromise = (async () => {
+      logger.info('🔑 [ApiKeyManager] Restauration des quotas depuis Redis...');
+      const now = Date.now();
 
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          status.hourlyRequests = parsed.hourlyRequests ?? 0;
-          status.dailyRequests = parsed.dailyRequests ?? 0;
-          status.hourlyResetTime = parsed.hourlyResetTime ?? (now + ApiKeyManager.HOUR_MS);
-          status.dailyResetTime = parsed.dailyResetTime ?? (now + ApiKeyManager.DAY_MS);
-          status.cooldownUntil = parsed.cooldownUntil ?? 0;
+      for (const [key, status] of this.keysStatus.entries()) {
+        const maskedKey = this.mask(key);
+        try {
+          const redisKey = `sneakyskink:quota:status:${this.mask(key)}`;
+          const cached = await redisConnection.get(redisKey);
 
-          // Réinitialiser les quotas si les fenêtres temporelles ont expiré pendant l'arrêt
-          this.checkAndResetQuotas(status, now);
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            status.hourlyRequests = parsed.hourlyRequests ?? 0;
+            status.dailyRequests = parsed.dailyRequests ?? 0;
+            status.hourlyResetTime = parsed.hourlyResetTime ?? (now + ApiKeyManager.HOUR_MS);
+            status.dailyResetTime = parsed.dailyResetTime ?? (now + ApiKeyManager.DAY_MS);
+            status.cooldownUntil = parsed.cooldownUntil ?? 0;
 
-          logger.info(
-            `🔑 [ApiKeyManager] Clé [${maskedKey}] restaurée. Quota horaire: ${status.hourlyRequests}/${ApiKeyManager.HOURLY_LIMIT}`
-          );
-        } else {
-          logger.info(`🔑 [ApiKeyManager] Clé [${maskedKey}] : Aucun quota en cache, initialisation par défaut.`);
-          await this.persistStatus(status);
+            // Réinitialiser les quotas si les fenêtres temporelles ont expiré pendant l'arrêt
+            this.checkAndResetQuotas(status, now);
+
+            logger.info(
+              `🔑 [ApiKeyManager] Clé [${maskedKey}] restaurée. Quota horaire: ${status.hourlyRequests}/${ApiKeyManager.HOURLY_LIMIT}`
+            );
+          } else {
+            logger.info(`🔑 [ApiKeyManager] Clé [${maskedKey}] : Aucun quota en cache, initialisation par défaut.`);
+            await this.persistStatus(status);
+          }
+        } catch (err: any) {
+          logger.error(`⚠️ [ApiKeyManager] Échec chargement Redis pour clé [${maskedKey}]: ${err.message}`);
         }
-      } catch (err: any) {
-        logger.error(`⚠️ [ApiKeyManager] Échec chargement Redis pour clé [${maskedKey}]: ${err.message}`);
       }
-    }
-    
-    // Afficher les quotas de la première clé au démarrage pour le TUI
-    if (env.apiKeys.length > 0) {
-      this.updateDashboard(env.apiKeys[0]);
+      
+      // Afficher les quotas de la première clé au démarrage pour le TUI
+      if (env.apiKeys.length > 0) {
+        this.updateDashboard(env.apiKeys[0]);
+      }
+      this.isInitialized = true;
+    })();
+
+    return this.initPromise;
+  }
+
+  /**
+   * Réinitialise les quotas et cooldowns de toutes les clés API.
+   * Utilisé lors du rétablissement de l'API.
+   */
+  public async resetAllQuotas(): Promise<void> {
+    logger.info('🔄 [ApiKeyManager] Réinitialisation de toutes les clés API (API de nouveau disponible)...');
+    const now = Date.now();
+    for (const [key, status] of this.keysStatus.entries()) {
+      status.hourlyRequests = 0;
+      status.dailyRequests = 0;
+      status.hourlyResetTime = now + ApiKeyManager.HOUR_MS;
+      status.dailyResetTime = now + ApiKeyManager.DAY_MS;
+      status.cooldownUntil = 0;
+      await this.persistStatus(status);
+      this.updateDashboard(key);
     }
   }
 

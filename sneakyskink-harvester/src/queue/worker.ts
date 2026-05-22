@@ -76,6 +76,7 @@ export const harvesterWorker = new Worker<JobData>(
   {
     connection: redisConnection,
     concurrency: 1, // Exécuter séquentiellement ; BullMQ gère l'ordre par priorité native
+    autorun: false, // Ne pas démarrer le worker automatiquement à l'import
   }
 );
 

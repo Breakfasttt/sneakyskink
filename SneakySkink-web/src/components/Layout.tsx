@@ -42,6 +42,7 @@ export const Layout: React.FC = () => {
   const [queueCount, setQueueCount] = useState<number>(0);
   const [harvesterRunning, setHarvesterRunning] = useState<boolean>(true);
   const [cyanideOnline, setCyanideOnline] = useState<boolean>(true);
+  const [cyanideStatus, setCyanideStatus] = useState<'OK' | 'QUOTA_EXCEEDED' | 'DOWN'>('OK');
 
   // Poll the sync queue status every 10 seconds to show in the header badge
   useEffect(() => {
@@ -53,10 +54,12 @@ export const Layout: React.FC = () => {
         setQueueCount(active + waiting);
         setHarvesterRunning((data as any).harvesterRunning ?? false);
         setCyanideOnline((data as any).cyanideOnline ?? false);
+        setCyanideStatus((data as any).cyanideStatus ?? 'DOWN');
       } catch (err) {
         console.error('API is offline or unreachable', err);
         setHarvesterRunning(false);
         setCyanideOnline(false);
+        setCyanideStatus('DOWN');
       }
     };
 
@@ -156,14 +159,28 @@ export const Layout: React.FC = () => {
               </Paper>
             </Tooltip>
 
-            <Tooltip title={`API Cyanide: ${cyanideOnline ? 'Disponible' : 'Indisponible'}`}>
+            <Tooltip title={
+              cyanideStatus === 'OK'
+                ? 'API Cyanide: En ligne / Disponible'
+                : cyanideStatus === 'QUOTA_EXCEEDED'
+                ? 'API Cyanide: Quotas dépassés (En attente)'
+                : 'API Cyanide: Indisponible (Pas de réponse)'
+            }>
               <Paper
                 elevation={0}
                 sx={{
                   px: 1.5,
                   py: 0.5,
-                  bgcolor: cyanideOnline ? 'rgba(0, 230, 118, 0.08)' : 'rgba(239, 68, 68, 0.08)',
-                  border: cyanideOnline ? '1px solid rgba(0, 230, 118, 0.2)' : '1px solid rgba(239, 68, 68, 0.2)',
+                  bgcolor: cyanideStatus === 'OK' 
+                    ? 'rgba(0, 230, 118, 0.08)' 
+                    : cyanideStatus === 'QUOTA_EXCEEDED'
+                    ? 'rgba(245, 158, 11, 0.08)'
+                    : 'rgba(239, 68, 68, 0.08)',
+                  border: cyanideStatus === 'OK'
+                    ? '1px solid rgba(0, 230, 118, 0.2)'
+                    : cyanideStatus === 'QUOTA_EXCEEDED'
+                    ? '1px solid rgba(245, 158, 11, 0.2)'
+                    : '1px solid rgba(239, 68, 68, 0.2)',
                   borderRadius: 2,
                   display: 'flex',
                   alignItems: 'center',
@@ -175,11 +192,28 @@ export const Layout: React.FC = () => {
                     width: 6,
                     height: 6,
                     borderRadius: '50%',
-                    bgcolor: cyanideOnline ? '#00E676' : '#EF4444',
-                    boxShadow: cyanideOnline ? '0 0 6px #00E676' : '0 0 6px #EF4444',
+                    bgcolor: cyanideStatus === 'OK'
+                      ? '#00E676'
+                      : cyanideStatus === 'QUOTA_EXCEEDED'
+                      ? '#F59E0B'
+                      : '#EF4444',
+                    boxShadow: cyanideStatus === 'OK'
+                      ? '0 0 6px #00E676'
+                      : cyanideStatus === 'QUOTA_EXCEEDED'
+                      ? '0 0 6px #F59E0B'
+                      : '0 0 6px #EF4444',
                   }}
                 />
-                <Typography variant="caption" sx={{ color: cyanideOnline ? '#00E676' : '#EF4444', fontWeight: 800, fontSize: '0.65rem', letterSpacing: '0.05em' }}>
+                <Typography variant="caption" sx={{
+                  color: cyanideStatus === 'OK'
+                    ? '#00E676'
+                    : cyanideStatus === 'QUOTA_EXCEEDED'
+                    ? '#F59E0B'
+                    : '#EF4444',
+                  fontWeight: 800,
+                  fontSize: '0.65rem',
+                  letterSpacing: '0.05em'
+                }}>
                   CYANIDE
                 </Typography>
               </Paper>

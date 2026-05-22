@@ -59,12 +59,13 @@ export class BB3ApiClient {
    * @param params Les arguments sous forme de paires clé-valeur
    */
   public async get<T = any>(method: string, params: Record<string, any> = {}): Promise<T> {
+    await apiKeyManager.ensureInitialized();
     const cleanMethod = method.replace(/^\/+|\/+$/g, '').toLowerCase();
     if (cleanMethod !== 'status' && cleanMethod !== 'welcome') {
       try {
         const available = await redisConnection.get('sneakyskink:cyanide_api:available');
-        if (available === 'false') {
-          throw new CyanideFunctionalError(`Appel API bloqué : l'API de Cyanide est marquée comme indisponible.`);
+        if (available === 'false' || available === 'DOWN' || available === 'QUOTA_EXCEEDED') {
+          throw new CyanideFunctionalError(`Appel API bloqué : l'API de Cyanide est marquée comme indisponible (statut: ${available}).`);
         }
       } catch (err: any) {
         if (err instanceof CyanideFunctionalError) throw err;
@@ -72,9 +73,10 @@ export class BB3ApiClient {
       }
     }
 
+    const maxAttempts = Math.max(3, env.apiKeys.length);
     let attempts = 0;
 
-    while (attempts < BB3ApiClient.MAX_RETRIES) {
+    while (attempts < maxAttempts) {
       attempts++;
       let activeKey = '';
 
@@ -98,7 +100,7 @@ export class BB3ApiClient {
 
       try {
         logger.debug(
-          `🚀 [BB3ApiClient] Tentative ${attempts}/${BB3ApiClient.MAX_RETRIES} sur [${method}] avec la clé [${maskedKey}]`
+          `🚀 [BB3ApiClient] Tentative ${attempts}/${maxAttempts} sur [${method}] avec la clé [${maskedKey}]`
         );
 
         // 2.5. Régulation du rythme (Rate Pacing) — ignoré en mode maintenance ou si bypass temporaire dans Redis
@@ -143,7 +145,7 @@ export class BB3ApiClient {
           safeParams.key = '***MASKED***';
         }
         const paramsStr = JSON.stringify(safeParams);
-        ConsoleDashboard.setActivity(`Appel API: [${method}] (Tentative ${attempts}/${BB3ApiClient.MAX_RETRIES}) - Params: ${paramsStr}`);
+        ConsoleDashboard.setActivity(`Appel API: [${method}] (Tentative ${attempts}/${maxAttempts}) - Params: ${paramsStr}`);
         const cleanMethod = method.replace(/^\/+|\/+$/g, '');
         const endpoint = (cleanMethod === 'status' || cleanMethod === 'welcome') ? `cya/${cleanMethod}/` : `bb3/${cleanMethod}/`;
         const response = await this.axiosInstance.get(endpoint, { params: queryParams });
@@ -152,14 +154,16 @@ export class BB3ApiClient {
         // Parfois, l'API de Cyanide retourne du HTTP 200 mais avec un payload contenant une erreur (ex: {"error": "..."})
         const data = response.data;
         if (data === false) {
-          // L'API Cyanide retourne false lorsque la ressource demandée n'existe pas ou est inaccessible
-          apiKeyManager.reportSuccess(activeKey);
-          throw new CyanideFunctionalError(`Ressource non trouvée ou inaccessible (l'API de Cyanide a retourné false)`);
+          // Un retour false indique que le quota est dépassé ou que la clé est invalide.
+          // On marque la clé en quota exceed/cooldown pour la pénaliser et forcer la rotation.
+          apiKeyManager.reportRateLimit(activeKey);
+          throw new Error(`Quota dépassé ou clé invalide (l'API de Cyanide a retourné false)`);
         }
 
         if (data && typeof data === 'object' && 'error' in data) {
           const errMsg = String(data.error).toLowerCase();
           if (errMsg.includes('key') || errMsg.includes('quota') || errMsg.includes('limit') || errMsg.includes('unauthorized')) {
+            apiKeyManager.reportRateLimit(activeKey);
             throw new Error(`Cyanide API Error Payload: ${data.error}`);
           }
           // C'est une erreur fonctionnelle (ex: ressource non trouvée). La clé a fonctionné.
@@ -189,7 +193,7 @@ export class BB3ApiClient {
         const timestamp = new Date().toLocaleTimeString('fr-FR');
         ConsoleDashboard.setLastResponse(`[${timestamp}] ERROR -> ${error.message}`);
         logger.warn(
-          `⚠️ [BB3ApiClient] Échec de la tentative ${attempts}/${BB3ApiClient.MAX_RETRIES} sur [${method}] avec la clé [${maskedKey}]. Erreur : ${error.message}`
+          `⚠️ [BB3ApiClient] Échec de la tentative ${attempts}/${maxAttempts} sur [${method}] avec la clé [${maskedKey}]. Erreur : ${error.message}`
         );
 
         // Si c'est une erreur fonctionnelle, on ne pénalise pas la clé et on ne réessaie pas (resource inexistante)
@@ -216,17 +220,20 @@ export class BB3ApiClient {
             apiKeyManager.reportError(activeKey);
           }
         } else {
-          // Erreur applicative (ex: timeout de connexion, erreur de payload, DNS)
-          apiKeyManager.reportError(activeKey);
+          // Erreur applicative ou quota retourné false (déjà géré mais on s'assure qu'un cooldown est actif)
+          // Si le message d'erreur contient 'false', on a déjà appelé reportRateLimit, sinon on appelle reportError
+          if (!error.message?.includes('retourné false')) {
+            apiKeyManager.reportError(activeKey);
+          }
         }
 
         // Si c'est notre dernière tentative, on propage l'erreur
-        if (attempts >= BB3ApiClient.MAX_RETRIES) {
+        if (attempts >= maxAttempts) {
           logger.error(
-            `❌ [BB3ApiClient] Échec définitif après ${BB3ApiClient.MAX_RETRIES} tentatives sur [${method}].`
+            `❌ [BB3ApiClient] Échec définitif après ${maxAttempts} tentatives sur [${method}].`
           );
           throw new Error(
-            `Échec d'appel de la méthode [${method}] après ${BB3ApiClient.MAX_RETRIES} tentatives. Dernière erreur: ${error.message}`
+            `Échec d'appel de la méthode [${method}] après ${maxAttempts} tentatives. Dernière erreur: ${error.message}`
           );
         }
 
@@ -243,19 +250,40 @@ export class BB3ApiClient {
   }
 
   /**
-   * Vérifie la santé générale de l'API de Cyanide en faisant un appel de test sur status.
-   * Retourne true si l'API répond correctement, false si elle retourne 'false' ou est inaccessible.
+   * Vérifie la santé générale de l'API de Cyanide en testant toutes les clés configurées.
+   * Retourne 'OK', 'QUOTA_EXCEEDED' ou 'DOWN'.
    */
-  public async checkApiAvailability(): Promise<boolean> {
-    try {
-      const data = await this.get('status');
-      if (data && typeof data === 'object' && 'games' in data) {
-        return true;
+  public async checkApiAvailability(): Promise<'OK' | 'QUOTA_EXCEEDED' | 'DOWN'> {
+    let hasQuotaExceeded = false;
+
+    for (const key of env.apiKeys) {
+      try {
+        const endpoint = `${BB3ApiClient.BASE_URL}cya/status/`;
+        // Appel direct via axios pour bypasser getAvailableKey() et son pacing/cooldown
+        const response = await axios.get(endpoint, {
+          params: { key, bb: 3 },
+          timeout: 10000,
+          headers: {
+            'Accept': 'application/json',
+            'User-Agent': 'SneakySkink-Harvester/1.0.0',
+          }
+        });
+        const data = response.data;
+        if (data && typeof data === 'object' && 'games' in data) {
+          return 'OK'; // Au moins une clé fonctionne !
+        }
+        if (data === false) {
+          hasQuotaExceeded = true;
+        }
+      } catch (err: any) {
+        logger.debug(`[BB3ApiClient] Test de santé échoué pour la clé ${key.substring(0, 4)}...: ${err.message}`);
       }
-      return false;
-    } catch (error) {
-      return false;
     }
+
+    if (hasQuotaExceeded) {
+      return 'QUOTA_EXCEEDED';
+    }
+    return 'DOWN';
   }
 }
 

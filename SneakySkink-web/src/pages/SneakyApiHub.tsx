@@ -118,6 +118,7 @@ const SneakyApiHub: React.FC = () => {
     counts: { active: 0, waiting: 0, completed: 0, failed: 0 },
     harvesterRunning: false,
     cyanideOnline: false,
+    cyanideStatus: 'DOWN',
     activeJobs: [],
     waitingJobs: [],
   };
@@ -211,13 +212,32 @@ const SneakyApiHub: React.FC = () => {
 
                     <ListItem disableGutters sx={{ py: 1.5 }}>
                       <ListItemIcon sx={{ minWidth: 36 }}>
-                        <CyanideIcon sx={{ color: q.cyanideOnline ? '#3B82F6' : '#EF4444' }} />
+                        <CyanideIcon sx={{
+                          color: (q as any).cyanideStatus === 'OK'
+                            ? '#00E676'
+                            : (q as any).cyanideStatus === 'QUOTA_EXCEEDED'
+                            ? '#F59E0B'
+                            : '#EF4444'
+                        }} />
                       </ListItemIcon>
                       <ListItemText
                         primary="API Officielle Cyanide"
-                        secondary={q.cyanideOnline ? 'En ligne / Accessible' : 'Inaccessible'}
+                        secondary={
+                          (q as any).cyanideStatus === 'OK'
+                            ? 'En ligne / Accessible'
+                            : (q as any).cyanideStatus === 'QUOTA_EXCEEDED'
+                            ? 'Quota dépassé (En attente)'
+                            : 'Inaccessible / Pas de réponse'
+                        }
                         primaryTypographyProps={{ color: '#F8FAFC', fontWeight: 600, fontSize: '0.85rem' }}
-                        secondaryTypographyProps={{ color: q.cyanideOnline ? '#3B82F6' : '#EF4444', fontSize: '0.75rem' }}
+                        secondaryTypographyProps={{
+                          color: (q as any).cyanideStatus === 'OK'
+                            ? '#00E676'
+                            : (q as any).cyanideStatus === 'QUOTA_EXCEEDED'
+                            ? '#F59E0B'
+                            : '#EF4444',
+                          fontSize: '0.75rem'
+                        }}
                       />
                     </ListItem>
                   </List>

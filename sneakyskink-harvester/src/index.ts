@@ -77,12 +77,14 @@ async function bootstrap() {
       logger.error(`❌ Job ${job?.id} a échoué avec l'erreur : ${err.message}`);
     });
     
-    ConsoleDashboard.updateStatus('worker', 'IDLE');
-    logger.info('✅ [Worker] Worker démarré et à l\'écoute des jobs.');
-
     // 3.5. Initialiser le service de santé de l'API de Cyanide
     cyanideHealthService.setWorker(harvesterWorker);
     await cyanideHealthService.initialize();
+
+    // Démarrer le worker manuellement après l'initialisation complète et la configuration de la santé
+    await harvesterWorker.run();
+    ConsoleDashboard.updateStatus('worker', 'IDLE');
+    logger.info('✅ [Worker] Worker démarré et à l\'écoute des jobs.');
 
     // 4. Démarrer le Scheduler de synchronisation périodique
     ConsoleDashboard.updateStatus('scheduler', 'INITIALIZING');
