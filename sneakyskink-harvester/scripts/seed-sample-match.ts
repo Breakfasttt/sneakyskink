@@ -36,7 +36,7 @@ async function main() {
         name: rawMatch.leaguename || 'Official league',
         logo: 'Logo_BlackOrc_01',
         gamerCount: 1,
-        active: false,
+        active: true,
       },
       update: {},
     });

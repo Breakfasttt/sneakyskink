@@ -7,7 +7,7 @@ export class LeaguesController {
       const activeParam = req.query.active as string | undefined;
       const active = activeParam !== undefined ? activeParam === 'true' : undefined;
 
-      const limit = Math.min(parseInt(req.query.limit as string || '20', 10), 100);
+      const limit = Math.min(parseInt(req.query.limit as string || '100', 10), 1000);
       const offset = Math.max(parseInt(req.query.offset as string || '0', 10), 0);
 
       const result = await LeaguesService.getAllLeagues(active, limit, offset);

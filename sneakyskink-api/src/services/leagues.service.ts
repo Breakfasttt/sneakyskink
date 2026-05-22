@@ -23,6 +23,15 @@ export class LeaguesService {
               matches: true,
             },
           },
+          matches: {
+            orderBy: {
+              finishedAt: 'desc',
+            },
+            take: 1,
+            select: {
+              finishedAt: true,
+            },
+          },
         },
       }),
     ]);
@@ -38,6 +47,7 @@ export class LeaguesService {
       updatedAt: league.updatedAt,
       competitionsCount: league._count.competitions,
       matchesCount: league._count.matches,
+      lastMatchDate: league.matches[0]?.finishedAt || null,
     }));
 
     return {

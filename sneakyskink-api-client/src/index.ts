@@ -77,8 +77,8 @@ export class SneakySkinkApiClient {
   /**
    * 🏆 Récupère la liste de toutes les ligues enregistrées
    */
-  public async getLeagues(): Promise<League[]> {
-    const res = await this.client.get('/leagues');
+  public async getLeagues(params?: { limit?: number; offset?: number; active?: boolean }): Promise<League[]> {
+    const res = await this.client.get('/leagues', { params });
     return res.data.data;
   }
 
