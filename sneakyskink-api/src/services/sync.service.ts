@@ -1,4 +1,4 @@
-import { queueCoachFetch, queueLeagueFetch, queueCompetitionFetch, harvesterQueue, redisConnection } from '../lib/queue.js';
+import { queueCoachFetch, queueLeagueFetch, queueCompetitionFetch, harvesterQueue, redisConnection, interactiveQueue } from '../lib/queue.js';
 import { logger } from '../lib/logger.js';
 import axios from 'axios';
 import { prisma } from '../lib/prisma.js';
@@ -17,12 +17,39 @@ export class SyncService {
 
   static async syncLeague(leagueId: string) {
     logger.info(`⚡ [Sync Service] Demande de synchronisation à la demande pour la ligue : ${leagueId}`);
-    await queueLeagueFetch(leagueId, 'high');
-    return {
-      success: true,
-      message: `La demande de synchronisation pour la ligue ${leagueId} a été ajoutée à la file d'attente (priorité Haute).`,
-      enqueuedAt: new Date(),
-    };
+    
+    try {
+      const job = await interactiveQueue.add(
+        `fetch-league-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        { type: 'fetch-league', id: leagueId }
+      );
+
+      // Attendre la complétion du job par le harvester
+      let attempts = 0;
+      const maxAttempts = 300; // 30 secondes max
+      
+      while (attempts < maxAttempts) {
+        const state = await job.getState();
+        if (state === 'completed') {
+          return {
+            success: true,
+            message: `La ligue ${leagueId} a été synchronisée/importée avec succès.`,
+            jobId: job.id,
+            enqueuedAt: new Date(),
+          };
+        }
+        if (state === 'failed') {
+          const finishedJob = await interactiveQueue.getJob(job.id!);
+          throw new Error(finishedJob?.failedReason || "La synchronisation/importation de la ligue a échoué.");
+        }
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
+      }
+
+      throw new Error("La synchronisation/importation de la ligue a expiré.");
+    } catch (error: any) {
+      throw new ApiError(500, `Erreur lors de la synchronisation déléguée au Harvester : ${error.message}`);
+    }
   }
 
   static async syncCompetition(competitionId: string) {

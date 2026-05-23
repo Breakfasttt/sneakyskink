@@ -20,6 +20,7 @@ export class CyanideFunctionalError extends Error {
 
 export class BB3ApiClient {
   private axiosInstance: AxiosInstance;
+  // REFACTOR SUGGESTION: Stocker lastRequestTime par clé d'API (Map<string, number>) afin de ne pas globaliser le pacing dynamique d'une clé spécifique sur l'ensemble de la rotation.
   private lastRequestTime = 0;
   /** Quand actif, le pacing est ignoré pour toutes les requêtes (mode maintenance) */
   private maintenanceMode = false;
@@ -124,10 +125,12 @@ export class BB3ApiClient {
           ConsoleDashboard.setPacing(0, 0);
         }
 
-        // Délai de pacing incompressible de 50ms en cas de bypass pour éviter de surcharger l'API
+        // Délai de pacing : 50ms en cas de bypass, sinon calcul dynamique par clé
         const pacingDelay = isBypassed ? 50 : apiKeyManager.getDynamicPacingDelay(activeKey);
         const now = Date.now();
-        const timeSinceLast = now - this.lastRequestTime;
+        const lastRequestTime = isBypassed ? this.lastRequestTime : apiKeyManager.getLastRequestTime(activeKey);
+        const timeSinceLast = now - lastRequestTime;
+        
         if (pacingDelay > 0 && timeSinceLast < pacingDelay) {
           const waitTime = pacingDelay - timeSinceLast;
           logger.debug(
@@ -138,7 +141,13 @@ export class BB3ApiClient {
           }
           await new Promise((resolve) => setTimeout(resolve, waitTime));
         }
-        this.lastRequestTime = Date.now();
+        
+        const endNow = Date.now();
+        if (isBypassed) {
+          this.lastRequestTime = endNow;
+        } else {
+          apiKeyManager.setLastRequestTime(activeKey, endNow);
+        }
 
         // 3. Exécuter l'appel
         // Cyanide utilise le format d'URL : /ws/bb3/{method}/ ou /ws/cya/{method}/

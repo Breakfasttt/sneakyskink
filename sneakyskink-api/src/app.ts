@@ -1,3 +1,7 @@
+/**
+ * Point d'entrée de l'application Express pour l'API REST.
+ */
+
 import express from 'express';
 import cors from 'cors';
 import { requestLogger } from './middlewares/request-logger.js';
@@ -9,7 +13,7 @@ const app = express();
 // Configurer CORS
 app.use(cors({
   origin: '*', // Permettre tous les accès en développement (à affiner en production)
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 

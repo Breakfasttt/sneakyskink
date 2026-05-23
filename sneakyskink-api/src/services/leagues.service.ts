@@ -1,12 +1,42 @@
+/**
+ * Service pour la gestion des ligues dans la base de données.
+ */
+
 import { prisma } from '../lib/prisma.js';
 import { ApiError } from '../middlewares/error.middleware.js';
-import { harvesterQueue } from '../lib/queue.js';
+import { harvesterQueue, interactiveQueue } from '../lib/queue.js';
 
 export class LeaguesService {
-  static async getAllLeagues(active?: boolean, limit: number = 20, offset: number = 0) {
+  static async getAllLeagues(
+    active?: boolean,
+    limit: number = 20,
+    offset: number = 0,
+    search?: string,
+    sortBy?: string,
+    sortOrder?: 'asc' | 'desc'
+  ) {
     const where: any = {};
     if (active !== undefined) {
       where.active = active;
+    }
+
+    if (search && search.trim() !== '') {
+      where.name = {
+        contains: search.trim(),
+        mode: 'insensitive'
+      };
+    }
+
+    let orderBy: any = { updatedAt: 'desc' };
+    if (sortBy) {
+      const order = sortOrder === 'asc' ? 'asc' : 'desc';
+      if (sortBy === 'matchesCount') {
+        orderBy = { matches: { _count: order } };
+      } else if (sortBy === 'competitionsCount') {
+        orderBy = { competitions: { _count: order } };
+      } else if (['name', 'active', 'isPriority', 'createdAt', 'updatedAt', 'gamerCount'].includes(sortBy)) {
+        orderBy = { [sortBy]: order };
+      }
     }
 
     const [total, leagues] = await Promise.all([
@@ -15,7 +45,7 @@ export class LeaguesService {
         where,
         take: limit,
         skip: offset,
-        orderBy: { updatedAt: 'desc' },
+        orderBy,
         include: {
           _count: {
             select: {
@@ -100,24 +130,23 @@ export class LeaguesService {
     }
 
     try {
-      const job = await harvesterQueue.add(
+      const job = await interactiveQueue.add(
         `search-leagues-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-        { type: 'search-leagues', id: query },
-        { priority: 1 } // Haute priorité
+        { type: 'search-leagues', id: query }
       );
 
       // Attendre la complétion du job par le harvester
       let attempts = 0;
-      const maxAttempts = 150; // 15 secondes max
+      const maxAttempts = 300; // 30 secondes max
       
       while (attempts < maxAttempts) {
         const state = await job.getState();
         if (state === 'completed') {
-          const finishedJob = await harvesterQueue.getJob(job.id!);
+          const finishedJob = await interactiveQueue.getJob(job.id!);
           return { data: finishedJob?.returnvalue || [] };
         }
         if (state === 'failed') {
-          const finishedJob = await harvesterQueue.getJob(job.id!);
+          const finishedJob = await interactiveQueue.getJob(job.id!);
           throw new Error(finishedJob?.failedReason || "La recherche de ligues sur Cyanide a échoué.");
         }
         await new Promise(resolve => setTimeout(resolve, 100));

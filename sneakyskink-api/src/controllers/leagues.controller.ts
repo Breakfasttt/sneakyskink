@@ -1,3 +1,7 @@
+/**
+ * Contrôleur pour la gestion des ligues de l'API REST.
+ */
+
 import { Request, Response, NextFunction } from 'express';
 import { LeaguesService } from '../services/leagues.service.js';
 
@@ -9,8 +13,11 @@ export class LeaguesController {
 
       const limit = Math.min(parseInt(req.query.limit as string || '100', 10), 1000);
       const offset = Math.max(parseInt(req.query.offset as string || '0', 10), 0);
+      const search = req.query.search as string | undefined;
+      const sortBy = req.query.sortBy as string | undefined;
+      const sortOrder = req.query.sortOrder as 'asc' | 'desc' | undefined;
 
-      const result = await LeaguesService.getAllLeagues(active, limit, offset);
+      const result = await LeaguesService.getAllLeagues(active, limit, offset, search, sortBy, sortOrder);
       res.json({ success: true, ...result });
     } catch (error) {
       next(error);

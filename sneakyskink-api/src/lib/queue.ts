@@ -39,6 +39,8 @@ redisConnection.on('error', (err) => {
   logger.error(err, '❌ [Redis] Erreur de connexion dans l\'API :');
 });
 
+export const INTERACTIVE_QUEUE_NAME = 'interactive-queue';
+
 // Définir la file d'attente globale
 export const harvesterQueue = new Queue<JobData>(QUEUE_NAME, {
   connection: redisConnection,
@@ -50,6 +52,17 @@ export const harvesterQueue = new Queue<JobData>(QUEUE_NAME, {
       type: 'exponential',
       delay: 5000,
     },
+  },
+});
+
+// Définir la file d'attente interactive et prioritaire
+// removeOnComplete: false pour que l'API puisse relire le returnvalue après complétion
+export const interactiveQueue = new Queue<JobData>(INTERACTIVE_QUEUE_NAME, {
+  connection: redisConnection,
+  defaultJobOptions: {
+    removeOnComplete: { count: 100 },
+    removeOnFail: { count: 100 },
+    attempts: 2,
   },
 });
 

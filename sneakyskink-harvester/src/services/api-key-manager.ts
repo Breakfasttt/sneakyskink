@@ -1,3 +1,7 @@
+/**
+ * Gestionnaire des clés d'API Cyanide pour Blood Bowl 3.
+ * Gère la rotation des clés, les quotas horaires/journaliers et le calcul du Rate Pacing dynamique.
+ */
 import { env } from '../config/environment.js';
 import { logger } from '../utils/logger.js';
 import { redisConnection } from '../queue/connection.js';
@@ -10,6 +14,7 @@ interface ApiKeyStatus {
   hourlyResetTime: number; // Timestamp (ms)
   dailyResetTime: number;  // Timestamp (ms)
   cooldownUntil: number;   // Timestamp (ms)
+  lastRequestTime: number; // Timestamp (ms)
 }
 
 export class ApiKeyManager {
@@ -37,6 +42,7 @@ export class ApiKeyManager {
         hourlyResetTime: this.getNextHourlyReset(now),
         dailyResetTime: this.getNextDailyReset(now),
         cooldownUntil: 0,
+        lastRequestTime: 0,
       });
     }
   }
@@ -74,6 +80,7 @@ export class ApiKeyManager {
             status.hourlyResetTime = parsed.hourlyResetTime ?? this.getNextHourlyReset(now);
             status.dailyResetTime = parsed.dailyResetTime ?? this.getNextDailyReset(now);
             status.cooldownUntil = parsed.cooldownUntil ?? 0;
+            status.lastRequestTime = 0;
 
             // Réinitialiser les quotas si les fenêtres temporelles ont expiré pendant l'arrêt
             this.checkAndResetQuotas(status, now);
@@ -142,6 +149,11 @@ export class ApiKeyManager {
    * Calcule le délai minimum de pacing dynamique pour une clé API.
    * Répartit l'utilisation restante sur le temps restant avant réinitialisation.
    */
+  /**
+   * Calcule le délai de régulation (Rate Pacing) dynamique pour une clé d'API.
+   * Il assure un lissage fluide pour ne pas griller les quotas horaires et journaliers
+   * restant avant leur réinitialisation respective.
+   */
   public getDynamicPacingDelay(key: string): number {
     const status = this.keysStatus.get(key);
     if (!status) return 2500;
@@ -149,18 +161,48 @@ export class ApiKeyManager {
     const now = Date.now();
     this.checkAndResetQuotas(status, now);
 
-    // Calcul du rythme de lissage en fonction du quota restant sur la journée
+    // 1. Calcul du délai basé sur le quota restant de la journée
     const remainingDayMs = status.dailyResetTime - now;
     const remainingDayReqs = ApiKeyManager.DAILY_LIMIT - status.dailyRequests;
 
     if (remainingDayReqs <= 0 || remainingDayMs <= 0) {
-      return ApiKeyManager.DAY_MS; // Quota journalier épuisé, délai maximum
+      return ApiKeyManager.DAY_MS; // Quota journalier épuisé
     }
-
     const dailyDelay = remainingDayMs / remainingDayReqs;
 
-    // Minimum de sécurité de 1 seconde (burst protection)
-    return Math.max(1000, Math.ceil(dailyDelay));
+    // 2. Calcul du délai basé sur le quota restant de l'heure
+    const remainingHourMs = status.hourlyResetTime - now;
+    const remainingHourReqs = ApiKeyManager.HOURLY_LIMIT - status.hourlyRequests;
+    
+    let hourlyDelay = 0;
+    if (remainingHourReqs <= 0 || remainingHourMs <= 0) {
+      hourlyDelay = ApiKeyManager.HOUR_MS; // Quota horaire épuisé
+    } else {
+      hourlyDelay = remainingHourMs / remainingHourReqs;
+    }
+
+    // Le pacing dynamique optimal est le plus restrictif des deux calculs
+    const dynamicDelay = Math.max(dailyDelay, hourlyDelay);
+
+    return Math.ceil(dynamicDelay);
+  }
+
+  /**
+   * Retourne le timestamp (ms) de la dernière requête effectuée avec cette clé.
+   */
+  public getLastRequestTime(key: string): number {
+    const status = this.keysStatus.get(key);
+    return status ? status.lastRequestTime : 0;
+  }
+
+  /**
+   * Met à jour le timestamp (ms) de la dernière requête effectuée avec cette clé.
+   */
+  public setLastRequestTime(key: string, time: number): void {
+    const status = this.keysStatus.get(key);
+    if (status) {
+      status.lastRequestTime = time;
+    }
   }
 
   /**
@@ -254,6 +296,10 @@ export class ApiKeyManager {
   /**
    * Met une clé en cooldown suite à un retour HTTP 429 (Too Many Requests).
    */
+  /**
+   * Enregistre un dépassement de quota (HTTP 429 ou retour false de Cyanide).
+   * Identifie s'il s'agit d'un dépassement horaire ou journalier pour bloquer efficacement la clé.
+   */
   public reportRateLimit(key: string, retryAfterSeconds?: number): void {
     const status = this.keysStatus.get(key);
     if (!status) return;
@@ -262,16 +308,24 @@ export class ApiKeyManager {
     const cooldownDuration = retryAfterSeconds ? retryAfterSeconds * 1000 : ApiKeyManager.DEFAULT_COOLDOWN_MS;
     status.cooldownUntil = now + cooldownDuration;
     
-    // On force la réinitialisation de son quota horaire car Cyanide signale un dépassement
-    status.hourlyRequests = ApiKeyManager.HOURLY_LIMIT; 
+    // Si la clé est signalée en dépassement alors que son quota horaire en mémoire
+    // n'est pas encore atteint, c'est que le quota journalier (ou global) est épuisé.
+    if (status.hourlyRequests < ApiKeyManager.HOURLY_LIMIT) {
+      status.dailyRequests = ApiKeyManager.DAILY_LIMIT;
+      logger.warn(
+        `🚨 [ApiKeyManager] La clé [${this.mask(key)}] a reçu un signal de quota dépassé (429/false) alors qu'elle n'a fait que ${status.hourlyRequests}/${ApiKeyManager.HOURLY_LIMIT} requêtes dans l'heure. Quota journalier marqué comme épuisé.`
+      );
+    } else {
+      // Sinon, on considère que le quota horaire est épuisé
+      status.hourlyRequests = ApiKeyManager.HOURLY_LIMIT;
+      logger.warn(
+        `🚨 [ApiKeyManager] La clé [${this.mask(key)}] a reçu un signal de quota dépassé (429/false). Quota horaire marqué comme épuisé.`
+      );
+    }
 
     // Persister et mettre à jour le Dashboard
     this.persistStatus(status);
     this.updateDashboard(key);
-
-    logger.warn(
-      `🚨 [ApiKeyManager] La clé [${this.mask(key)}] a reçu une erreur 429. Cooldown pendant ${cooldownDuration / 1000}s.`
-    );
   }
 
   /**

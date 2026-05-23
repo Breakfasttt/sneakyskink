@@ -1,3 +1,8 @@
+/**
+ * Application d'administration SneakySkink.
+ * Gère la file d'attente, les ligues et la maintenance de la BDD.
+ */
+
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container,
@@ -33,7 +38,12 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  DialogContentText
+  DialogContentText,
+  TableSortLabel,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl
 } from '@mui/material';
 import {
   Visibility,
@@ -89,6 +99,19 @@ export default function App() {
   const [queueState, setQueueState] = useState<any>(null);
   const [leagues, setLeagues] = useState<any[]>([]);
   const [auditReports, setAuditReports] = useState<AuditReport[]>([]);
+
+  // Local Leagues Search & Sorting
+  const [dbSearchInput, setDbSearchInput] = useState<string>('');
+  const [dbSearchQuery, setDbSearchQuery] = useState<string>('');
+  const [sortBy, setSortBy] = useState<string>('updatedAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+
+  const handleRequestSort = (property: string) => {
+    const isAsc = sortBy === property && sortOrder === 'asc';
+    setSortOrder(isAsc ? 'desc' : 'asc');
+    setSortBy(property);
+  };
   
   // Loading states
   const [loadingStats, setLoadingStats] = useState<boolean>(false);
@@ -169,8 +192,15 @@ export default function App() {
     setLoadingLeagues(true);
     try {
       const client = getApiClient();
-      // Récupérer toutes les ligues (actives et inactives)
-      const data = await client.getLeagues({ limit: 100 });
+      const activeParam = statusFilter === 'active' ? true : statusFilter === 'inactive' ? false : undefined;
+      // Récupérer toutes les ligues (actives et inactives) avec filtres et tri
+      const data = await client.getLeagues({
+        limit: 100,
+        search: dbSearchQuery || undefined,
+        active: activeParam,
+        sortBy,
+        sortOrder
+      });
       setLeagues(data);
     } catch (err: any) {
       console.error(err);
@@ -178,7 +208,7 @@ export default function App() {
     } finally {
       setLoadingLeagues(false);
     }
-  }, [isValidKey, showToast]);
+  }, [isValidKey, showToast, dbSearchQuery, sortBy, sortOrder, statusFilter]);
 
   // Fetch audit reports
   const fetchReports = useCallback(async () => {
@@ -187,7 +217,7 @@ export default function App() {
     try {
       const client = getApiClient();
       const reports = await client.getAuditReports();
-      setAuditReports(reports);
+      setAuditReports(reports || []);
     } catch (err: any) {
       console.error(err);
       showToast(`Erreur rapports d'audit : ${err.message}`, "error");
@@ -204,27 +234,33 @@ export default function App() {
 
   // Toggle league active status (activé/désactivé une ligue)
   const handleToggleActive = async (leagueId: string, currentActive: boolean) => {
+    // Mise à jour optimiste locale pour éviter le clignotement
+    setLeagues(prev => prev.map(l => l.id === leagueId ? { ...l, active: !currentActive } : l));
     try {
       const client = getApiClient();
       await client.toggleLeagueActive(leagueId, !currentActive);
       showToast(`Statut de la ligue mis à jour avec succès.`, "success");
-      fetchLeagues();
     } catch (err: any) {
       console.error(err);
       showToast(`Échec du changement de statut : ${err.message}`, "error");
+      // Annulation en cas d'erreur
+      setLeagues(prev => prev.map(l => l.id === leagueId ? { ...l, active: currentActive } : l));
     }
   };
 
   // Toggle league priority
   const handleTogglePriority = async (leagueId: string, currentPriority: boolean) => {
+    // Mise à jour optimiste locale pour éviter le clignotement
+    setLeagues(prev => prev.map(l => l.id === leagueId ? { ...l, isPriority: !currentPriority } : l));
     try {
       const client = getApiClient();
       await client.setLeaguePriority(leagueId, !currentPriority);
       showToast(`Priorité de la ligue mise à jour.`, "success");
-      fetchLeagues();
     } catch (err: any) {
       console.error(err);
       showToast(`Échec du changement de priorité : ${err.message}`, "error");
+      // Annulation en cas d'erreur
+      setLeagues(prev => prev.map(l => l.id === leagueId ? { ...l, isPriority: currentPriority } : l));
     }
   };
 
@@ -233,11 +269,12 @@ export default function App() {
     try {
       const client = getApiClient();
       const res = await client.syncLeague(leagueId);
-      showToast(`Synchronisation de la ligue planifiée (Job ID: ${res.jobId}).`, "success");
+      showToast(res.message || `Synchronisation de la ligue planifiée.`, "success");
       fetchQueue();
+      fetchLeagues();
     } catch (err: any) {
       console.error(err);
-      showToast(`Échec de planification : ${err.message}`, "error");
+      showToast(`Échec : ${err.message}`, "error");
     }
   };
 
@@ -703,17 +740,24 @@ export default function App() {
                         <TableBody>
                           {searchResults.map((league) => (
                             <TableRow key={league.id}>
-                              <TableCell>{league.name}</TableCell>
+                              <TableCell>
+                                <Typography variant="body2" sx={{ fontWeight: 600, display: 'inline' }}>
+                                  {league.name}
+                                </Typography>
+                                {league.imported && (
+                                  <Chip label="Déjà importée" size="small" color="success" sx={{ ml: 1, height: 20, fontSize: '0.75rem' }} />
+                                )}
+                              </TableCell>
                               <TableCell><code>{league.id}</code></TableCell>
                               <TableCell align="center">
                                 <Button
-                                  variant="contained"
+                                  variant={league.imported ? "outlined" : "contained"}
                                   size="small"
-                                  color="primary"
+                                  color={league.imported ? "secondary" : "primary"}
                                   startIcon={<CloudSync />}
                                   onClick={() => handleSyncLeague(league.id)}
                                 >
-                                  Importer / Synchro
+                                  {league.imported ? "Forcer Synchro" : "Importer"}
                                 </Button>
                               </TableCell>
                             </TableRow>
@@ -736,6 +780,59 @@ export default function App() {
                   }
                 />
                 <CardContent>
+                  {/* Formulaire de recherche locale en BDD */}
+                  <Box
+                    component="form"
+                    onSubmit={(e: React.FormEvent) => {
+                      e.preventDefault();
+                      setDbSearchQuery(dbSearchInput);
+                    }}
+                    sx={{ display: 'flex', gap: 2, mb: 3 }}
+                  >
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label="Rechercher une ligue en base de données"
+                      value={dbSearchInput}
+                      onChange={(e: any) => setDbSearchInput(e.target.value)}
+                      placeholder="Nom de la ligue..."
+                      slotProps={{
+                        input: {
+                          endAdornment: dbSearchInput && (
+                            <InputAdornment position="end">
+                              <IconButton
+                                size="small"
+                                onClick={() => {
+                                  setDbSearchInput('');
+                                  setDbSearchQuery('');
+                                }}
+                              >
+                                <span style={{ fontSize: '18px', fontWeight: 'bold' }}>×</span>
+                              </IconButton>
+                            </InputAdornment>
+                          )
+                        }
+                      }}
+                    />
+                    <FormControl size="small" sx={{ minWidth: 160 }}>
+                      <InputLabel id="status-filter-label">Statut</InputLabel>
+                      <Select
+                        labelId="status-filter-label"
+                        id="status-filter"
+                        value={statusFilter}
+                        label="Statut"
+                        onChange={(e: any) => setStatusFilter(e.target.value)}
+                      >
+                        <MenuItem value="all">Toutes</MenuItem>
+                        <MenuItem value="active">Actives</MenuItem>
+                        <MenuItem value="inactive">Inactives</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <Button variant="contained" type="submit" startIcon={<Search />} sx={{ minWidth: 120 }}>
+                      Filtrer
+                    </Button>
+                  </Box>
+
                   {loadingLeagues ? (
                     <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
                       <CircularProgress />
@@ -745,12 +842,52 @@ export default function App() {
                       <Table>
                         <TableHead>
                           <TableRow>
-                            <TableCell>Logo</TableCell>
-                            <TableCell>Ligue</TableCell>
+                            <TableCell>
+                              <TableSortLabel
+                                active={sortBy === 'name'}
+                                direction={sortBy === 'name' ? sortOrder : 'desc'}
+                                onClick={() => handleRequestSort('name')}
+                              >
+                                Ligue
+                              </TableSortLabel>
+                            </TableCell>
                             <TableCell>ID Ligue</TableCell>
-                            <TableCell align="center">Matchs</TableCell>
-                            <TableCell align="center">Actif / Inactif</TableCell>
-                            <TableCell align="center">Prioritaire</TableCell>
+                            <TableCell align="center">
+                              <TableSortLabel
+                                active={sortBy === 'gamerCount'}
+                                direction={sortBy === 'gamerCount' ? sortOrder : 'desc'}
+                                onClick={() => handleRequestSort('gamerCount')}
+                              >
+                                Coachs
+                              </TableSortLabel>
+                            </TableCell>
+                            <TableCell align="center">
+                              <TableSortLabel
+                                active={sortBy === 'matchesCount'}
+                                direction={sortBy === 'matchesCount' ? sortOrder : 'desc'}
+                                onClick={() => handleRequestSort('matchesCount')}
+                              >
+                                Matchs
+                              </TableSortLabel>
+                            </TableCell>
+                            <TableCell align="center">
+                              <TableSortLabel
+                                active={sortBy === 'active'}
+                                direction={sortBy === 'active' ? sortOrder : 'desc'}
+                                onClick={() => handleRequestSort('active')}
+                              >
+                                Actif / Inactif
+                              </TableSortLabel>
+                            </TableCell>
+                            <TableCell align="center">
+                              <TableSortLabel
+                                active={sortBy === 'isPriority'}
+                                direction={sortBy === 'isPriority' ? sortOrder : 'desc'}
+                                onClick={() => handleRequestSort('isPriority')}
+                              >
+                                Prioritaire
+                              </TableSortLabel>
+                            </TableCell>
                             <TableCell align="center">Actions</TableCell>
                           </TableRow>
                         </TableHead>
@@ -758,16 +895,10 @@ export default function App() {
                           {leagues.map((league) => (
                             <TableRow key={league.id}>
                               <TableCell>
-                                {league.logo ? (
-                                  <Box component="img" src={league.logo} sx={{ width: 40, height: 40, borderRadius: 1 }} />
-                                ) : (
-                                  '-'
-                                )}
-                              </TableCell>
-                              <TableCell>
                                 <Typography variant="body2" sx={{ fontWeight: 600 }}>{league.name}</Typography>
                               </TableCell>
                               <TableCell><code>{league.id}</code></TableCell>
+                              <TableCell align="center">{league.gamerCount ?? 0}</TableCell>
                               <TableCell align="center">{league.matchesCount}</TableCell>
                               <TableCell align="center">
                                 <FormControlLabel

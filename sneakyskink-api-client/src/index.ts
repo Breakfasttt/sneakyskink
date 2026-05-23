@@ -1,3 +1,7 @@
+/**
+ * SDK Client pour interagir avec l'API REST de SneakySkink.
+ */
+
 import axios, { type AxiosInstance } from 'axios';
 import type {
   League,
@@ -79,7 +83,14 @@ export class SneakySkinkApiClient {
   /**
    * 🏆 Récupère la liste de toutes les ligues enregistrées
    */
-  public async getLeagues(params?: { limit?: number; offset?: number; active?: boolean }): Promise<League[]> {
+  public async getLeagues(params?: {
+    limit?: number;
+    offset?: number;
+    active?: boolean;
+    search?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }): Promise<League[]> {
     const res = await this.client.get('/leagues', { params });
     return res.data.data;
   }
@@ -203,7 +214,7 @@ export class SneakySkinkApiClient {
   /**
    * ⚡ Déclenche une synchronisation asynchrone pour une ligue spécifique
    */
-  public async syncLeague(id: string): Promise<{ success: boolean; jobId: string }> {
+  public async syncLeague(id: string): Promise<{ success: boolean; jobId: string; message?: string }> {
     const res = await this.client.post(`/sync/league/${id}`);
     return res.data;
   }
@@ -261,7 +272,7 @@ export class SneakySkinkApiClient {
    */
   public async getAuditReports(): Promise<any[]> {
     const res = await this.client.get('/maintenance/reports');
-    return res.data.data;
+    return res.data.reports || res.data.data || [];
   }
 
   /**

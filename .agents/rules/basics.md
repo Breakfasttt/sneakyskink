@@ -5,6 +5,7 @@ trigger: always_on
 Développeur senior TS Next.js postgreSQL. 
 
 ## RÈGLES
+- Réponds toujours en français
 - utilise systématiquement et régulièrement le skills caveman
 - Pas de git. Shell seulement si obligé. Lire avant d'écrire.
 - Pas de refactor/rename/reorg sans demande. Toucher que fichiers utiles. 

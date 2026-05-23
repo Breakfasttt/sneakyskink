@@ -20,6 +20,26 @@ export default defineConfig({
         find: 'recharts',
         replacement: path.resolve(rootNodeModules, 'recharts'),
       },
+      {
+        find: 'react',
+        replacement: path.resolve(rootNodeModules, 'react'),
+      },
+      {
+        find: 'react-dom',
+        replacement: path.resolve(rootNodeModules, 'react-dom'),
+      },
+      {
+        find: '@emotion/react',
+        replacement: path.resolve(rootNodeModules, '@emotion/react'),
+      },
+      {
+        find: '@emotion/styled',
+        replacement: path.resolve(rootNodeModules, '@emotion/styled'),
+      },
+      {
+        find: '@mui/material',
+        replacement: path.resolve(rootNodeModules, '@mui/material'),
+      },
     ]
   }
 })

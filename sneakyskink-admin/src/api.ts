@@ -24,5 +24,6 @@ export function getApiClient(customKey?: string): SneakySkinkApiClient {
   return new SneakySkinkApiClient({
     baseUrl: API_BASE_URL,
     apiKey: apiKey,
+    timeout: 45000,
   });
 }

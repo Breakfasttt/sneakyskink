@@ -1,5 +1,5 @@
 import { prisma } from './database/client.js';
-import { redisConnection, harvesterWorker, initScheduler } from './queue/index.js';
+import { redisConnection, harvesterWorker, interactiveWorker, initScheduler } from './queue/index.js';
 import { logger } from './utils/logger.js';
 import { ConsoleDashboard } from './utils/dashboard.js';
 import { apiKeyManager } from './services/api-key-manager.js';
@@ -76,14 +76,30 @@ async function bootstrap() {
       ConsoleDashboard.setActivity(`Échec du job ${job?.id}`);
       logger.error(`❌ Job ${job?.id} a échoué avec l'erreur : ${err.message}`);
     });
+
+    interactiveWorker.on('active', (job) => {
+      ConsoleDashboard.setActivity(`⚡ [Priority] Job ${job.id} [${job.name}] en cours`);
+      logger.info(`⚡ [Priority] Job ${job.id} est actif.`);
+    });
+    interactiveWorker.on('completed', (job) => {
+      ConsoleDashboard.setActivity(`✨ [Priority] Job ${job.id} terminé`);
+      logger.info(`✨ [Priority] Job ${job.id} complété.`);
+    });
+    interactiveWorker.on('failed', (job, err) => {
+      ConsoleDashboard.setActivity(`❌ [Priority] Échec job ${job?.id}`);
+      logger.error(`❌ [Priority] Job ${job?.id} a échoué : ${err.message}`);
+    });
     
-    // 3.5. Démarrer le worker manuellement en arrière-plan pour ne pas bloquer le bootstrap
+    // 3.5. Démarrer les workers manuellement en arrière-plan pour ne pas bloquer le bootstrap
     harvesterWorker.run().catch((err: any) => {
       logger.error(`❌ [Worker] Erreur fatale du worker : ${err.message}`);
       ConsoleDashboard.addAlert('FATAL', `Worker crash: ${err.message}`);
     });
+    interactiveWorker.run().catch((err: any) => {
+      logger.error(`❌ [Interactive Worker] Erreur fatale du worker interactif : ${err.message}`);
+    });
     ConsoleDashboard.updateStatus('worker', 'IDLE');
-    logger.info('✅ [Worker] Worker démarré et à l\'écoute des jobs.');
+    logger.info('✅ [Worker] Workers principal et interactif démarrés.');
 
     // 3.6. Initialiser le service de santé de l'API de Cyanide
     cyanideHealthService.setWorker(harvesterWorker);
@@ -111,10 +127,11 @@ async function shutdown(signal: string) {
   ConsoleDashboard.setActivity(`Arrêt en cours (${signal})...`);
 
   try {
-    // Fermer le worker
+    // Fermer les workers
     ConsoleDashboard.updateStatus('worker', 'STOPPING');
-    logger.info('⚙️ [Worker] Fermeture du worker BullMQ...');
+    logger.info('⚙️ [Worker] Fermeture des workers BullMQ...');
     await harvesterWorker.close();
+    await interactiveWorker.close();
     ConsoleDashboard.updateStatus('worker', 'STOPPED');
     
     // Fermer la connexion Redis

@@ -7,6 +7,7 @@ import { redisConnection } from './connection.js';
 import { 
   harvesterQueue, 
   QUEUE_NAME, 
+  INTERACTIVE_QUEUE_NAME,
   JobData, 
   queueCoachFetch, 
   queueCompetitionFetch,
@@ -51,9 +52,6 @@ export const harvesterWorker = new Worker<JobData>(
         case 'fetch-match':
           await handleFetchMatch(id, job.data.competitionId!, job.data.contest, triggerPriority);
           break;
-
-        case 'search-leagues':
-          return await handleSearchLeagues(id);
 
         case 'maintenance-task':
           bb3ApiClient.setMaintenanceMode(true);
@@ -778,3 +776,24 @@ export async function handleSearchLeagues(query: string) {
     throw new Error(`Erreur lors de la recherche sur l'API de Cyanide : ${error.message}`);
   }
 }
+
+export const interactiveWorker = new Worker<JobData>(
+  INTERACTIVE_QUEUE_NAME,
+  async (job: Job<JobData>) => {
+    const { type, id } = job.data;
+    logger.info(`🚀 [Interactive Worker] Traitement du job [${job.id}] : ${type}`);
+    if (type === 'search-leagues') {
+      return await handleSearchLeagues(id);
+    }
+    if (type === 'fetch-league') {
+      await handleFetchLeague(id, 'high');
+      return { success: true };
+    }
+    throw new Error(`Type de job non supporté dans le worker interactif : ${type}`);
+  },
+  {
+    connection: redisConnection,
+    concurrency: 3, // Permettre plusieurs recherches en parallèle
+    autorun: false,
+  }
+);
