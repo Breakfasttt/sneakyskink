@@ -115,6 +115,17 @@ export class SyncService {
       }
     }
 
+    // Récupérer le prochain test de santé périodique de l'API Cyanide
+    let cyanideNextCheck: number | undefined = undefined;
+    try {
+      const nextCheckVal = await redisConnection.get('sneakyskink:cyanide_api:next_check');
+      if (nextCheckVal) {
+        cyanideNextCheck = parseInt(nextCheckVal, 10);
+      }
+    } catch (err) {
+      // ignore
+    }
+
     return {
       success: true,
       counts: {
@@ -128,6 +139,7 @@ export class SyncService {
       harvesterRunning,
       cyanideOnline,
       cyanideStatus,
+      cyanideNextCheck,
       activeJobs,
       waitingJobs,
       pacingBypassed,

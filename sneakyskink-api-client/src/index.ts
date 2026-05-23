@@ -28,6 +28,7 @@ export interface SyncQueueState {
   harvesterRunning?: boolean;
   cyanideOnline?: boolean;
   cyanideStatus?: 'OK' | 'QUOTA_EXCEEDED' | 'DOWN';
+  cyanideNextCheck?: number;
   activeJobs?: any[];
   waitingJobs?: any[];
 }

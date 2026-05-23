@@ -12,13 +12,13 @@ L'écosystème SneakySkink est divisé en plusieurs packages spécialisés :
 
 | Package / Dossier | Rôle & Description | Technologie clé |
 | :--- | :--- | :--- |
-| **`sneakyskink-bdd`** | Source unique de vérité pour le schéma de données. Partage les types Prisma et gère la base PostgreSQL. | Prisma, PostgreSQL |
-| **`sneakyskink-api-client`** | SDK Client réutilisable, léger et 100% typé pour consommer l'API REST de façon fluide. | TypeScript, Axios, Prisma |
-| **`SneakySkink-harvester`** | Démon d'aspiration asynchrone régulé par file d'attente (BullMQ), rotation de clés API, et Rate Pacing intelligent. | BullMQ, Redis, Axios |
-| **`SneakySkink-api`** | API REST Express exposant les données stockées et permettant de déclencher des jobs de synchro. | Express.js, TypeScript |
-| **`SneakySkink-web`** | Interface utilisateur premium (Glassmorphism & Neon Glows) pour explorer les ligues, coachs et statistiques. | React, Vite, Material UI (MUI) |
-| **`SneakySkink-discord`** | Bot Discord fournissant des commandes interactives, des alertes de matchs et des statistiques en direct. | Discord.js, Node.js |
-| **`SneakySkink-twitch`** | Service d'intégration pour les overlays de streaming en direct et la détection d'activité Twitch. | Twitch API, WebSockets |
+| [**`sneakyskink-bdd`**](./sneakyskink-bdd/README.md) | Source unique de vérité pour le schéma de données. Partage les types Prisma et gère la base PostgreSQL. | Prisma, PostgreSQL |
+| [**`sneakyskink-api-client`**](./sneakyskink-api-client/README.md) | SDK Client réutilisable, léger et 100% typé pour consommer l'API REST de façon fluide. | TypeScript, Axios, Prisma |
+| [**`sneakyskink-harvester`**](./sneakyskink-harvester/README.md) | Démon d'aspiration asynchrone régulé par file d'attente (BullMQ), rotation de clés API, et Rate Pacing intelligent. | BullMQ, Redis, Axios |
+| [**`sneakyskink-api`**](./sneakyskink-api/README.md) | API REST Express exposant les données stockées et permettant de déclencher des jobs de synchro. | Express.js, TypeScript |
+| [**`SneakySkink-web`**](./SneakySkink-web/README.md) | Interface utilisateur premium (Glassmorphism & Neon Glows) pour explorer les ligues, coachs et statistiques. | React, Vite, Material UI (MUI) |
+| [**`SneakySkink-discord`**](./SneakySkink-discord/README.md) | Bot Discord fournissant des commandes interactives, des alertes de matchs et des statistiques en direct. | Discord.js, Node.js |
+| [**`SneakySkink-twitch`**](./SneakySkink-twitch/README.md) | Service d'intégration pour les overlays de streaming en direct et la détection d'activité Twitch. | Twitch API, WebSockets |
 
 ---
 
@@ -78,14 +78,14 @@ Ouvrez des terminaux séparés pour lancer chaque service en mode développement
 
 * **Le Harvester (Démon BullMQ) :**
   ```bash
-  cd SneakySkink-harvester
+  cd sneakyskink-harvester
   # Configurez le .env (clés API Cyanide, api pacing delay, etc.)
   npm run dev
   ```
 
 * **L'API REST (Express) :**
   ```bash
-  cd SneakySkink-api
+  cd sneakyskink-api
   # Configurez le .env (port, redis connection, etc.)
   npm run dev
   ```

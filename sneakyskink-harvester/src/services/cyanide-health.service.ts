@@ -37,10 +37,12 @@ export class CyanideHealthService {
     if (!isCurrentlyAvailable) {
       logger.warn('⚠️ [CyanideHealth] L\'API Cyanide était marquée indisponible lors du dernier arrêt. Application de la pause...');
       const oldStatus = (availableVal === 'false' || availableVal === 'DOWN') ? 'DOWN' : 'QUOTA_EXCEEDED';
+      ConsoleDashboard.setApiStatus(oldStatus);
       await this.pauseHarvester('Restauration du statut indisponible au démarrage.', oldStatus);
     } else {
       // S'assurer que le statut est bien synchronisé
       await redisConnection.set(CyanideHealthService.REDIS_KEY, 'OK');
+      ConsoleDashboard.setApiStatus('OK');
     }
 
     // Toujours démarrer le scheduler de vérification périodique d'une heure
@@ -69,8 +71,11 @@ export class CyanideHealthService {
       await redisConnection.set(CyanideHealthService.REDIS_SINCE_KEY, new Date(now).toISOString());
     }
 
+    // Mettre à jour le dashboard
+    ConsoleDashboard.setApiStatus(status);
+
     // 2. Mettre en pause le worker BullMQ
-    if (this.worker) {
+    if (this.worker && this.worker.running) {
       try {
         await this.worker.pause();
         logger.info('⚙️ [Worker] Worker mis en pause avec succès.');
@@ -93,6 +98,9 @@ export class CyanideHealthService {
     await redisConnection.set(CyanideHealthService.REDIS_KEY, 'OK');
     await redisConnection.del(CyanideHealthService.REDIS_SINCE_KEY);
 
+    // Mettre à jour le dashboard
+    ConsoleDashboard.setApiStatus('OK');
+
     // 1.5. Réinitialiser les quotas car l'API est à nouveau disponible
     try {
       await apiKeyManager.resetAllQuotas();
@@ -101,7 +109,7 @@ export class CyanideHealthService {
     }
 
     // 2. Reprendre le worker BullMQ
-    if (this.worker) {
+    if (this.worker && this.worker.running) {
       try {
         await this.worker.resume();
         logger.info('⚙️ [Worker] Worker réactivé avec succès.');
@@ -142,10 +150,26 @@ export class CyanideHealthService {
       clearInterval(this.checkInterval);
     }
 
+    const updateNextCheckRedis = async () => {
+      const nextCheck = Date.now() + CyanideHealthService.CHECK_INTERVAL_MS;
+      try {
+        await redisConnection.set('sneakyskink:cyanide_api:next_check', nextCheck.toString());
+        ConsoleDashboard.setNextHealthCheckTime(nextCheck);
+      } catch (err: any) {
+        logger.warn(`⚠️ [CyanideHealth] Impossible d'écrire next_check dans Redis: ${err.message}`);
+      }
+    };
+
+    // Initialiser le prochain check dans Redis au démarrage
+    updateNextCheckRedis();
+
     // Tester l'API toutes les heures
     this.checkInterval = setInterval(async () => {
       logger.info('⏰ [CyanideHealth] Cycle de vérification automatique de la santé de l\'API...');
       
+      // Mettre à jour le prochain check dans Redis pour le cycle suivant
+      await updateNextCheckRedis();
+
       const isCurrentlyAvailable = await this.isApiAvailable();
       const status = await bb3ApiClient.checkApiAvailability();
 

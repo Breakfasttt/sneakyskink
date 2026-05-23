@@ -1,3 +1,8 @@
+/**
+ * Fichier : src/pages/SneakyApiHub.tsx
+ * Description : Tableau de bord de l'infrastructure SneakySync et de la documentation de l'API.
+ */
+
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -7,6 +12,7 @@ import {
   Tab,
   Grid,
   CircularProgress,
+  LinearProgress,
   List,
   ListItem,
   ListItemText,
@@ -37,6 +43,15 @@ const SneakyApiHub: React.FC = () => {
   const [queueState, setQueueState] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [now, setNow] = useState<number>(Date.now());
+
+  // Horloge locale pour rafraîchir le compte à rebours de santé toutes les secondes
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const fetchQueueDetails = async () => {
     try {
@@ -119,6 +134,7 @@ const SneakyApiHub: React.FC = () => {
     harvesterRunning: false,
     cyanideOnline: false,
     cyanideStatus: 'DOWN',
+    cyanideNextCheck: undefined,
     activeJobs: [],
     waitingJobs: [],
   };
@@ -126,6 +142,21 @@ const SneakyApiHub: React.FC = () => {
   const counts = q.counts || { active: 0, waiting: 0, completed: 0, failed: 0 };
   const activeJobs = q.activeJobs || [];
   const waitingJobs = q.waitingJobs || [];
+
+  // Calcul du temps restant avant le prochain test automatique de santé Cyanide
+  const remainingMs = q.cyanideNextCheck ? Math.max(0, q.cyanideNextCheck - now) : 0;
+  const remainingSeconds = Math.round(remainingMs / 1000);
+  
+  const totalInterval = 60 * 60 * 1000; // Intervalle de 1 heure
+  const boundedRemainingMs = Math.min(totalInterval, remainingMs);
+  const progressPercent = Math.max(0, Math.min(100, ((totalInterval - boundedRemainingMs) / totalInterval) * 100));
+
+  const formatTime = (totalSecs: number) => {
+    if (totalSecs <= 0) return 'Vérification en cours...';
+    const m = Math.floor(totalSecs / 60);
+    const s = totalSecs % 60;
+    return `${m}m ${s.toString().padStart(2, '0')}s`;
+  };
 
   return (
     <Box sx={{ py: 2 }}>
@@ -210,35 +241,63 @@ const SneakyApiHub: React.FC = () => {
 
                     <Divider sx={{ borderColor: 'rgba(148, 163, 184, 0.06)' }} />
 
-                    <ListItem disableGutters sx={{ py: 1.5 }}>
-                      <ListItemIcon sx={{ minWidth: 36 }}>
-                        <CyanideIcon sx={{
-                          color: (q as any).cyanideStatus === 'OK'
-                            ? '#00E676'
-                            : (q as any).cyanideStatus === 'QUOTA_EXCEEDED'
-                            ? '#F59E0B'
-                            : '#EF4444'
-                        }} />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary="API Officielle Cyanide"
-                        secondary={
-                          (q as any).cyanideStatus === 'OK'
-                            ? 'En ligne / Accessible'
-                            : (q as any).cyanideStatus === 'QUOTA_EXCEEDED'
-                            ? 'Quota dépassé (En attente)'
-                            : 'Inaccessible / Pas de réponse'
-                        }
-                        primaryTypographyProps={{ color: '#F8FAFC', fontWeight: 600, fontSize: '0.85rem' }}
-                        secondaryTypographyProps={{
-                          color: (q as any).cyanideStatus === 'OK'
-                            ? '#00E676'
-                            : (q as any).cyanideStatus === 'QUOTA_EXCEEDED'
-                            ? '#F59E0B'
-                            : '#EF4444',
-                          fontSize: '0.75rem'
-                        }}
-                      />
+                    <ListItem disableGutters sx={{ py: 1.5, display: 'block' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <ListItemIcon sx={{ minWidth: 36 }}>
+                          <CyanideIcon sx={{
+                            color: (q as any).cyanideStatus === 'OK'
+                              ? '#00E676'
+                              : (q as any).cyanideStatus === 'QUOTA_EXCEEDED'
+                              ? '#F59E0B'
+                              : '#EF4444'
+                          }} />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary="API Officielle Cyanide"
+                          secondary={
+                            (q as any).cyanideStatus === 'OK'
+                              ? 'En ligne / Accessible'
+                              : (q as any).cyanideStatus === 'QUOTA_EXCEEDED'
+                              ? 'Quota dépassé (En attente)'
+                              : 'Inaccessible / Pas de réponse'
+                          }
+                          primaryTypographyProps={{ color: '#F8FAFC', fontWeight: 600, fontSize: '0.85rem' }}
+                          secondaryTypographyProps={{
+                            color: (q as any).cyanideStatus === 'OK'
+                              ? '#00E676'
+                              : (q as any).cyanideStatus === 'QUOTA_EXCEEDED'
+                              ? '#F59E0B'
+                              : '#EF4444',
+                            fontSize: '0.75rem'
+                          }}
+                        />
+                      </Box>
+                      {(q as any).cyanideStatus === 'QUOTA_EXCEEDED' && q.cyanideNextCheck && (
+                        <Box sx={{ mt: 1.5, pl: '36px' }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.75 }}>
+                            <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 500, fontSize: '0.7rem' }}>
+                              Prochain test dans
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: '#F59E0B', fontWeight: 800, fontSize: '0.7rem' }}>
+                              {formatTime(remainingSeconds)}
+                            </Typography>
+                          </Box>
+                          <LinearProgress
+                            variant="determinate"
+                            value={progressPercent}
+                            sx={{
+                              height: 4,
+                              borderRadius: 99,
+                              bgcolor: 'rgba(255,255,255,0.05)',
+                              '& .MuiLinearProgress-bar': {
+                                borderRadius: 99,
+                                background: 'linear-gradient(90deg, #D97706 0%, #F59E0B 100%)',
+                                boxShadow: '0 0 8px rgba(245, 158, 11, 0.4)',
+                              },
+                            }}
+                          />
+                        </Box>
+                      )}
                     </ListItem>
                   </List>
                 </Paper>

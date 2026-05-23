@@ -124,7 +124,8 @@ export class BB3ApiClient {
           ConsoleDashboard.setPacing(0, 0);
         }
 
-        const pacingDelay = isBypassed ? 0 : apiKeyManager.getDynamicPacingDelay(activeKey);
+        // Délai de pacing incompressible de 50ms en cas de bypass pour éviter de surcharger l'API
+        const pacingDelay = isBypassed ? 50 : apiKeyManager.getDynamicPacingDelay(activeKey);
         const now = Date.now();
         const timeSinceLast = now - this.lastRequestTime;
         if (pacingDelay > 0 && timeSinceLast < pacingDelay) {
@@ -132,7 +133,9 @@ export class BB3ApiClient {
           logger.debug(
             `⏳ [BB3ApiClient] Rate pacing : attente de ${waitTime}ms avant l'appel suivant pour réguler le trafic...`
           );
-          ConsoleDashboard.setPacing(waitTime, waitTime);
+          if (!isBypassed) {
+            ConsoleDashboard.setPacing(waitTime, waitTime);
+          }
           await new Promise((resolve) => setTimeout(resolve, waitTime));
         }
         this.lastRequestTime = Date.now();

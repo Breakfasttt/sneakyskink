@@ -34,8 +34,8 @@ export class ApiKeyManager {
         key,
         hourlyRequests: 0,
         dailyRequests: 0,
-        hourlyResetTime: now + ApiKeyManager.HOUR_MS,
-        dailyResetTime: now + ApiKeyManager.DAY_MS,
+        hourlyResetTime: this.getNextHourlyReset(now),
+        dailyResetTime: this.getNextDailyReset(now),
         cooldownUntil: 0,
       });
     }
@@ -71,8 +71,8 @@ export class ApiKeyManager {
             const parsed = JSON.parse(cached);
             status.hourlyRequests = parsed.hourlyRequests ?? 0;
             status.dailyRequests = parsed.dailyRequests ?? 0;
-            status.hourlyResetTime = parsed.hourlyResetTime ?? (now + ApiKeyManager.HOUR_MS);
-            status.dailyResetTime = parsed.dailyResetTime ?? (now + ApiKeyManager.DAY_MS);
+            status.hourlyResetTime = parsed.hourlyResetTime ?? this.getNextHourlyReset(now);
+            status.dailyResetTime = parsed.dailyResetTime ?? this.getNextDailyReset(now);
             status.cooldownUntil = parsed.cooldownUntil ?? 0;
 
             // Réinitialiser les quotas si les fenêtres temporelles ont expiré pendant l'arrêt
@@ -110,8 +110,8 @@ export class ApiKeyManager {
     for (const [key, status] of this.keysStatus.entries()) {
       status.hourlyRequests = 0;
       status.dailyRequests = 0;
-      status.hourlyResetTime = now + ApiKeyManager.HOUR_MS;
-      status.dailyResetTime = now + ApiKeyManager.DAY_MS;
+      status.hourlyResetTime = this.getNextHourlyReset(now);
+      status.dailyResetTime = this.getNextDailyReset(now);
       status.cooldownUntil = 0;
       await this.persistStatus(status);
       this.updateDashboard(key);
@@ -149,46 +149,43 @@ export class ApiKeyManager {
     const now = Date.now();
     this.checkAndResetQuotas(status, now);
 
-    // 1. Calcul du rythme de lissage horaire
-    const remainingHourMs = status.hourlyResetTime - now;
-    const remainingHourReqs = ApiKeyManager.HOURLY_LIMIT - status.hourlyRequests;
-    const hourlyDelay = remainingHourReqs > 0 && remainingHourMs > 0
-      ? (remainingHourMs / remainingHourReqs)
-      : 3600; // Si plus de requêtes dispo, délai max
-
-    // 2. Calcul du rythme de lissage journalier
+    // Calcul du rythme de lissage en fonction du quota restant sur la journée
     const remainingDayMs = status.dailyResetTime - now;
     const remainingDayReqs = ApiKeyManager.DAILY_LIMIT - status.dailyRequests;
-    const dailyDelay = remainingDayReqs > 0 && remainingDayMs > 0
-      ? (remainingDayMs / remainingDayReqs)
-      : 8640;
 
-    // Prendre le max des deux lissages et borner avec un minimum de sécurité de 1 seconde (burst protection)
-    const delay = Math.max(1000, hourlyDelay, dailyDelay);
+    if (remainingDayReqs <= 0 || remainingDayMs <= 0) {
+      return ApiKeyManager.DAY_MS; // Quota journalier épuisé, délai maximum
+    }
 
-    return Math.ceil(delay);
+    const dailyDelay = remainingDayMs / remainingDayReqs;
+
+    // Minimum de sécurité de 1 seconde (burst protection)
+    return Math.max(1000, Math.ceil(dailyDelay));
   }
 
   /**
    * Met à jour les statistiques de quotas affichées dans le Dashboard console.
    */
-  public updateDashboard(key: string): void {
-    const status = this.keysStatus.get(key);
-    if (!status) return;
-
+  public updateDashboard(activeKey: string): void {
     const now = Date.now();
-    const keyIndex = env.apiKeys.indexOf(key);
-
-    ConsoleDashboard.setQuotaInfo({
-      keyIndex: keyIndex >= 0 ? keyIndex : 0,
-      keyMasked: this.mask(key),
-      hourlyRequests: status.hourlyRequests,
-      hourlyLimit: ApiKeyManager.HOURLY_LIMIT,
-      dailyRequests: status.dailyRequests,
-      dailyLimit: ApiKeyManager.DAILY_LIMIT,
-      hourlyResetMinutes: Math.max(0, Math.ceil((status.hourlyResetTime - now) / (60 * 1000))),
-      dailyResetHours: Math.max(0, Math.ceil((status.dailyResetTime - now) / (60 * 60 * 1000))),
+    const statuses = Array.from(this.keysStatus.values()).map(status => {
+      this.checkAndResetQuotas(status, now);
+      const keyIndex = env.apiKeys.indexOf(status.key);
+      return {
+        keyIndex: keyIndex >= 0 ? keyIndex : 0,
+        keyMasked: this.mask(status.key),
+        hourlyRequests: status.hourlyRequests,
+        hourlyLimit: ApiKeyManager.HOURLY_LIMIT,
+        dailyRequests: status.dailyRequests,
+        dailyLimit: ApiKeyManager.DAILY_LIMIT,
+        cooldownUntil: status.cooldownUntil,
+        hourlyResetTime: status.hourlyResetTime,
+        dailyResetTime: status.dailyResetTime,
+        isActive: status.key === activeKey,
+      };
     });
+
+    ConsoleDashboard.setKeysStatus(statuses);
   }
 
   /**
@@ -317,6 +314,27 @@ export class ApiKeyManager {
   }
 
   /**
+  /**
+   * Calcule le prochain reset horaire UTC (heure pile suivante).
+   */
+  private getNextHourlyReset(now: number): number {
+    const date = new Date(now);
+    date.setUTCMinutes(0, 0, 0);
+    date.setUTCHours(date.getUTCHours() + 1);
+    return date.getTime();
+  }
+
+  /**
+   * Calcule le prochain reset journalier UTC (minuit UTC suivant).
+   */
+  private getNextDailyReset(now: number): number {
+    const date = new Date(now);
+    date.setUTCDate(date.getUTCDate() + 1);
+    date.setUTCHours(0, 0, 0, 0);
+    return date.getTime();
+  }
+
+  /**
    * Réinitialise les fenêtres de quotas si le temps est écoulé.
    */
   private checkAndResetQuotas(status: ApiKeyStatus, now: number): void {
@@ -324,14 +342,14 @@ export class ApiKeyManager {
 
     if (now >= status.hourlyResetTime) {
       status.hourlyRequests = 0;
-      status.hourlyResetTime = now + ApiKeyManager.HOUR_MS;
+      status.hourlyResetTime = this.getNextHourlyReset(now);
       changed = true;
       logger.info(`🔄 [ApiKeyManager] Quota horaire réinitialisé pour la clé [${this.mask(status.key)}].`);
     }
 
     if (now >= status.dailyResetTime) {
       status.dailyRequests = 0;
-      status.dailyResetTime = now + ApiKeyManager.DAY_MS;
+      status.dailyResetTime = this.getNextDailyReset(now);
       changed = true;
       logger.info(`🔄 [ApiKeyManager] Quota journalier réinitialisé pour la clé [${this.mask(status.key)}].`);
     }

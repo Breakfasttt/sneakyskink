@@ -5,6 +5,19 @@
 
 import readline from 'readline';
 
+export interface ApiKeyDashboardStatus {
+  keyIndex: number;
+  keyMasked: string;
+  hourlyRequests: number;
+  hourlyLimit: number;
+  dailyRequests: number;
+  dailyLimit: number;
+  cooldownUntil: number;
+  hourlyResetTime: number;
+  dailyResetTime: number;
+  isActive: boolean;
+}
+
 interface SystemStatus {
   db: string;
   redis: string;
@@ -20,14 +33,9 @@ export class ConsoleDashboard {
     worker: 'IDLE',
   };
 
-  private static currentKeyIndex = -1;
-  private static currentKeyMasked = 'N/A';
-  private static hourlyRequests = 0;
-  private static hourlyLimit = 1000;
-  private static dailyRequests = 0;
-  private static dailyLimit = 10000;
-  private static hourlyResetMinutes = 0;
-  private static dailyResetHours = 0;
+  private static keysStatus: ApiKeyDashboardStatus[] = [];
+  private static apiStatus: 'OK' | 'QUOTA_EXCEEDED' | 'DOWN' = 'OK';
+  private static nextHealthCheckTime = 0;
 
   private static pacingRemainingMs = 0;
   private static pacingTotalMs = 0;
@@ -159,26 +167,24 @@ export class ConsoleDashboard {
   }
 
   /**
-   * Définit les informations de quota de la clé active.
+   * Définit le statut de toutes les clés d'API.
    */
-  public static setQuotaInfo(info: {
-    keyIndex: number;
-    keyMasked: string;
-    hourlyRequests: number;
-    hourlyLimit: number;
-    dailyRequests: number;
-    dailyLimit: number;
-    hourlyResetMinutes: number;
-    dailyResetHours: number;
-  }): void {
-    this.currentKeyIndex = info.keyIndex;
-    this.currentKeyMasked = info.keyMasked;
-    this.hourlyRequests = info.hourlyRequests;
-    this.hourlyLimit = info.hourlyLimit;
-    this.dailyRequests = info.dailyRequests;
-    this.dailyLimit = info.dailyLimit;
-    this.hourlyResetMinutes = info.hourlyResetMinutes;
-    this.dailyResetHours = info.dailyResetHours;
+  public static setKeysStatus(statuses: ApiKeyDashboardStatus[]): void {
+    this.keysStatus = statuses;
+  }
+
+  /**
+   * Définit le statut global de l'API de Cyanide.
+   */
+  public static setApiStatus(status: 'OK' | 'QUOTA_EXCEEDED' | 'DOWN'): void {
+    this.apiStatus = status;
+  }
+
+  /**
+   * Définit l'heure du prochain check de santé.
+   */
+  public static setNextHealthCheckTime(timestamp: number): void {
+    this.nextHealthCheckTime = timestamp;
   }
 
   /**
@@ -287,15 +293,60 @@ export class ConsoleDashboard {
     out += `Worker: ${formatStatus(this.statuses.worker)}\n`;
     out += separator;
 
-    // 3. Quotas de la clé active
-    out += `  🔑 ACTIVE API KEY: Clé #${this.currentKeyIndex + 1} (${this.currentKeyMasked})\n\n`;
+    // 3. Quotas des clés API
+    out += `  🔑 API KEYS STATUS:\n`;
+    const now = Date.now();
+    const getNextCallTimer = (status: ApiKeyDashboardStatus, timeNow: number) => {
+      if (status.cooldownUntil > timeNow) {
+        const diff = status.cooldownUntil - timeNow;
+        const mins = Math.floor(diff / 60000);
+        const secs = Math.ceil((diff % 60000) / 1000);
+        return `Cooldown: ${mins}m ${secs}s`;
+      }
+      if (status.hourlyRequests >= status.hourlyLimit) {
+        const diff = status.hourlyResetTime - timeNow;
+        const mins = Math.ceil(diff / 60000);
+        return `Quota Hr dépassé (Reset dans ${mins}m)`;
+      }
+      if (status.dailyRequests >= status.dailyLimit) {
+        const diff = status.dailyResetTime - timeNow;
+        const hours = Math.ceil(diff / 3600000);
+        return `Quota Jr dépassé (Reset dans ${hours}h)`;
+      }
+      if (status.isActive && this.pacingRemainingMs > 0) {
+        return `Pacing: ${(this.pacingRemainingMs / 1000).toFixed(1)}s`;
+      }
+      return `Prête`;
+    };
 
-    const hourlyBar = this.makeProgressBar(this.hourlyRequests, this.hourlyLimit, barWidth);
-    const dailyBar = this.makeProgressBar(this.dailyRequests, this.dailyLimit, barWidth);
-
-    out += `  📊 Hour Quota :  ${hourlyBar}  ${this.hourlyRequests}/${this.hourlyLimit}  (Reset dans ${this.hourlyResetMinutes}m)\n`;
-    out += `  📊 Day Quota  :  ${dailyBar}  ${this.dailyRequests}/${this.dailyLimit}  (Reset dans ${this.dailyResetHours}h)\n`;
+    for (const keyStatus of this.keysStatus) {
+      const activeIndicator = keyStatus.isActive ? '▶ \x1B[32m' : '  ';
+      const activeReset = keyStatus.isActive ? '\x1B[0m' : '';
+      const hourlyBar = this.makeProgressBar(keyStatus.hourlyRequests, keyStatus.hourlyLimit, 10);
+      const dailyBar = this.makeProgressBar(keyStatus.dailyRequests, keyStatus.dailyLimit, 10);
+      const timerStr = getNextCallTimer(keyStatus, now);
+      
+      out += `  ${activeIndicator}Key #${keyStatus.keyIndex + 1} (${keyStatus.keyMasked})${activeReset} | ` +
+             `Jour: ${dailyBar} ${keyStatus.dailyRequests}/${keyStatus.dailyLimit} | ` +
+             `Heure: ${hourlyBar} ${keyStatus.hourlyRequests}/${keyStatus.hourlyLimit} | ` +
+             `Prochain: ${timerStr}\n`;
+    }
     out += separator;
+
+    // 3.5. Remise en route en cas de panne
+    if (this.apiStatus !== 'OK' && this.nextHealthCheckTime > 0) {
+      const remainingMs = this.nextHealthCheckTime - now;
+      if (remainingMs > 0) {
+        const total = 60 * 60 * 1000; // 1 heure
+        const elapsed = Math.max(0, total - remainingMs);
+        const recoveryBar = this.makeProgressBar(elapsed, total, barWidth);
+        const mins = Math.floor(remainingMs / 60000);
+        const secs = Math.ceil((remainingMs % 60000) / 1000);
+        
+        out += `  🔄 REMISE EN ROUTE :  ${recoveryBar}  Prochain essai dans ${mins}m ${secs}s...\n`;
+        out += separator;
+      }
+    }
 
     // 4. Barre de pacing
     out += `  ⏳ RATE PACING: `;
@@ -327,13 +378,12 @@ export class ConsoleDashboard {
     }
     out += separator;
 
-    // 6. Warnings & Erreurs — nombre fixe de lignes, indépendant du terminal
+    // 6. Warnings & Erreurs — nombre de lignes adapté au contenu
     out += `  ⚠️ WARNINGS & ERRORS DETECTED (Historique récent):\n`;
 
-    // Lignes fixes consommées avant la section alertes : 21
-    // FIXED_HEIGHT - 21 = nombre de lignes disponibles pour les alertes
-    const LINES_BEFORE_ALERTS = 21;
-    const maxAlertLines = Math.max(2, this.FIXED_HEIGHT - LINES_BEFORE_ALERTS);
+    // Calculer le nombre de lignes déjà construites pour ajuster dynamiquement la taille des alertes
+    const linesBeforeAlerts = out.split('\n').length;
+    const maxAlertLines = Math.max(2, this.FIXED_HEIGHT - linesBeforeAlerts);
 
     if (this.alertHistory.length === 0) {
       out += `  \x1B[32mAucun avertissement ou erreur détecté. Le système fonctionne parfaitement.\x1B[0m\n`;

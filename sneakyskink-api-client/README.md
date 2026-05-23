@@ -6,15 +6,21 @@ Ce package fournit une classe TypeScript pratique pour communiquer de façon sim
 
 ---
 
-## 📦 Installation
+## 📦 Installation & Liaison
 
-Pour intégrer le client à un autre sous-projet, installez-le en utilisant les dépendances locales :
+Ce package fait partie du monorepo piloté par les **NPM Workspaces**.
 
+### Dans le cadre du Monorepo
+Il est automatiquement configuré et lié comme dépendance locale pour les services associés (`sneakyskink-api`, `sneakyskink-harvester`, `SneakySkink-web`, etc.). Pour mettre à jour les liaisons symboliques, exécutez simplement à la racine du monorepo :
+```bash
+npm install
+```
+
+### Installation manuelle / externe
+Pour l'intégrer en tant que dépendance locale dans un autre projet en dehors du monorepo :
 ```bash
 npm install ../sneakyskink-api-client
 ```
-
----
 
 ## ⚙️ Configuration
 
