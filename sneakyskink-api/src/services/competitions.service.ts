@@ -7,12 +7,37 @@ export class CompetitionsService {
     format?: string,
     status?: string,
     limit: number = 20,
-    offset: number = 0
+    offset: number = 0,
+    search?: string,
+    sortBy?: string,
+    sortOrder?: 'asc' | 'desc'
   ) {
     const where: any = {};
     if (leagueId) where.leagueId = leagueId;
     if (format) where.format = format;
     if (status) where.status = status;
+
+    if (search && search.trim() !== '') {
+      const cleanSearch = search.trim();
+      where.OR = [
+        { name: { contains: cleanSearch, mode: 'insensitive' } },
+        { league: { name: { contains: cleanSearch, mode: 'insensitive' } } }
+      ];
+    }
+
+    let orderBy: any = { updatedAt: 'desc' };
+    if (sortBy) {
+      const order = sortOrder === 'asc' ? 'asc' : 'desc';
+      if (sortBy === 'name') {
+        orderBy = { name: order };
+      } else if (sortBy === 'status') {
+        orderBy = { status: order };
+      } else if (sortBy === 'teams') {
+        orderBy = { teamsCount: order };
+      } else if (sortBy === 'league') {
+        orderBy = { league: { name: order } };
+      }
+    }
 
     const [total, competitions] = await Promise.all([
       prisma.competition.count({ where }),
@@ -20,7 +45,7 @@ export class CompetitionsService {
         where,
         take: limit,
         skip: offset,
-        orderBy: { updatedAt: 'desc' },
+        orderBy,
         include: {
           league: {
             select: {

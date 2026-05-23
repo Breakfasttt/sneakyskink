@@ -40,9 +40,9 @@ const SearchResults: React.FC = () => {
       api.getTeams({ search: query }),
     ])
       .then(([leaguesRes, coachesRes, teamsRes]) => {
-        const leaguesList = leaguesRes.data || leaguesRes || [];
-        const coachesList = coachesRes.data || coachesRes || [];
-        const teamsList = teamsRes.data || teamsRes || [];
+        const leaguesList = leaguesRes || [];
+        const coachesList = coachesRes || [];
+        const teamsList = teamsRes || [];
 
         const filteredLeagues = (Array.isArray(leaguesList) ? leaguesList : [])
           .filter((l: any) => l.name?.toLowerCase().includes(query.toLowerCase()));

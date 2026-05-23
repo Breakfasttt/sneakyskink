@@ -5,7 +5,10 @@ export class CoachesService {
   static async getAllCoaches(
     search?: string,
     limit: number = 20,
-    offset: number = 0
+    offset: number = 0,
+    sortBy?: string,
+    sortOrder?: 'asc' | 'desc',
+    leagueId?: string
   ) {
     const where: any = {};
     if (search) {
@@ -14,6 +17,22 @@ export class CoachesService {
         mode: 'insensitive',
       };
     }
+    if (leagueId) {
+      where.OR = [
+        { homeMatches: { some: { leagueId } } },
+        { awayMatches: { some: { leagueId } } },
+      ];
+    }
+
+    let orderBy: any = { updatedAt: 'desc' };
+    if (sortBy) {
+      const order = sortOrder === 'asc' ? 'asc' : 'desc';
+      if (sortBy === 'teams') {
+        orderBy = { teams: { _count: order } };
+      } else if (sortBy === 'name') {
+        orderBy = { name: order };
+      }
+    }
 
     const [total, coaches] = await Promise.all([
       prisma.coach.count({ where }),
@@ -21,7 +40,7 @@ export class CoachesService {
         where,
         take: limit,
         skip: offset,
-        orderBy: { updatedAt: 'desc' },
+        orderBy,
         include: {
           _count: {
             select: {

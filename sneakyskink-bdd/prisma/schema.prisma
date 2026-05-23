@@ -23,6 +23,10 @@ model League {
   competitions Competition[]
   matches      Match[]
 
+  // Index pour la recherche, le filtrage et le tri des ligues
+  @@index([active])
+  @@index([gamerCount])
+  @@index([updatedAt])
   @@map("leagues")
 }
 
@@ -45,6 +49,11 @@ model Competition {
   createdAt          DateTime  @default(now()) @map("created_at")
   updatedAt          DateTime  @updatedAt @map("last_update")
 
+  // Index pour la recherche et le filtrage des compétitions
+  @@index([leagueId])
+  @@index([format])
+  @@index([status])
+  @@index([updatedAt])
   @@map("competitions")
 }
 
@@ -65,6 +74,9 @@ model Coach {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("last_update")
 
+  // Index pour la recherche et le tri des coachs
+  @@index([name])
+  @@index([updatedAt])
   @@map("coaches")
 }
 
@@ -96,6 +108,9 @@ model Team {
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("last_update")
 
+  // Index pour la relation coach et le tri des équipes
+  @@index([coachId])
+  @@index([updatedAt])
   @@map("teams")
 }
 
@@ -178,6 +193,12 @@ model Match {
   createdAt       DateTime           @default(now()) @map("created_at")
   updatedAt       DateTime           @updatedAt @map("last_update")
 
+  // Index pour requêtes et tris des matchs
+  @@index([leagueId])
+  @@index([competitionId])
+  @@index([startedAt])
+  @@index([finishedAt])
+  @@index([updatedAt])
   @@map("matches")
 }
 
@@ -228,6 +249,10 @@ model PlayerMatchStats {
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("last_update")
 
+  // Index pour accélérer le filtrage et les agrégats de stats
+  @@index([matchId])
+  @@index([playerId])
+  @@index([teamId])
   @@map("player_match_stats")
 }
 

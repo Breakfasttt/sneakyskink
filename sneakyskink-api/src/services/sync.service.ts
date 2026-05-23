@@ -187,15 +187,15 @@ export class SyncService {
   }
 
   /**
-   * Désactive temporairement le rate pacing pendant 1 heure (3600 secondes)
+   * Désactive temporairement le rate pacing pendant 5 minutes (300 secondes)
    */
   static async bypassPacing() {
-    logger.info('⚡ [Sync Service] Demande de bypass temporaire du rate pacing (1 heure)');
-    await redisConnection.set('sneakyskink:bypass_pacing', 'true', 'EX', 3600);
+    logger.info('⚡ [Sync Service] Demande de bypass temporaire du rate pacing (5 minutes)');
+    await redisConnection.set('sneakyskink:bypass_pacing', 'true', 'EX', 300);
     return {
       success: true,
-      message: 'Le rate pacing a été désactivé temporairement pour 1 heure (3600 secondes).',
-      expiresAt: new Date(Date.now() + 3600 * 1000).toISOString(),
+      message: 'Le rate pacing a été désactivé temporairement pour 5 minutes (300 secondes).',
+      expiresAt: new Date(Date.now() + 300 * 1000).toISOString(),
     };
   }
 

@@ -225,7 +225,7 @@ export async function handleFetchLeague(leagueId: string, triggerPriority: 'high
   const teams = teamsResponse.teams || [];
 
   for (const t of teams) {
-    await queueTeamFetch(t.id.toString(), realLeagueId, triggerPriority);
+    await queueTeamFetch(t.id.toString(), realLeagueId, 'low');
   }
 }
 

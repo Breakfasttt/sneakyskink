@@ -16,8 +16,9 @@ export class LeaguesController {
       const search = req.query.search as string | undefined;
       const sortBy = req.query.sortBy as string | undefined;
       const sortOrder = req.query.sortOrder as 'asc' | 'desc' | undefined;
+      const minGamerCount = req.query.minGamerCount ? parseInt(req.query.minGamerCount as string, 10) : undefined;
 
-      const result = await LeaguesService.getAllLeagues(active, limit, offset, search, sortBy, sortOrder);
+      const result = await LeaguesService.getAllLeagues(active, limit, offset, search, sortBy, sortOrder, minGamerCount);
       res.json({ success: true, ...result });
     } catch (error) {
       next(error);

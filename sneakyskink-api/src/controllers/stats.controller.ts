@@ -44,7 +44,22 @@ export class StatsController {
 
   static async getActivityStats(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await StatsService.getActivityStats();
+      const leagueId = req.query.leagueId as string | undefined;
+      const competitionId = req.query.competitionId as string | undefined;
+      const coachId = req.query.coachId as string | undefined;
+      const result = await StatsService.getActivityStats(leagueId, competitionId, coachId);
+      res.json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getActivity24h(req: Request, res: Response, next: NextFunction) {
+    try {
+      const leagueId = req.query.leagueId as string | undefined;
+      const competitionId = req.query.competitionId as string | undefined;
+      const coachId = req.query.coachId as string | undefined;
+      const result = await StatsService.getActivity24h(leagueId, competitionId, coachId);
       res.json({ success: true, data: result });
     } catch (error) {
       next(error);

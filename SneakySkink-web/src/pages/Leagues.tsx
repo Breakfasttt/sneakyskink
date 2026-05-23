@@ -4,7 +4,7 @@
  * d'une ligue non encore référencée via son ID Cyanide.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -43,26 +43,89 @@ const Leagues: React.FC = () => {
   const navigate = useNavigate();
   const [leagues, setLeagues] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showInactive, setShowInactive] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
   const [syncError, setSyncError] = useState(false);
-  // Mode d'affichage de la liste des ligues : 'list' ou 'grid'
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
-  // Mode de tri des ligues : 'coaches' (nombre de coachs), 'name' (nom de la ligue) ou 'lastMatch' (dernier match joué)
   const [sortBy, setSortBy] = useState<'coaches' | 'name' | 'lastMatch'>('coaches');
+  const [hasMore, setHasMore] = useState(true);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const PAGE_LIMIT = 24;
+
+  const fetchLeagues = useCallback(async (
+    search: string,
+    isAppend = false,
+    activeSort = sortBy,
+    activeShowInactive = showInactive,
+    currentOffset = 0
+  ) => {
+    if (isAppend) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
+
+    try {
+      let apiSortBy = 'gamerCount';
+      let sortOrder: 'asc' | 'desc' = 'desc';
+
+      if (activeSort === 'name') {
+        apiSortBy = 'name';
+        sortOrder = 'asc';
+      } else if (activeSort === 'lastMatch') {
+        apiSortBy = 'lastMatch';
+        sortOrder = 'desc';
+      }
+
+      const res: any = await api.getLeagues({
+        search: search.trim() || undefined,
+        limit: PAGE_LIMIT,
+        offset: currentOffset,
+        active: activeShowInactive ? undefined : true,
+        sortBy: apiSortBy,
+        sortOrder,
+        minGamerCount: 15
+      });
+
+      const list = Array.isArray(res) ? res : [];
+      setLeagues(prev => isAppend ? [...prev, ...list] : list);
+      setHasMore(list.length === PAGE_LIMIT);
+    } catch {
+      if (!isAppend) setLeagues([]);
+      setHasMore(false);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, []);
 
   useEffect(() => {
-    setLoading(true);
-    api.getLeagues()
-      .then((res: any) => {
-        const list = res.data || res || [];
-        setLeagues(Array.isArray(list) ? list : []);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+    fetchLeagues('', false, 'coaches', false, 0);
+  }, [fetchLeagues]);
+
+  const handleSearchChange = (val: string) => {
+    setSearchQuery(val);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      fetchLeagues(val, false, sortBy, showInactive, 0);
+    }, 400);
+  };
+
+  const handleSortChange = (newSort: 'coaches' | 'name' | 'lastMatch') => {
+    setSortBy(newSort);
+    setLeagues([]);
+    fetchLeagues(searchQuery, false, newSort, showInactive, 0);
+  };
+
+  const handleShowInactiveChange = (newVal: boolean) => {
+    setShowInactive(newVal);
+    setLeagues([]);
+    fetchLeagues(searchQuery, false, sortBy, newVal, 0);
+  };
 
   const handleSync = async () => {
     const nameToSync = searchQuery.trim();
@@ -83,32 +146,8 @@ const Leagues: React.FC = () => {
     }
   };
 
-  // Filtrage et tri des ligues (exclut les ligues à moins de 15 coachs)
-  const filteredLeagues = leagues
-    .filter((league) => {
-      const matchesSearch = league.name?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesActive = showInactive ? true : league.active;
-      const matchesCoachCount = (league.gamerCount ?? 0) >= 15;
-      return matchesSearch && matchesActive && matchesCoachCount;
-    })
-    .sort((a, b) => {
-      if (sortBy === 'coaches') {
-        const diff = (b.gamerCount ?? 0) - (a.gamerCount ?? 0);
-        if (diff !== 0) return diff;
-        return (a.name || '').localeCompare(b.name || '');
-      } else if (sortBy === 'lastMatch') {
-        const dateA = a.lastMatchDate ? new Date(a.lastMatchDate).getTime() : 0;
-        const dateB = b.lastMatchDate ? new Date(b.lastMatchDate).getTime() : 0;
-        if (dateB !== dateA) return dateB - dateA;
-        return (b.gamerCount ?? 0) - (a.gamerCount ?? 0);
-      } else {
-        const nameA = a.name || '';
-        const nameB = b.name || '';
-        const nameCompare = nameA.localeCompare(nameB);
-        if (nameCompare !== 0) return nameCompare;
-        return (b.gamerCount ?? 0) - (a.gamerCount ?? 0);
-      }
-    });
+  // Les ligues sont filtrées et triées côté serveur
+  const filteredLeagues = leagues;
 
   return (
     <Box sx={{ maxWidth: 1040, mx: 'auto', py: { xs: 2, md: 4 } }}>
@@ -145,9 +184,10 @@ const Leagues: React.FC = () => {
           fullWidth
           placeholder="Rechercher une ligue..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => handleSearchChange(e.target.value)}
           sx={{ fontSize: '0.95rem', color: '#F8FAFC' }}
         />
+        {loading && <CircularProgress size={18} sx={{ color: '#00E676', ml: 1 }} />}
       </Paper>
 
       {/* Grid/List unified view */}
@@ -157,7 +197,7 @@ const Leagues: React.FC = () => {
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         sortBy={sortBy}
-        onSortChange={setSortBy}
+        onSortChange={handleSortChange}
         sortOptions={[
           { value: 'coaches', label: 'Nombre de coachs' },
           { value: 'name', label: 'Nom de ligue' },
@@ -168,7 +208,7 @@ const Leagues: React.FC = () => {
             control={
               <Switch
                 checked={showInactive}
-                onChange={(e) => setShowInactive(e.target.checked)}
+                onChange={(e) => handleShowInactiveChange(e.target.checked)}
                 sx={{
                   '& .MuiSwitch-switchBase.Mui-checked': { color: '#00E676' },
                   '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: '#00E676' },
@@ -397,6 +437,31 @@ const Leagues: React.FC = () => {
           </Box>
         )}
       />
+
+      {hasMore && !loading && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <Button
+            variant="outlined"
+            disabled={loadingMore}
+            onClick={() => fetchLeagues(searchQuery, true, sortBy, showInactive, leagues.length)}
+            sx={{
+              borderColor: 'rgba(0, 230, 118, 0.3)',
+              color: '#00E676',
+              fontWeight: 700,
+              textTransform: 'none',
+              px: 4,
+              py: 1,
+              borderRadius: 2.5,
+              '&:hover': {
+                borderColor: '#00E676',
+                bgcolor: 'rgba(0, 230, 118, 0.04)',
+              },
+            }}
+          >
+            {loadingMore ? <CircularProgress size={20} sx={{ color: '#00E676' }} /> : 'Afficher plus'}
+          </Button>
+        </Box>
+      )}
     </Box>
   );
 };

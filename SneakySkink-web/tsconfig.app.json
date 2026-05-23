@@ -24,8 +24,6 @@
       "@mui/icons-material/*": ["../node_modules/@mui/icons-material/*"],
       "@emotion/react": ["../node_modules/@emotion/react"],
       "@emotion/styled": ["../node_modules/@emotion/styled"],
-      "react": ["../node_modules/react"],
-      "react-dom": ["../node_modules/react-dom"],
       "sneakyskink-api-client": ["../sneakyskink-api-client/src"],
       "*": ["*", "../node_modules/*"]
     },

@@ -36,6 +36,7 @@ const Competitions: React.FC = () => {
   const navigate = useNavigate();
   const [competitions, setCompetitions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [formatFilter, setFormatFilter] = useState('ALL');
@@ -44,17 +45,78 @@ const Competitions: React.FC = () => {
   const [syncError, setSyncError] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
   const [sortBy, setSortBy] = useState<'name' | 'league' | 'status' | 'teams'>('name');
+  const [hasMore, setHasMore] = useState(true);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const PAGE_LIMIT = 24;
+
+  const fetchCompetitions = useCallback(async (
+    search: string,
+    isAppend = false,
+    activeSort = sortBy,
+    activeFormat = formatFilter,
+    activeStatus = statusFilter,
+    currentOffset = 0
+  ) => {
+    if (isAppend) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
+
+    try {
+      const order = activeSort === 'teams' ? 'desc' : 'asc';
+      const res: any = await api.getCompetitions({
+        limit: PAGE_LIMIT,
+        offset: currentOffset,
+        format: activeFormat === 'ALL' ? undefined : activeFormat,
+        status: activeStatus === 'ALL' ? undefined : activeStatus,
+        search: search.trim() || undefined,
+        sortBy: activeSort,
+        sortOrder: order as any
+      });
+
+      const list = Array.isArray(res) ? res : [];
+      setCompetitions(prev => isAppend ? [...prev, ...list] : list);
+      setHasMore(list.length === PAGE_LIMIT);
+    } catch {
+      if (!isAppend) setCompetitions([]);
+      setHasMore(false);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, []);
 
   useEffect(() => {
-    setLoading(true);
-    api.getCompetitions()
-      .then((res: any) => {
-        const list = res.data || res || [];
-        setCompetitions(Array.isArray(list) ? list : []);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+    fetchCompetitions('', false, 'name', 'ALL', 'ALL', 0);
+  }, [fetchCompetitions]);
+
+  const handleSearchChange = (val: string) => {
+    setSearchQuery(val);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      fetchCompetitions(val, false, sortBy, formatFilter, statusFilter, 0);
+    }, 400);
+  };
+
+  const handleSortChange = (newSort: 'name' | 'league' | 'status' | 'teams') => {
+    setSortBy(newSort);
+    setCompetitions([]);
+    fetchCompetitions(searchQuery, false, newSort, formatFilter, statusFilter, 0);
+  };
+
+  const handleFormatFilterChange = (newFormat: string) => {
+    setFormatFilter(newFormat);
+    setCompetitions([]);
+    fetchCompetitions(searchQuery, false, sortBy, newFormat, statusFilter, 0);
+  };
+
+  const handleStatusFilterChange = (newStatus: string) => {
+    setStatusFilter(newStatus);
+    setCompetitions([]);
+    fetchCompetitions(searchQuery, false, sortBy, formatFilter, newStatus, 0);
+  };
 
   const handleSync = async () => {
     const nameToSync = searchQuery.trim();
@@ -75,34 +137,8 @@ const Competitions: React.FC = () => {
     }
   };
 
-  const filteredCompetitions = competitions.filter((comp) => {
-    const matchesSearch = comp.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      comp.leagueName?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'ALL' ? true : comp.status === statusFilter;
-    const matchesFormat = formatFilter === 'ALL' ? true : comp.format === formatFilter;
-    return matchesSearch && matchesStatus && matchesFormat;
-  });
-
-  // Tri des compétitions côté client
-  const sortedCompetitions = [...filteredCompetitions].sort((a, b) => {
-    if (sortBy === 'league') {
-      const nameA = a.leagueName || '';
-      const nameB = b.leagueName || '';
-      const compare = nameA.localeCompare(nameB);
-      if (compare !== 0) return compare;
-      return (a.name || '').localeCompare(b.name || '');
-    } else if (sortBy === 'status') {
-      const compare = (a.status || '').localeCompare(b.status || '');
-      if (compare !== 0) return compare;
-      return (a.name || '').localeCompare(b.name || '');
-    } else if (sortBy === 'teams') {
-      const diff = (b.teamsCount ?? 0) - (a.teamsCount ?? 0);
-      if (diff !== 0) return diff;
-      return (a.name || '').localeCompare(b.name || '');
-    } else {
-      return (a.name || '').localeCompare(b.name || '');
-    }
-  });
+  // Les compétitions sont filtrées et triées côté serveur
+  const sortedCompetitions = competitions;
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -161,9 +197,10 @@ const Competitions: React.FC = () => {
             fullWidth
             placeholder="Rechercher par compétition ou ligue..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             sx={{ fontSize: '0.9rem', color: '#F8FAFC' }}
           />
+          {loading && <CircularProgress size={18} sx={{ color: '#00E676', ml: 1 }} />}
         </Paper>
       </Box>
 
@@ -174,7 +211,7 @@ const Competitions: React.FC = () => {
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         sortBy={sortBy}
-        onSortChange={setSortBy}
+        onSortChange={handleSortChange}
         sortOptions={[
           { value: 'name', label: 'Nom' },
           { value: 'league', label: 'Ligue' },
@@ -186,7 +223,7 @@ const Competitions: React.FC = () => {
             <FormControl size="small" sx={{ minWidth: 140 }}>
               <Select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
+                onChange={(e) => handleStatusFilterChange(e.target.value as string)}
                 displayEmpty
                 sx={{
                   height: 38,
@@ -209,7 +246,7 @@ const Competitions: React.FC = () => {
             <FormControl size="small" sx={{ minWidth: 140 }}>
               <Select
                 value={formatFilter}
-                onChange={(e) => setFormatFilter(e.target.value)}
+                onChange={(e) => handleFormatFilterChange(e.target.value as string)}
                 displayEmpty
                 sx={{
                   height: 38,
@@ -461,6 +498,31 @@ const Competitions: React.FC = () => {
           </Box>
         )}
       />
+
+      {hasMore && !loading && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <Button
+            variant="outlined"
+            disabled={loadingMore}
+            onClick={() => fetchCompetitions(searchQuery, true, sortBy, formatFilter, statusFilter, competitions.length)}
+            sx={{
+              borderColor: 'rgba(0, 230, 118, 0.3)',
+              color: '#00E676',
+              fontWeight: 700,
+              textTransform: 'none',
+              px: 4,
+              py: 1,
+              borderRadius: 2.5,
+              '&:hover': {
+                borderColor: '#00E676',
+                bgcolor: 'rgba(0, 230, 118, 0.04)',
+              },
+            }}
+          >
+            {loadingMore ? <CircularProgress size={20} sx={{ color: '#00E676' }} /> : 'Afficher plus'}
+          </Button>
+        </Box>
+      )}
     </Box>
   );
 };

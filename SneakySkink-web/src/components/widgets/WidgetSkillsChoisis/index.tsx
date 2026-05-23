@@ -3,26 +3,68 @@
  * Description : Widget réutilisable affichant les compétences acquises les plus fréquentes chez les joueurs.
  */
 
-import React, { useMemo } from 'react';
-import { Box, Typography, Paper, LinearProgress, alpha } from '@mui/material';
+import React, { useState, useMemo } from 'react';
+import {
+  Box,
+  Typography,
+  Paper,
+  LinearProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
+} from '@mui/material';
+import { getRaceInfo } from '../../../utils/raceHelper';
 
 interface MinimalPlayer {
   acquiredSkills?: string[] | null;
 }
 
 export interface WidgetSkillsChoisisProps {
-  players: MinimalPlayer[];
+  players?: MinimalPlayer[];
+  skillsData?: { skillName: string; count: number }[];
+  skillsByRoster?: { raceId: number; skills: { skillName: string; count: number }[] }[];
   limit?: number; // Nombre max de compétences à afficher (défaut : 5)
 }
 
 export const WidgetSkillsChoisis: React.FC<WidgetSkillsChoisisProps> = ({
-  players,
+  players = [],
+  skillsData,
+  skillsByRoster,
   limit = 5,
 }) => {
-  // 1. Agréger les compétences acquises et calculer les fréquences
-  const sortedSkills = useMemo(() => {
-    const counts: Record<string, number> = {};
+  const [selectedRaceId, setSelectedRaceId] = useState<number | 'all'>('all');
 
+  // Déterminer la liste des rosters disponibles pour le sélecteur
+  const availableRosters = useMemo(() => {
+    if (!skillsByRoster) return [];
+    return skillsByRoster
+      .map(item => {
+        const info = getRaceInfo(item.raceId);
+        return {
+          raceId: item.raceId,
+          name: info.name,
+          emoji: info.emoji,
+        };
+      })
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [skillsByRoster]);
+
+  // Agréger ou filtrer les compétences à afficher
+  const sortedSkills = useMemo(() => {
+    // Cas 1 : Roster spécifique sélectionné
+    if (selectedRaceId !== 'all' && skillsByRoster) {
+      const rosterData = skillsByRoster.find(r => r.raceId === selectedRaceId);
+      return rosterData ? rosterData.skills.slice(0, limit) : [];
+    }
+
+    // Cas 2 : Global avec skillsData pré-calculé
+    if (skillsData) {
+      return skillsData.slice(0, limit);
+    }
+
+    // Cas 3 : Calcul local fallback à partir de players
+    const counts: Record<string, number> = {};
     players.forEach(p => {
       if (Array.isArray(p.acquiredSkills)) {
         p.acquiredSkills.forEach(skill => {
@@ -40,7 +82,7 @@ export const WidgetSkillsChoisis: React.FC<WidgetSkillsChoisisProps> = ({
       }))
       .sort((a, b) => b.count - a.count)
       .slice(0, limit);
-  }, [players, limit]);
+  }, [players, skillsData, skillsByRoster, selectedRaceId, limit]);
 
   // Déterminer la valeur maximale pour le ratio des barres de progression
   const maxCount = useMemo(() => {
@@ -62,9 +104,44 @@ export const WidgetSkillsChoisis: React.FC<WidgetSkillsChoisisProps> = ({
         flexDirection: 'column',
       }}
     >
-      <Typography variant="subtitle2" sx={{ color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', mb: 3 }}>
-        Compétences les Plus Choisies
-      </Typography>
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2, mb: 3 }}>
+        <Typography variant="subtitle2" sx={{ color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          Compétences les Plus Choisies
+        </Typography>
+
+        {availableRosters.length > 0 && (
+          <FormControl size="small" sx={{ minWidth: 160 }}>
+            <InputLabel id="skills-roster-select-label" sx={{ color: '#64748B', '&.Mui-focused': { color: '#00E676' } }}>Roster</InputLabel>
+            <Select
+              labelId="skills-roster-select-label"
+              value={selectedRaceId}
+              label="Roster"
+              onChange={(e) => setSelectedRaceId(e.target.value as number | 'all')}
+              sx={{
+                color: '#F8FAFC',
+                bgcolor: 'rgba(15, 23, 42, 0.4)',
+                borderRadius: 2,
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'rgba(148, 163, 184, 0.15)',
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'rgba(0, 230, 118, 0.3)',
+                },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#00E676',
+                },
+              }}
+            >
+              <MenuItem value="all">Tous les rosters</MenuItem>
+              {availableRosters.map(roster => (
+                <MenuItem key={roster.raceId} value={roster.raceId}>
+                  {roster.emoji} {roster.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
+      </Box>
 
       {sortedSkills.length === 0 ? (
         <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', py: 4 }}>

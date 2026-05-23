@@ -13,6 +13,11 @@ export interface WidgetRosterJoueProps {
 }
 
 export const WidgetRosterJoue: React.FC<WidgetRosterJoueProps> = ({ data }) => {
+  const [isMounted, setIsMounted] = React.useState(false);
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // Trier par ordre décroissant
   const sortedData = [...data]
     .sort((a, b) => b.teamCount - a.teamCount)
@@ -75,30 +80,32 @@ export const WidgetRosterJoue: React.FC<WidgetRosterJoueProps> = ({ data }) => {
           <Typography variant="body2" sx={{ color: '#475569' }}>Aucune donnée disponible</Typography>
         </Box>
       ) : (
-        <Box sx={{ width: '100%', height: Math.max(240, sortedData.length * 40 + 40), minWidth: 0 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={sortedData}
-              layout="vertical"
-              margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
-            >
-              <XAxis type="number" stroke="#475569" fontSize={10} tickLine={false} />
-              <YAxis
-                dataKey="name"
-                type="category"
-                stroke="#94A3B8"
-                fontSize={11}
-                tickLine={false}
-                width={120}
-              />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255, 255, 255, 0.03)' }} />
-              <Bar dataKey="teamCount" radius={[0, 4, 4, 0]}>
-                {sortedData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+        <Box sx={{ width: '100%', height: Math.max(240, sortedData.length * 40 + 40), position: 'relative', minWidth: 0 }}>
+          {isMounted && (
+            <ResponsiveContainer width="99%" height="100%">
+              <BarChart
+                data={sortedData}
+                layout="vertical"
+                margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+              >
+                <XAxis type="number" stroke="#475569" fontSize={10} tickLine={false} />
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  stroke="#94A3B8"
+                  fontSize={11}
+                  tickLine={false}
+                  width={120}
+                />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255, 255, 255, 0.03)' }} />
+                <Bar dataKey="teamCount" radius={[0, 4, 4, 0]}>
+                  {sortedData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </Box>
       )}
     </Paper>

@@ -639,14 +639,14 @@ export default function App() {
                   <CardHeader title="Contrôle de Vitesse (Rate Pacing)" />
                   <CardContent>
                     <Stack spacing={3}>
-                      <Alert severity={queueState?.hasPendingCalls === false ? "success" : "warning"}>
-                        {queueState?.hasPendingCalls === false
-                          ? "Le pacing est actif. Un délai de 2,5s est injecté entre chaque appel API."
-                          : "Le pacing est court-circuité ou des requêtes directes sont autorisées."}
+                      <Alert severity={queueState?.pacingBypassed ? "warning" : "success"}>
+                        {queueState?.pacingBypassed
+                          ? "Le pacing est court-circuité (DANGER : pas de délai entre les requêtes)."
+                          : "Le pacing est actif. Un délai de 2,5s est injecté entre chaque appel API."}
                       </Alert>
                       
                       <Typography variant="body2" color="text.secondary">
-                        Pour des opérations de maintenance massives ou du débogage local sur des bases de test, vous pouvez forcer le Harvester à ignorer temporairement le délai imposé par l'API officielle de Cyanide.
+                        Pour des opérations de maintenance massives ou du débogage local sur des bases de test, vous pouvez forcer le Harvester à ignorer temporairement le délai imposé by l'API officielle de Cyanide.
                       </Typography>
 
                       <Typography variant="caption" color="secondary.main" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -660,7 +660,7 @@ export default function App() {
                           color="secondary"
                           startIcon={<Speed />}
                           onClick={handleBypassPacing}
-                          disabled={pacingUpdating || queueState?.hasPendingCalls === true}
+                          disabled={pacingUpdating || queueState?.pacingBypassed === true}
                           fullWidth
                         >
                           Bypass Pacing
@@ -670,7 +670,7 @@ export default function App() {
                           color="primary"
                           startIcon={<CheckCircle />}
                           onClick={handleRestorePacing}
-                          disabled={pacingUpdating || queueState?.hasPendingCalls === false}
+                          disabled={pacingUpdating || queueState?.pacingBypassed === false}
                           fullWidth
                         >
                           Restaurer Pacing

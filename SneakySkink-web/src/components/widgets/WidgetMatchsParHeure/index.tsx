@@ -12,34 +12,49 @@ interface MinimalMatch {
 }
 
 export interface WidgetMatchsParHeureProps {
-  matches: MinimalMatch[];
+  matches?: MinimalMatch[];
+  hourlyActivity?: number[];
 }
 
-export const WidgetMatchsParHeure: React.FC<WidgetMatchsParHeureProps> = ({ matches }) => {
-  // Calculer la chronologie des dernières 24h
+export const WidgetMatchsParHeure: React.FC<WidgetMatchsParHeureProps> = ({ matches = [], hourlyActivity }) => {
+  const [isMounted, setIsMounted] = React.useState(false);
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const chartData = [];
-  const now = new Date();
 
-  for (let i = 23; i >= 0; i--) {
-    const targetTime = new Date(now.getTime() - i * 60 * 60 * 1000);
-    const targetHourUtc = targetTime.getUTCHours();
-    const targetDay = targetTime.getUTCDate();
-    const targetMonth = targetTime.getUTCMonth();
+  if (hourlyActivity && hourlyActivity.length === 24) {
+    for (let hour = 0; hour < 24; hour++) {
+      chartData.push({
+        label: `${hour}h`,
+        count: hourlyActivity[hour],
+      });
+    }
+  } else {
+    // Calculer la chronologie des dernières 24h
+    const now = new Date();
+    for (let i = 23; i >= 0; i--) {
+      const targetTime = new Date(now.getTime() - i * 60 * 60 * 1000);
+      const targetHourUtc = targetTime.getUTCHours();
+      const targetDay = targetTime.getUTCDate();
+      const targetMonth = targetTime.getUTCMonth();
 
-    // Compter les matchs commencés durant cette heure UTC spécifique
-    const count = matches.filter(m => {
-      const mDate = new Date(m.startedAt);
-      return (
-        mDate.getUTCHours() === targetHourUtc &&
-        mDate.getUTCDate() === targetDay &&
-        mDate.getUTCMonth() === targetMonth
-      );
-    }).length;
+      // Compter les matchs commencés durant cette heure UTC spécifique
+      const count = matches.filter(m => {
+        const mDate = new Date(m.startedAt);
+        return (
+          mDate.getUTCHours() === targetHourUtc &&
+          mDate.getUTCDate() === targetDay &&
+          mDate.getUTCMonth() === targetMonth
+        );
+      }).length;
 
-    chartData.push({
-      label: `${targetHourUtc}:00`,
-      count,
-    });
+      chartData.push({
+        label: `${targetHourUtc}:00`,
+        count,
+      });
+    }
   }
 
   const CustomTooltip = ({ active, payload }: any) => {
@@ -56,7 +71,7 @@ export const WidgetMatchsParHeure: React.FC<WidgetMatchsParHeureProps> = ({ matc
           }}
         >
           <Typography variant="caption" sx={{ color: '#94A3B8', display: 'block', mb: 0.5 }}>
-            Heure (UTC) : {d.label}
+            {hourlyActivity ? `Heure : ${d.label}` : `Heure (UTC) : ${d.label}`}
           </Typography>
           <Typography variant="body2" sx={{ color: '#00E676', fontWeight: 800 }}>
             {d.count} match{d.count > 1 ? 's' : ''} joué{d.count > 1 ? 's' : ''}
@@ -84,11 +99,11 @@ export const WidgetMatchsParHeure: React.FC<WidgetMatchsParHeureProps> = ({ matc
       }}
     >
       <Typography variant="subtitle2" sx={{ color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', mb: 3 }}>
-        Activité Recente (Dernières 24h UTC)
+        {hourlyActivity ? "Répartition horaire globale de l'activité" : "Activité Récente (Dernières 24h UTC)"}
       </Typography>
 
-      <Box sx={{ width: '100%', minWidth: 0 }}>
-        <ResponsiveContainer width="100%" height={200}>
+      <Box sx={{ width: '100%', height: 200, position: 'relative', minWidth: 0 }}>
+        <ResponsiveContainer width="99%" height="100%">
           <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
             <defs>
               <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">

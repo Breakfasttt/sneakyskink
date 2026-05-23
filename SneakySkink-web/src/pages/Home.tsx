@@ -121,10 +121,8 @@ const Home: React.FC = () => {
       });
     }).catch(() => {});
 
-    api.getGlobalStats().then((res: any) => {
-      const payload = res?.data || res || {};
-      const matches = payload?.matches || [];
-      setRecentMatches(matches);
+    api.getActivity24h().then((res: any) => {
+      setRecentMatches(res || []);
     }).catch(() => setRecentMatches([])).finally(() => setActivityLoading(false));
   }, []);
 

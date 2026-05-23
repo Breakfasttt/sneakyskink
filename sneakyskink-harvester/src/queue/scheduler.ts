@@ -38,7 +38,43 @@ export async function triggerPeriodicSync() {
       });
 
       const isPriority = existingLeague ? existingLeague.isPriority : isOfficial;
-      const shouldBeActive = existingLeague ? existingLeague.active : true;
+      let shouldBeActive = true;
+
+      if (existingLeague) {
+        shouldBeActive = existingLeague.active;
+        
+        // Règle 3 : Désactiver si inactive depuis plus de 3 mois (sauf si au moins 100 coachs)
+        if (shouldBeActive) {
+          const threeMonthsAgo = new Date();
+          threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+          
+          const lastMatch = await prisma.match.findFirst({
+            where: { competition: { leagueId: id } },
+            orderBy: { finishedAt: 'desc' },
+            select: { finishedAt: true }
+          });
+
+          if (lastMatch && new Date(lastMatch.finishedAt) < threeMonthsAgo && gamerCount < 100) {
+            shouldBeActive = false;
+            logger.info(`🚫 [Scheduler] Désactivation automatique de la ligue "${name}" (${id}) : inactive depuis plus de 3 mois (dernier match: ${lastMatch.finishedAt.toISOString()}, coachs: ${gamerCount})`);
+          }
+        }
+      } else {
+        // Règle 2 : Nouvelle ligue découverte
+        // Active seulement si plus de 30 coachs ET au moins 1 compétition active
+        if (gamerCount > 30) {
+          let hasCompetitions = false;
+          try {
+            const compsRes = await bb3ApiClient.get('/competitions', { league: id });
+            hasCompetitions = compsRes.competitions && compsRes.competitions.length > 0;
+          } catch (e: any) {
+            logger.warn(`⚠️ [Scheduler] Impossible de vérifier les compétitions de la nouvelle ligue "${name}" (${id}) : ${e.message}`);
+          }
+          shouldBeActive = hasCompetitions;
+        } else {
+          shouldBeActive = false;
+        }
+      }
 
       await prisma.league.upsert({
         where: { id },
@@ -54,11 +90,12 @@ export async function triggerPeriodicSync() {
           name,
           logo,
           gamerCount,
+          active: shouldBeActive, // Mettre à jour active si modifiée par inactivité
         }
       });
 
       if (!existingLeague) {
-        ConsoleDashboard.setLastInserted('Ligue (Découverte)', `Nom: "${name}" (${id}) - Joueurs: ${gamerCount}`);
+        ConsoleDashboard.setLastInserted('Ligue (Découverte)', `Nom: "${name}" (${id}) - Joueurs: ${gamerCount} - Activée: ${shouldBeActive}`);
       }
     }
   } catch (err: any) {

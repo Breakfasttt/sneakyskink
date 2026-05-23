@@ -90,6 +90,7 @@ export class SneakySkinkApiClient {
     search?: string;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
+    minGamerCount?: number;
   }): Promise<League[]> {
     const res = await this.client.get('/leagues', { params });
     return res.data.data;
@@ -120,6 +121,9 @@ export class SneakySkinkApiClient {
     status?: string;
     limit?: number;
     offset?: number;
+    search?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
   }): Promise<Competition[]> {
     const res = await this.client.get('/competitions', { params });
     return res.data.data;
@@ -152,7 +156,14 @@ export class SneakySkinkApiClient {
   /**
    * 👥 Récupère la liste globale de tous les coachs
    */
-  public async getCoaches(params?: { search?: string; limit?: number; offset?: number }): Promise<Coach[]> {
+  public async getCoaches(params?: {
+    search?: string;
+    limit?: number;
+    offset?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+    leagueId?: string;
+  }): Promise<Coach[]> {
     const res = await this.client.get('/coaches', { params });
     return res.data.data;
   }
@@ -283,11 +294,13 @@ export class SneakySkinkApiClient {
     return res.data.data;
   }
 
-  /**
-   * 📊 Récupère l'activité récente (ex: matchs par jour)
-   */
-  public async getActivityStats(): Promise<any> {
-    const res = await this.client.get('/stats/activity');
+  public async getActivityStats(params?: { leagueId?: string; competitionId?: string; coachId?: string }): Promise<any> {
+    const res = await this.client.get('/stats/activity', { params });
+    return res.data.data;
+  }
+
+  public async getActivity24h(params?: { leagueId?: string; competitionId?: string; coachId?: string }): Promise<{ startedAt: string }[]> {
+    const res = await this.client.get('/stats/activity/24h', { params });
     return res.data.data;
   }
 

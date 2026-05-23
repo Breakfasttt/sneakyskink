@@ -13,7 +13,8 @@ export class LeaguesService {
     offset: number = 0,
     search?: string,
     sortBy?: string,
-    sortOrder?: 'asc' | 'desc'
+    sortOrder?: 'asc' | 'desc',
+    minGamerCount?: number
   ) {
     const where: any = {};
     if (active !== undefined) {
@@ -27,6 +28,12 @@ export class LeaguesService {
       };
     }
 
+    if (minGamerCount !== undefined) {
+      where.gamerCount = {
+        gte: minGamerCount
+      };
+    }
+
     let orderBy: any = { updatedAt: 'desc' };
     if (sortBy) {
       const order = sortOrder === 'asc' ? 'asc' : 'desc';
@@ -34,6 +41,8 @@ export class LeaguesService {
         orderBy = { matches: { _count: order } };
       } else if (sortBy === 'competitionsCount') {
         orderBy = { competitions: { _count: order } };
+      } else if (sortBy === 'lastMatch') {
+        orderBy = { updatedAt: order };
       } else if (['name', 'active', 'isPriority', 'createdAt', 'updatedAt', 'gamerCount'].includes(sortBy)) {
         orderBy = { [sortBy]: order };
       }
@@ -73,6 +82,7 @@ export class LeaguesService {
       logo: league.logo,
       gamerCount: league.gamerCount,
       active: league.active,
+      isPriority: league.isPriority,
       createdAt: league.createdAt,
       updatedAt: league.updatedAt,
       competitionsCount: league._count.competitions,
@@ -95,6 +105,13 @@ export class LeaguesService {
         competitions: includeCompetitions
           ? {
               orderBy: { updatedAt: 'desc' },
+              include: {
+                _count: {
+                  select: {
+                    matches: true,
+                  },
+                },
+              },
             }
           : false,
         _count: {
@@ -110,17 +127,58 @@ export class LeaguesService {
       throw new ApiError(404, `La ligue avec l'ID ${id} n'existe pas dans la base de données.`);
     }
 
+    // Récupérer dynamiquement le nombre d'équipes réelles par compétition via les matches si non défini en BDD
+    const teamsCountMap = new Map<string, number>();
+    if (includeCompetitions && league.competitions && league.competitions.length > 0) {
+      const realTeamsCountRaw = await prisma.$queryRaw<{ competitionId: string; teamCount: number }[]>`
+        SELECT 
+          m.competition_id AS "competitionId", 
+          COUNT(DISTINCT team_id)::int AS "teamCount"
+        FROM (
+          SELECT competition_id, home_team_id AS team_id FROM matches WHERE league_id = ${id} AND home_team_id IS NOT NULL
+          UNION
+          SELECT competition_id, away_team_id AS team_id FROM matches WHERE league_id = ${id} AND away_team_id IS NOT NULL
+        ) AS m
+        GROUP BY m.competition_id
+      `;
+      realTeamsCountRaw.forEach(item => {
+        teamsCountMap.set(item.competitionId, item.teamCount);
+      });
+    }
+
+    const competitionsEnriched = includeCompetitions && league.competitions
+      ? league.competitions.map(comp => ({
+          id: comp.id,
+          name: comp.name,
+          format: comp.format,
+          status: comp.status,
+          round: comp.round,
+          roundsCount: comp.roundsCount,
+          turnDuration: comp.turnDuration,
+          timeBonusDuration: comp.timeBonusDuration,
+          teamsMax: comp.teamsMax,
+          teamsCount: comp.teamsCount || teamsCountMap.get(comp.id) || 0,
+          matchesCount: (comp as any)._count?.matches ?? 0,
+          leagueId: comp.leagueId,
+          historySynced: comp.historySynced,
+          historyLastDate: comp.historyLastDate,
+          createdAt: comp.createdAt,
+          updatedAt: comp.updatedAt,
+        }))
+      : undefined;
+
     return {
       id: league.id,
       name: league.name,
       logo: league.logo,
       gamerCount: league.gamerCount,
       active: league.active,
+      isPriority: league.isPriority,
       createdAt: league.createdAt,
       updatedAt: league.updatedAt,
       competitionsCount: league._count.competitions,
       matchesCount: league._count.matches,
-      competitions: includeCompetitions ? league.competitions : undefined,
+      competitions: competitionsEnriched,
     };
   }
 

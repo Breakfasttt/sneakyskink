@@ -16,3 +16,5 @@ export * from './WidgetWinrateRosterVsRosters';
 export * from './WidgetCoachsRencontres';
 export * from './WidgetCalendrierMatchs';
 export * from './WidgetSkillsChoisis';
+export * from './WidgetMatchsSur24h';
+

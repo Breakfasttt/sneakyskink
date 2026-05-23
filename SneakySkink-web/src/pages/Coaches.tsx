@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -17,6 +17,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Chip,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -29,39 +30,78 @@ import { ItemCard } from '../components/ItemCard';
 
 const Coaches: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const leagueId = searchParams.get('leagueId') || undefined;
+  const [leagueName, setLeagueName] = useState<string | null>(null);
+
   const [coaches, setCoaches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [syncing, setSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
   const [syncError, setSyncError] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
   const [sortBy, setSortBy] = useState<'name' | 'teams'>('name');
+  const [hasMore, setHasMore] = useState(true);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const fetchCoaches = useCallback(async (search: string) => {
-    setLoading(true);
-    try {
-      const res: any = await api.getCoaches({ search: search || undefined, limit: 100 });
-      const list = res.data || res || [];
-      setCoaches(Array.isArray(list) ? list : []);
-    } catch {
-      setCoaches([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const PAGE_LIMIT = 24;
 
   useEffect(() => {
-    fetchCoaches('');
-  }, [fetchCoaches]);
+    if (leagueId) {
+      api.getLeague(leagueId)
+        .then((res: any) => setLeagueName(res.name))
+        .catch(() => setLeagueName('Ligue inconnue'));
+    } else {
+      setLeagueName(null);
+    }
+  }, [leagueId]);
+
+  const fetchCoaches = useCallback(async (search: string, isAppend = false, activeSort = sortBy, currentOffset = 0) => {
+    if (isAppend) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
+    try {
+      const res: any = await api.getCoaches({
+        search: search || undefined,
+        limit: PAGE_LIMIT,
+        offset: currentOffset,
+        sortBy: activeSort,
+        sortOrder: activeSort === 'teams' ? 'desc' : 'asc',
+        leagueId: leagueId,
+      });
+      const list = Array.isArray(res) ? res : [];
+      setCoaches(prev => isAppend ? [...prev, ...list] : list);
+      setHasMore(list.length === PAGE_LIMIT);
+    } catch {
+      if (!isAppend) setCoaches([]);
+      setHasMore(false);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, [sortBy, leagueId]);
+
+  useEffect(() => {
+    setCoaches([]);
+    fetchCoaches(searchQuery, false, sortBy, 0);
+  }, [fetchCoaches, leagueId]);
 
   const handleSearchChange = (val: string) => {
     setSearchQuery(val);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      fetchCoaches(val.trim());
+      fetchCoaches(val.trim(), false, sortBy, 0);
     }, 400);
+  };
+
+  const handleSortChange = (newSort: 'name' | 'teams') => {
+    setSortBy(newSort);
+    setCoaches([]);
+    fetchCoaches(searchQuery, false, newSort, 0);
   };
 
   const handleSync = async () => {
@@ -83,16 +123,8 @@ const Coaches: React.FC = () => {
     }
   };
 
-  // Tri des coachs côté client
-  const sortedCoaches = [...coaches].sort((a, b) => {
-    if (sortBy === 'teams') {
-      const diff = (b.teamsCount ?? 0) - (a.teamsCount ?? 0);
-      if (diff !== 0) return diff;
-      return (a.name || '').localeCompare(b.name || '');
-    } else {
-      return (a.name || '').localeCompare(b.name || '');
-    }
-  });
+  // Les coachs sont déjà triés côté serveur
+  const sortedCoaches = coaches;
 
   return (
     <Box sx={{ maxWidth: 1040, mx: 'auto', py: { xs: 2, md: 4 } }}>
@@ -104,6 +136,24 @@ const Coaches: React.FC = () => {
         <Typography variant="body2" sx={{ color: '#64748B' }}>
           Consultez et recherchez parmi tous les coachs enregistrés sur le serveur
         </Typography>
+        {leagueName && (
+          <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Chip
+              label={`Filtré par ligue : ${leagueName}`}
+              onDelete={() => setSearchParams({})}
+              sx={{
+                bgcolor: 'rgba(0, 230, 118, 0.08)',
+                color: '#00E676',
+                border: '1px solid rgba(0, 230, 118, 0.3)',
+                fontWeight: 700,
+                '& .MuiChip-deleteIcon': {
+                  color: '#00E676',
+                  '&:hover': { color: '#00C853' },
+                },
+              }}
+            />
+          </Box>
+        )}
       </Box>
 
       {/* Search Bar */}
@@ -142,7 +192,7 @@ const Coaches: React.FC = () => {
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         sortBy={sortBy}
-        onSortChange={setSortBy}
+        onSortChange={handleSortChange}
         sortOptions={[
           { value: 'name', label: 'Nom de coach' },
           { value: 'teams', label: 'Nombre d\'équipes' },
@@ -327,6 +377,31 @@ const Coaches: React.FC = () => {
           </Box>
         )}
       />
+
+      {hasMore && !loading && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <Button
+            variant="outlined"
+            disabled={loadingMore}
+            onClick={() => fetchCoaches(searchQuery, true, sortBy, coaches.length)}
+            sx={{
+              borderColor: 'rgba(0, 230, 118, 0.3)',
+              color: '#00E676',
+              fontWeight: 700,
+              textTransform: 'none',
+              px: 4,
+              py: 1,
+              borderRadius: 2.5,
+              '&:hover': {
+                borderColor: '#00E676',
+                bgcolor: 'rgba(0, 230, 118, 0.04)',
+              },
+            }}
+          >
+            {loadingMore ? <CircularProgress size={20} sx={{ color: '#00E676' }} /> : 'Afficher plus'}
+          </Button>
+        </Box>
+      )}
     </Box>
   );
 };

@@ -67,7 +67,7 @@ export const WidgetWinrateRosterVsRosters: React.FC<WidgetWinrateRosterVsRosters
   const [order, setOrder] = useState<Order>('desc');
   const [orderBy, setOrderBy] = useState<keyof OpponentStat>('matchesCount');
 
-  // 1. Déterminer tous les rosters joués par le focusId
+  // 1. Déterminer tous les rosters joués par le focusId ou tous les rosters si focusId est global (ligue)
   const focusRaces = useMemo(() => {
     const races = new Set<number>();
     matches.forEach(m => {
@@ -79,16 +79,23 @@ export const WidgetWinrateRosterVsRosters: React.FC<WidgetWinrateRosterVsRosters
       } else if (isAway) {
         const race = m.awayRaceId ?? m.awayTeam?.raceId;
         if (race !== undefined) races.add(race);
+      } else {
+        // Mode global : on récupère tous les rosters du match
+        const homeRace = m.homeRaceId ?? m.homeTeam?.raceId;
+        const awayRace = m.awayRaceId ?? m.awayTeam?.raceId;
+        if (homeRace !== undefined) races.add(homeRace);
+        if (awayRace !== undefined) races.add(awayRace);
       }
     });
-    const result = Array.from(races).sort((a, b) => a - b);
-    
-    // Auto-sélectionner le premier roster s'il y en a et aucun n'est sélectionné
-    if (result.length > 0 && selectedRaceId === '') {
-      setSelectedRaceId(result[0]);
+    return Array.from(races).sort((a, b) => a - b);
+  }, [matches, focusId]);
+
+  // Auto-sélectionner le premier roster s'il y en a et aucun n'est sélectionné
+  React.useEffect(() => {
+    if (focusRaces.length > 0 && selectedRaceId === '') {
+      setSelectedRaceId(focusRaces[0]);
     }
-    return result;
-  }, [matches, focusId, selectedRaceId]);
+  }, [focusRaces, selectedRaceId]);
 
   // 2. Calculer les statistiques contre les autres rosters pour le roster sélectionné
   const opponentStats = useMemo(() => {
@@ -100,27 +107,46 @@ export const WidgetWinrateRosterVsRosters: React.FC<WidgetWinrateRosterVsRosters
       const isHome = m.homeCoachId === focusId || m.homeTeamId === focusId;
       const isAway = m.awayCoachId === focusId || m.awayTeamId === focusId;
 
-      if (!isHome && !isAway) return;
+      if (isHome || isAway) {
+        const myRace = isHome ? (m.homeRaceId ?? m.homeTeam?.raceId) : (m.awayRaceId ?? m.awayTeam?.raceId);
+        const oppRace = isHome ? (m.awayRaceId ?? m.awayTeam?.raceId) : (m.homeRaceId ?? m.homeTeam?.raceId);
 
-      const myRace = isHome ? (m.homeRaceId ?? m.homeTeam?.raceId) : (m.awayRaceId ?? m.awayTeam?.raceId);
-      const oppRace = isHome ? (m.awayRaceId ?? m.awayTeam?.raceId) : (m.homeRaceId ?? m.homeTeam?.raceId);
+        // Ne prendre en compte que si j'ai joué le roster sélectionné
+        if (myRace !== selectedRaceId || oppRace === undefined) return;
 
-      // Ne prendre en compte que si j'ai joué le roster sélectionné
-      if (myRace !== selectedRaceId || oppRace === undefined) return;
+        if (!stats[oppRace]) {
+          stats[oppRace] = { wins: 0, draws: 0, losses: 0 };
+        }
 
-      if (!stats[oppRace]) {
-        stats[oppRace] = { wins: 0, draws: 0, losses: 0 };
-      }
+        const myScore = isHome ? m.homeScore : m.awayScore;
+        const oppScore = isHome ? m.awayScore : m.homeScore;
 
-      const myScore = isHome ? m.homeScore : m.awayScore;
-      const oppScore = isHome ? m.awayScore : m.homeScore;
-
-      if (myScore > oppScore) {
-        stats[oppRace].wins++;
-      } else if (myScore === oppScore) {
-        stats[oppRace].draws++;
+        if (myScore > oppScore) {
+          stats[oppRace].wins++;
+        } else if (myScore === oppScore) {
+          stats[oppRace].draws++;
+        } else {
+          stats[oppRace].losses++;
+        }
       } else {
-        stats[oppRace].losses++;
+        // Mode global : on calcule le winrate du selectedRaceId face aux adversaires
+        const homeRace = m.homeRaceId ?? m.homeTeam?.raceId;
+        const awayRace = m.awayRaceId ?? m.awayTeam?.raceId;
+
+        if (homeRace === undefined || awayRace === undefined) return;
+
+        if (homeRace === selectedRaceId) {
+          if (!stats[awayRace]) stats[awayRace] = { wins: 0, draws: 0, losses: 0 };
+          if (m.homeScore > m.awayScore) stats[awayRace].wins++;
+          else if (m.homeScore === m.awayScore) stats[awayRace].draws++;
+          else stats[awayRace].losses++;
+        }
+        if (awayRace === selectedRaceId) {
+          if (!stats[homeRace]) stats[homeRace] = { wins: 0, draws: 0, losses: 0 };
+          if (m.awayScore > m.homeScore) stats[homeRace].wins++;
+          else if (m.awayScore === m.homeScore) stats[homeRace].draws++;
+          else stats[homeRace].losses++;
+        }
       }
     });
 
