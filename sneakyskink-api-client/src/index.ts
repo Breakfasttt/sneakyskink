@@ -1,5 +1,5 @@
-import axios, { AxiosInstance } from 'axios';
-import {
+import axios, { type AxiosInstance } from 'axios';
+import type {
   League,
   Competition,
   Team,
@@ -222,6 +222,46 @@ export class SneakySkinkApiClient {
   public async setLeaguePriority(id: string, isPriority: boolean): Promise<{ success: boolean; message: string; league: League }> {
     const res = await this.client.post(`/sync/league/${id}/priority`, { isPriority });
     return res.data;
+  }
+
+  /**
+   * 🏆 Active ou désactive une ligue spécifique (exclut ou inclut dans la récolte périodique)
+   */
+  public async toggleLeagueActive(id: string, active: boolean): Promise<{ success: boolean; data: League }> {
+    const res = await this.client.patch(`/leagues/${id}/active`, { active });
+    return res.data;
+  }
+
+  /**
+   * ⚡ Désactive temporairement le rate pacing de l'API
+   */
+  public async bypassPacing(): Promise<{ success: boolean; message: string }> {
+    const res = await this.client.post('/sync/pacing/bypass');
+    return res.data;
+  }
+
+  /**
+   * ⚡ Restaure le rate pacing de l'API
+   */
+  public async restorePacing(): Promise<{ success: boolean; message: string }> {
+    const res = await this.client.post('/sync/pacing/restore');
+    return res.data;
+  }
+
+  /**
+   * ⚙️ Déclenche manuellement un audit et une maintenance de la base de données
+   */
+  public async runMaintenance(): Promise<{ success: boolean; report: any }> {
+    const res = await this.client.post('/maintenance/run');
+    return res.data;
+  }
+
+  /**
+   * ⚙️ Récupère l'historique des rapports d'audit de maintenance
+   */
+  public async getAuditReports(): Promise<any[]> {
+    const res = await this.client.get('/maintenance/reports');
+    return res.data.data;
   }
 
   /**

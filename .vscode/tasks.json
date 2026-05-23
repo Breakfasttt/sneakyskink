@@ -72,11 +72,26 @@
       }
     },
     {
-      "label": "🚀 Start All Services (3 Terminals)",
+      "label": "⚡ Start Admin",
+      "type": "shell",
+      "command": "chcp 65001 >$null; npm run dev:admin",
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "🚀 Start All Services (4 Terminals)",
       "dependsOn": [
         "⚡ Start Harvester",
         "⚡ Start API",
-        "⚡ Start Web"
+        "⚡ Start Web",
+        "⚡ Start Admin"
       ],
       "problemMatcher": [],
       "presentation": {

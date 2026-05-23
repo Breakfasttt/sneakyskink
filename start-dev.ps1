@@ -13,6 +13,10 @@ Start-Process powershell -ArgumentList "-NoExit", "-Command", "[Console]::InputE
 
 # Lancer le Site Web
 Write-Host "-> Lancement de l'interface Web..." -ForegroundColor Yellow
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "[Console]::InputEncoding = [Console]::OutputEncoding = $OutputEncoding = [System.Text.Encoding]::UTF8; chcp 65001 >$null; npm run dev:web"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "[Console]::InputEncoding = [Console]::OutputEncoding = $OutputEncoding = $OutputEncoding = [System.Text.Encoding]::UTF8; chcp 65001 >$null; npm run dev:web"
 
-Write-Host "✅ Les 3 terminaux ont été démarrés avec succès !" -ForegroundColor Green
+# Lancer la console d'Administration
+Write-Host "-> Lancement de la console d'Administration..." -ForegroundColor Yellow
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "[Console]::InputEncoding = [Console]::OutputEncoding = $OutputEncoding = $OutputEncoding = [System.Text.Encoding]::UTF8; chcp 65001 >$null; npm run dev:admin"
+
+Write-Host "✅ Les 4 terminaux ont été démarrés avec succès !" -ForegroundColor Green

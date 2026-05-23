@@ -10,7 +10,8 @@
     "SneakySkink-api",
     "SneakySkink-web",
     "SneakySkink-discord",
-    "SneakySkink-twitch"
+    "SneakySkink-twitch",
+    "sneakyskink-admin"
   ],
   "scripts": {
     "install:all": "npm install",
@@ -18,7 +19,8 @@
     "lint:all": "npm run lint --workspaces --if-present",
     "dev:harvester": "npm run dev -w SneakySkink-harvester",
     "dev:api": "npm run dev -w SneakySkink-api",
-    "dev:web": "npm run dev -w SneakySkink-web"
+    "dev:web": "npm run dev -w SneakySkink-web",
+    "dev:admin": "npm run dev -w sneakyskink-admin"
   },
   "devDependencies": {
     "typescript": "^6.0.3"

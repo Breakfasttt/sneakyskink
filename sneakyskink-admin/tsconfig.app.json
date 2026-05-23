@@ -17,17 +17,7 @@
     "baseUrl": ".",
     "ignoreDeprecations": "6.0",
     "paths": {
-      "vite/client": ["../node_modules/vite/client.d.ts"],
-      "@mui/material": ["../node_modules/@mui/material"],
-      "@mui/material/*": ["../node_modules/@mui/material/*"],
-      "@mui/icons-material": ["../node_modules/@mui/icons-material"],
-      "@mui/icons-material/*": ["../node_modules/@mui/icons-material/*"],
-      "@emotion/react": ["../node_modules/@emotion/react"],
-      "@emotion/styled": ["../node_modules/@emotion/styled"],
-      "react": ["../node_modules/react"],
-      "react-dom": ["../node_modules/react-dom"],
-      "sneakyskink-api-client": ["../sneakyskink-api-client/src"],
-      "*": ["*", "../node_modules/*"]
+      "sneakyskink-api-client": ["../sneakyskink-api-client/src"]
     },
 
     /* Linting */

@@ -42,4 +42,19 @@ export class LeaguesController {
       next(error);
     }
   }
+
+  static async toggleActive(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = req.params.id as string;
+      const { active } = req.body;
+      if (active === undefined || typeof active !== 'boolean') {
+        return res.status(400).json({ success: false, message: "Le paramètre 'active' (booléen) est requis dans le corps de la requête." });
+      }
+
+      const result = await LeaguesService.toggleLeagueActive(id, active);
+      res.json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  }
 }

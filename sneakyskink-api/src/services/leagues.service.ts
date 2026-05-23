@@ -129,4 +129,19 @@ export class LeaguesService {
       throw new ApiError(500, `Erreur lors de la recherche déléguée au Harvester : ${error.message}`);
     }
   }
+
+  static async toggleLeagueActive(id: string, active: boolean) {
+    // Vérifier si la ligue existe
+    const league = await prisma.league.findUnique({ where: { id } });
+    if (!league) {
+      throw new ApiError(404, `La ligue avec l'ID ${id} n'existe pas.`);
+    }
+
+    const updated = await prisma.league.update({
+      where: { id },
+      data: { active },
+    });
+
+    return updated;
+  }
 }

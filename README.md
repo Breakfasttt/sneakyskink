@@ -17,6 +17,7 @@ L'écosystème SneakySkink est divisé en plusieurs packages spécialisés :
 | [**`sneakyskink-harvester`**](./sneakyskink-harvester/README.md) | Démon d'aspiration asynchrone régulé par file d'attente (BullMQ), rotation de clés API, et Rate Pacing intelligent. | BullMQ, Redis, Axios |
 | [**`sneakyskink-api`**](./sneakyskink-api/README.md) | API REST Express exposant les données stockées et permettant de déclencher des jobs de synchro. | Express.js, TypeScript |
 | [**`SneakySkink-web`**](./SneakySkink-web/README.md) | Interface utilisateur premium (Glassmorphism & Neon Glows) pour explorer les ligues, coachs et statistiques. | React, Vite, Material UI (MUI) |
+| [**`sneakyskink-admin`**](./sneakyskink-admin/README.md) | Interface Web d'administration (MUI & Glassmorphism) pour piloter le rate pacing, purger la file de synchro, gérer l'activation des ligues et consulter les audits. | React, Vite, Material UI (MUI) |
 | [**`SneakySkink-discord`**](./SneakySkink-discord/README.md) | Bot Discord fournissant des commandes interactives, des alertes de matchs et des statistiques en direct. | Discord.js, Node.js |
 | [**`SneakySkink-twitch`**](./SneakySkink-twitch/README.md) | Service d'intégration pour les overlays de streaming en direct et la détection d'activité Twitch. | Twitch API, WebSockets |
 
@@ -54,22 +55,22 @@ cd ../sneakyskink-api-client
 npm run build
 ```
 
-#### Étape D : Raccourcis de Lancement Magiques (3 Terminaux Simultanés) ⚡
+#### Étape D : Raccourcis de Lancement Magiques (4 Terminaux Simultanés) ⚡
 
-Plutôt que d'ouvrir 3 terminaux manuellement et de taper les commandes dans chaque dossier, nous vous avons configuré **des raccourcis automatiques** :
+Plutôt que d'ouvrir 4 terminaux manuellement et de taper les commandes dans chaque dossier, nous vous avons configuré **des raccourcis automatiques** :
 
 ##### Raccourci A : Intégration VSCode (Recommandé - Terminaux dans l'IDE)
 1. Ouvrez le monorepo dans VSCode.
 2. Appuyez sur `Ctrl + Shift + P` (ou `Cmd + Shift + P` sur Mac).
 3. Tapez `Tasks: Run Task` (ou `Tâches : Exécuter la tâche`) et appuyez sur Entrée.
-4. Sélectionnez **`🚀 Start All Services (3 Terminals)`**.
-5. VSCode va automatiquement ouvrir **3 terminaux dédiés côte à côte** dans votre panneau inférieur et y démarrer le Harvester, l'API et l'interface Web !
+4. Sélectionnez **`🚀 Start All Services (4 Terminals)`**.
+5. VSCode va automatiquement ouvrir **4 terminaux dédiés côte à côte** dans votre panneau inférieur et y démarrer le Harvester, l'API, l'interface Web et l'interface d'Administration !
 
 ##### Raccourci B : Script Windows PowerShell (Hors IDE)
 Si vous souhaitez démarrer l'écosystème en un double-clic depuis Windows :
 1. Faites un clic droit sur le fichier `start-dev.ps1` situé à la racine du monorepo.
 2. Choisissez **`Exécuter avec PowerShell`**.
-3. Trois fenêtres PowerShell indépendantes vont s'ouvrir et démarrer vos 3 services automatiquement !
+3. Quatre fenêtres PowerShell indépendantes vont s'ouvrir et démarrer vos 4 services automatiquement !
 
 ---
 
@@ -96,6 +97,13 @@ Ouvrez des terminaux séparés pour lancer chaque service en mode développement
   npm run dev
   ```
   L'interface est disponible sur [http://localhost:3000](http://localhost:3000) !
+
+* **La Console d'Administration (React / Vite) :**
+  ```bash
+  cd sneakyskink-admin
+  npm run dev
+  ```
+  L'interface d'administration est disponible sur [http://localhost:3002](http://localhost:3002) !
 
 ---
 
