@@ -250,86 +250,165 @@ export class StatsService {
       throw new ApiError(404, `La compétition avec l'ID ${competitionId} n'existe pas.`);
     }
 
-    const matches = await prisma.match.findMany({
-      where: {
-        competitionId,
-        homeCoachId: { not: null },
-        awayCoachId: { not: null }
-      },
-      select: {
-        id: true,
-        homeScore: true,
-        awayScore: true,
-        homeStats: true,
-        awayStats: true,
-        startedAt: true,
-        homeTeamId: true,
-        awayTeamId: true,
-        isForfeit: true,
-        forfeitTeamId: true,
-        homeTeam: { select: { name: true, raceId: true } },
-        awayTeam: { select: { name: true, raceId: true } },
-        competition: { select: { name: true } },
-      },
-      orderBy: { startedAt: 'desc' },
-    });
-
-    const playerStatsSum = await prisma.playerMatchStats.aggregate({
-      where: {
-        match: {
+    // Compter le nombre de matchs total et forfaits de manière très légère
+    const [totalMatches, forfeits] = await Promise.all([
+      prisma.match.count({
+        where: {
           competitionId,
           homeCoachId: { not: null },
           awayCoachId: { not: null }
-        },
-      },
-      _sum: {
-        touchdowns: true,
-        passes: true,
-        catches: true,
-        interceptions: true,
-        yardsRunning: true,
-        yardsPassing: true,
-        blocksSucceeded: true,
-        blocksSustained: true,
-        armourBreaks: true,
-        tackles: true,
-        casualtiesInflicted: true,
-        koInflicted: true,
-        injuriesInflicted: true,
-        deadInflicted: true,
-        casualtiesSustained: true,
-        koSustained: true,
-        injuriesSustained: true,
-        deadSustained: true,
-      },
+        }
+      }),
+      prisma.match.count({
+        where: {
+          competitionId,
+          isForfeit: true
+        }
+      })
+    ]);
+
+    // 1. Nombre de coachs distincts via SQL brut
+    const coachesCountRes = await prisma.$queryRaw<[{ count: number }]>`
+      SELECT COUNT(DISTINCT coach_id)::int AS count
+      FROM (
+        SELECT home_coach_id AS coach_id FROM matches WHERE competition_id = ${competitionId} AND home_coach_id IS NOT NULL
+        UNION
+        SELECT away_coach_id AS coach_id FROM matches WHERE competition_id = ${competitionId} AND away_coach_id IS NOT NULL
+      ) AS temp
+    `;
+    const coachesCount = Number(coachesCountRes[0]?.count || 0);
+
+    // 2. Rosters joués via SQL brut
+    const rostersPlayed = await prisma.$queryRaw<{ raceId: number; teamCount: number }[]>`
+      SELECT t.race_id AS "raceId", COUNT(DISTINCT t.id)::int AS "teamCount"
+      FROM teams t
+      WHERE t.id IN (
+        SELECT home_team_id FROM matches WHERE competition_id = ${competitionId} AND home_team_id IS NOT NULL
+        UNION
+        SELECT away_team_id FROM matches WHERE competition_id = ${competitionId} AND away_team_id IS NOT NULL
+      )
+      GROUP BY t.race_id
+      ORDER BY "teamCount" DESC
+    `;
+
+    // 3. Compétences globales les plus choisies via SQL brut
+    const popularSkills = await prisma.$queryRaw<{ skillName: string; count: number }[]>`
+      SELECT skill AS "skillName", COUNT(*)::int AS count
+      FROM (
+        SELECT unnest(acquired_skills) AS skill
+        FROM players
+        WHERE team_id IN (
+          SELECT home_team_id FROM matches WHERE competition_id = ${competitionId} AND home_team_id IS NOT NULL
+          UNION
+          SELECT away_team_id FROM matches WHERE competition_id = ${competitionId} AND away_team_id IS NOT NULL
+        )
+        AND acquired_skills IS NOT NULL
+      ) AS s
+      WHERE LOWER(skill) NOT LIKE 'loner%' AND TRIM(skill) != ''
+      GROUP BY skill
+      ORDER BY count DESC
+    `;
+
+    // 4. Compétences par roster via SQL brut
+    const skillsByRosterRaw = await prisma.$queryRaw<{ raceId: number; skillName: string; count: number }[]>`
+      SELECT race_id AS "raceId", skill AS "skillName", COUNT(*)::int AS count
+      FROM (
+        SELECT t.race_id, unnest(p.acquired_skills) AS skill
+        FROM players p
+        JOIN teams t ON p.team_id = t.id
+        WHERE p.team_id IN (
+          SELECT home_team_id FROM matches WHERE competition_id = ${competitionId} AND home_team_id IS NOT NULL
+          UNION
+          SELECT away_team_id FROM matches WHERE competition_id = ${competitionId} AND away_team_id IS NOT NULL
+        )
+        AND p.acquired_skills IS NOT NULL
+      ) AS s
+      WHERE LOWER(skill) NOT LIKE 'loner%' AND TRIM(skill) != ''
+      GROUP BY race_id, skill
+      ORDER BY race_id, count DESC
+    `;
+
+    const skillsByRosterMap = new Map<number, { skillName: string; count: number }[]>();
+    skillsByRosterRaw.forEach(item => {
+      if (!skillsByRosterMap.has(item.raceId)) {
+        skillsByRosterMap.set(item.raceId, []);
+      }
+      skillsByRosterMap.get(item.raceId)!.push({
+        skillName: item.skillName,
+        count: item.count,
+      });
     });
 
-    let forfeits = 0;
-    const rosterUsage: { [raceId: number]: { raceId: number; matches: number; wins: number; draws: number; losses: number } } = {};
-    
-    for (const m of matches) {
-      if (m.isForfeit) {
-        forfeits++;
+    const skillsByRoster = Array.from(skillsByRosterMap.entries()).map(([raceId, skills]) => ({
+      raceId,
+      skills,
+    }));
+
+    // 5. Récupérer les matches de manière plate en SQL brut
+    const allMatchesRaw = await prisma.$queryRaw<{
+      id: string;
+      homeScore: number;
+      awayScore: number;
+      homeTeamId: string;
+      awayTeamId: string;
+      homeRaceId: number;
+      awayRaceId: number;
+      homeCoachId: string | null;
+      awayCoachId: string | null;
+    }[]>`
+      SELECT 
+        m.id, 
+        m.home_score AS "homeScore", 
+        m.away_score AS "awayScore", 
+        m.home_team_id AS "homeTeamId", 
+        m.away_team_id AS "awayTeamId",
+        th.race_id AS "homeRaceId",
+        ta.race_id AS "awayRaceId",
+        m.home_coach_id AS "homeCoachId",
+        m.away_coach_id AS "awayCoachId"
+      FROM matches m
+      JOIN teams th ON m.home_team_id = th.id
+      JOIN teams ta ON m.away_team_id = ta.id
+      WHERE m.competition_id = ${competitionId}
+        AND m.home_coach_id IS NOT NULL
+        AND m.away_coach_id IS NOT NULL
+    `;
+
+    // Calculer les winrates par roster
+    const winrateMap = new Map<number, { raceId: number; wins: number; draws: number; losses: number }>();
+    allMatchesRaw.forEach(m => {
+      const homeRaceId = m.homeRaceId;
+      const awayRaceId = m.awayRaceId;
+
+      if (homeRaceId !== undefined) {
+        if (!winrateMap.has(homeRaceId)) winrateMap.set(homeRaceId, { raceId: homeRaceId, wins: 0, draws: 0, losses: 0 });
+        const stats = winrateMap.get(homeRaceId)!;
+        if (m.homeScore > m.awayScore) stats.wins++;
+        else if (m.homeScore === m.awayScore) stats.draws++;
+        else stats.losses++;
       }
 
-      const homeRaceId = m.homeTeam?.raceId;
-      const awayRaceId = m.awayTeam?.raceId;
+      if (awayRaceId !== undefined) {
+        if (!winrateMap.has(awayRaceId)) winrateMap.set(awayRaceId, { raceId: awayRaceId, wins: 0, draws: 0, losses: 0 });
+        const stats = winrateMap.get(awayRaceId)!;
+        if (m.awayScore > m.homeScore) stats.wins++;
+        else if (m.awayScore === m.homeScore) stats.draws++;
+        else stats.losses++;
+      }
+    });
+    const rosterWinrates = Array.from(winrateMap.values());
 
-      if (homeRaceId) {
-        if (!rosterUsage[homeRaceId]) rosterUsage[homeRaceId] = { raceId: homeRaceId, matches: 0, wins: 0, draws: 0, losses: 0 };
-        rosterUsage[homeRaceId].matches++;
-        if (m.homeScore > m.awayScore) rosterUsage[homeRaceId].wins++;
-        else if (m.homeScore === m.awayScore) rosterUsage[homeRaceId].draws++;
-        else rosterUsage[homeRaceId].losses++;
-      }
-      if (awayRaceId) {
-        if (!rosterUsage[awayRaceId]) rosterUsage[awayRaceId] = { raceId: awayRaceId, matches: 0, wins: 0, draws: 0, losses: 0 };
-        rosterUsage[awayRaceId].matches++;
-        if (m.awayScore > m.homeScore) rosterUsage[awayRaceId].wins++;
-        else if (m.awayScore === m.homeScore) rosterUsage[awayRaceId].draws++;
-        else rosterUsage[awayRaceId].losses++;
-      }
-    }
+    const simplifiedMatches = allMatchesRaw.map(m => ({
+      id: m.id,
+      homeScore: m.homeScore,
+      awayScore: m.awayScore,
+      homeRaceId: m.homeRaceId,
+      awayRaceId: m.awayRaceId,
+      homeCoachId: m.homeCoachId,
+      awayCoachId: m.awayCoachId,
+      homeTeamId: m.homeTeamId,
+      awayTeamId: m.awayTeamId,
+    }));
 
     return {
       competition: {
@@ -341,30 +420,15 @@ export class StatsService {
         leagueName: comp.league?.name || 'Inconnue',
       },
       summary: {
-        totalMatches: matches.length,
+        totalMatches,
         forfeits,
+        coachesCount,
       },
-      performance: (() => {
-        const sums = playerStatsSum._sum || {};
-        return {
-          touchdowns: sums.touchdowns || 0,
-          passes: sums.passes || 0,
-          catches: sums.catches || 0,
-          interceptions: sums.interceptions || 0,
-          yardsRunning: sums.yardsRunning || 0,
-          yardsPassing: sums.yardsPassing || 0,
-          blocksSucceeded: sums.blocksSucceeded || 0,
-          blocksSustained: sums.blocksSustained || 0,
-          armourBreaks: sums.armourBreaks || 0,
-          tackles: sums.tackles || 0,
-          casualtiesInflicted: sums.casualtiesInflicted || 0,
-          koInflicted: sums.koInflicted || 0,
-          injuriesInflicted: sums.injuriesInflicted || 0,
-          deadInflicted: sums.deadInflicted || 0,
-        };
-      })(),
-      rosterUsage: Object.values(rosterUsage).sort((a, b) => b.matches - a.matches),
-      matches,
+      rostersPlayed,
+      rosterWinrates,
+      allMatches: simplifiedMatches,
+      popularSkills,
+      skillsByRoster,
     };
   }
 

@@ -100,8 +100,8 @@ export class CompetitionsService {
           ? {
               orderBy: { round: 'desc' },
               include: {
-                homeTeam: { select: { name: true, logo: true } },
-                awayTeam: { select: { name: true, logo: true } },
+                homeTeam: { select: { name: true, logo: true, raceId: true } },
+                awayTeam: { select: { name: true, logo: true, raceId: true } },
                 homeCoach: { select: { name: true } },
                 awayCoach: { select: { name: true } },
               },

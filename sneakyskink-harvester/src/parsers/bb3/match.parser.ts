@@ -50,6 +50,19 @@ export interface RawMatchPlayerStats {
   sustainedexpulsions?: number;
 
   touchdowns?: number;
+  touchdown_success?: number;
+  touchdown?: number;
+  pass_success?: number;
+  catch_success?: number;
+  interception_success?: number;
+  pushout_inflicted?: number;
+  pushout_success?: number;
+  death_inflicted?: number;
+  dead_success?: number;
+  killed?: number;
+  dead?: number;
+  death?: number;
+  death_sustained?: number;
 }
 
 export interface RawMatchPlayer {
@@ -150,8 +163,22 @@ export class MatchParser {
     const homeScore = homeTeamRaw.score ?? 0;
     const awayScore = awayTeamRaw.score ?? 0;
 
-    const homeStats = homeTeamRaw.statistics || {};
-    const awayStats = awayTeamRaw.statistics || {};
+    const parseTeamStats = (teamRaw: any) => {
+      return {
+        inflictedko: teamRaw.inflictedko ?? 0,
+        sustainedko: teamRaw.sustainedko ?? 0,
+        inflictedcasualties: teamRaw.inflictedcasualties ?? 0,
+        sustainedcasualties: teamRaw.sustainedcasualties ?? 0,
+        inflicteddead: teamRaw.inflicteddead ?? 0,
+        sustaineddead: teamRaw.sustaineddead ?? 0,
+        inflictedpushouts: teamRaw.inflictedpushouts ?? 0,
+        inflictedpasses: teamRaw.inflictedpasses ?? 0,
+        sustainedexpulsions: teamRaw.sustainedexpulsions ?? 0,
+      };
+    };
+
+    const homeStats = parseTeamStats(homeTeamRaw);
+    const awayStats = parseTeamStats(awayTeamRaw);
 
     // Détection du forfait : un match complet a 1 MVP par équipe.
     // Si une équipe a 0 MVP, c'est un forfait.
@@ -269,10 +296,10 @@ export class MatchParser {
       xpGained: playerRaw.xp_gain || 0,
       
       // Stats offensives
-      touchdowns: s.touchdowns || 0,
-      passes: s.passes || 0,
-      catches: s.catches || 0,
-      interceptions: s.interceptions || 0,
+      touchdowns: s.touchdown_success || s.touchdown || s.touchdowns || 0,
+      passes: s.pass_success || s.passes || 0,
+      catches: s.catch_success || s.catches || 0,
+      interceptions: s.interception_success || s.interceptions || 0,
       yardsRunning: s.yards_running || s.yards_rushing || 0,
       yardsPassing: s.yards_passing || 0,
 
@@ -281,19 +308,19 @@ export class MatchParser {
       blocksSustained: s.blocks_sustained || 0,
       armourBreaks: s.armour_breaks || 0,
       tackles: s.tackles || 0,
-      pushouts: s.pushouts_inflicted || s.pushouts || 0,
+      pushouts: s.pushout_inflicted || s.pushouts_inflicted || s.pushouts || s.pushout_success || 0,
 
       // Dégâts infligés
       casualtiesInflicted: s.casualties_inflicted || s.inflictedcasualties || 0,
       koInflicted: s.ko_inflicted || s.inflictedko || 0,
       injuriesInflicted: s.injuries_inflicted || s.inflictedinjuries || 0,
-      deadInflicted: s.dead_inflicted || s.deadinflicted || 0,
+      deadInflicted: s.dead_inflicted || s.deadinflicted || s.death_inflicted || s.dead_success || s.killed || s.dead || s.death || 0,
 
       // Dégâts subis
       casualtiesSustained: s.casualties_sustained || s.sustainedcasualties || 0,
       koSustained: s.ko_sustained || s.sustainedko || 0,
       injuriesSustained: s.injuries_sustained || s.sustainedinjuries || 0,
-      deadSustained: s.dead_sustained || s.sustaineddead || 0,
+      deadSustained: s.dead_sustained || s.sustaineddead || s.death_sustained || s.dead_sustained || 0,
       sustainedExpulsions: s.expulsions_sustained || s.sustained_expulsions || s.expulsions || s.sustainedexpulsions || 0,
 
       // Blessures de ce match
