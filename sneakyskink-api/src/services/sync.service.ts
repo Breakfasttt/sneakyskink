@@ -212,6 +212,18 @@ export class SyncService {
   }
 
   /**
+   * Force un diagnostic immédiat et une remise en route du Harvester si l'API répond.
+   */
+  static async forceHealthCheck() {
+    logger.info('⚡ [Sync Service] Demande de vérification de santé immédiate de l\'API Cyanide');
+    await redisConnection.publish('sneakyskink:cyanide_api:commands', 'force-check');
+    return {
+      success: true,
+      message: 'Demande de vérification de santé envoyée au Harvester.',
+    };
+  }
+
+  /**
    * Modifie la priorité d'une ligue dans la base de données locale.
    */
   static async setLeaguePriority(leagueId: string, isPriority: boolean) {

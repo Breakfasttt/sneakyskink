@@ -215,6 +215,14 @@ export class SneakySkinkApiClient {
   }
 
   /**
+   * ⚡ Force une vérification immédiate de la santé de l'API Cyanide et tente une reprise du harvester
+   */
+  public async forceHealthCheck(): Promise<{ success: boolean; message: string }> {
+    const res = await this.client.post('/sync/queue/health-check');
+    return res.data;
+  }
+
+  /**
    * ⚡ Déclenche une synchronisation asynchrone pour un coach spécifique
    */
   public async syncCoach(id: string): Promise<{ success: boolean; jobId: string }> {

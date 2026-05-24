@@ -86,6 +86,15 @@ export class SyncController {
     }
   }
 
+  static async forceHealthCheck(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await SyncService.forceHealthCheck();
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async setLeaguePriority(req: Request, res: Response, next: NextFunction) {
     try {
       const id = req.params.id as string;

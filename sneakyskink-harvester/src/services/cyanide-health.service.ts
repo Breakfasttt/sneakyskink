@@ -12,6 +12,7 @@ import { ConsoleDashboard } from '../utils/dashboard.js';
 export class CyanideHealthService {
   private worker: any = null;
   private checkInterval: NodeJS.Timeout | null = null;
+  private subConnection: any = null;
   private static readonly CHECK_INTERVAL_MS = 60 * 60 * 1000; // 1 heure (60 minutes)
   private static readonly REDIS_KEY = 'sneakyskink:cyanide_api:available';
   private static readonly REDIS_SINCE_KEY = 'sneakyskink:cyanide_api:unavailable_since';
@@ -35,6 +36,11 @@ export class CyanideHealthService {
       this.handleApiFailure(msg).catch(err => {
         logger.error(`❌ [CyanideHealth] Échec du traitement de la panne API : ${err.message}`);
       });
+    });
+
+    // Écouter les commandes d'administration Redis
+    this.listenToCommands().catch(err => {
+      logger.error(`❌ [CyanideHealth] Échec abonnement commandes: ${err.message}`);
     });
 
     // Lire le statut en cache
@@ -82,7 +88,7 @@ export class CyanideHealthService {
     ConsoleDashboard.setApiStatus(status);
 
     // 2. Mettre en pause le worker BullMQ
-    if (this.worker && this.worker.running) {
+    if (this.worker) {
       try {
         await this.worker.pause();
         logger.info('⚙️ [Worker] Worker mis en pause avec succès.');
@@ -116,7 +122,7 @@ export class CyanideHealthService {
     }
 
     // 2. Reprendre le worker BullMQ
-    if (this.worker && this.worker.running) {
+    if (this.worker) {
       try {
         await this.worker.resume();
         logger.info('⚙️ [Worker] Worker réactivé avec succès.');
@@ -196,12 +202,80 @@ export class CyanideHealthService {
   }
 
   /**
+   * Force un diagnostic immédiat et une éventuelle remise en route du Harvester.
+   */
+  public async forceHealthCheck(): Promise<'OK' | 'QUOTA_EXCEEDED' | 'DOWN'> {
+    logger.info('⚡ [CyanideHealth] Diagnostic forcé de la santé de l\'API...');
+    
+    ConsoleDashboard.setActivity('Diagnostic de santé forcé...');
+
+    const isCurrentlyAvailable = await this.isApiAvailable();
+    const status = await bb3ApiClient.checkApiAvailability();
+
+    if (status === 'OK') {
+      if (!isCurrentlyAvailable) {
+        await this.resumeHarvester();
+      }
+      logger.info('✅ [CyanideHealth] Diagnostic forcé : API en ligne.');
+    } else {
+      if (isCurrentlyAvailable) {
+        await this.pauseHarvester('Diagnostic forcé en échec.', status);
+      }
+      logger.warn(`❌ [CyanideHealth] Diagnostic forcé : API indisponible (${status}).`);
+    }
+
+    // Réinitialiser le timer d'une heure
+    this.startPeriodicCheck();
+
+    return status;
+  }
+
+  /**
+   * S'abonne aux commandes d'administration Redis Pub/Sub.
+   */
+  private async listenToCommands(): Promise<void> {
+    const { env } = await import('../config/environment.js');
+    const { Redis } = await import('ioredis');
+
+    try {
+      this.subConnection = new Redis({
+        host: env.redis.host,
+        port: env.redis.port,
+        password: env.redis.password,
+      });
+
+      this.subConnection.on('error', (err: any) => {
+        logger.error(`❌ [CyanideHealth] Erreur de connexion Redis Sub: ${err.message}`);
+      });
+
+      await this.subConnection.subscribe('sneakyskink:cyanide_api:commands');
+      logger.info('🔑 [CyanideHealth] Abonné aux commandes Redis sur "sneakyskink:cyanide_api:commands"');
+
+      this.subConnection.on('message', async (channel: string, message: string) => {
+        if (channel === 'sneakyskink:cyanide_api:commands' && message === 'force-check') {
+          try {
+            await this.forceHealthCheck();
+          } catch (err: any) {
+            logger.error(`❌ [CyanideHealth] Erreur lors du check forcé : ${err.message}`);
+          }
+        }
+      });
+    } catch (err: any) {
+      logger.error(`❌ [CyanideHealth] Échec d'initialisation de l'abonnement : ${err.message}`);
+    }
+  }
+
+  /**
    * Nettoie les ressources (principalement pour les tests ou shutdowns).
    */
   public destroy(): void {
     if (this.checkInterval) {
       clearInterval(this.checkInterval);
       this.checkInterval = null;
+    }
+    if (this.subConnection) {
+      this.subConnection.quit().catch(() => {});
+      this.subConnection = null;
     }
   }
 }

@@ -19,6 +19,7 @@ router.post('/competition/:id', SyncController.syncCompetition);
 // Routes protégées : actions d'administration de la file d'attente
 router.post('/league/:id/priority', requireAdminKey, SyncController.setLeaguePriority);
 router.post('/queue/clean', requireAdminKey, SyncController.cleanQueue);
+router.post('/queue/health-check', requireAdminKey, SyncController.forceHealthCheck);
 router.post('/pacing/bypass', requireAdminKey, SyncController.bypassPacing);
 router.post('/pacing/restore', requireAdminKey, SyncController.restorePacing);
 

@@ -295,6 +295,23 @@ export default function App() {
     }
   };
 
+  const [forcingHealthCheck, setForcingHealthCheck] = useState<boolean>(false);
+
+  const handleForceHealthCheck = async () => {
+    setForcingHealthCheck(true);
+    try {
+      const client = getApiClient();
+      const res = await client.forceHealthCheck();
+      showToast(res.message || "Vérification de santé demandée avec succès.", "success");
+      fetchQueue();
+    } catch (err: any) {
+      console.error(err);
+      showToast(`Échec : ${err.message}`, "error");
+    } finally {
+      setForcingHealthCheck(false);
+    }
+  };
+
   // Run database maintenance
   const handleRunMaintenance = async () => {
     setMaintenanceRunning(true);
@@ -613,16 +630,28 @@ export default function App() {
                           </Typography>
                         </Box>
 
-                        <Button
-                          variant="outlined"
-                          color="secondary"
-                          startIcon={<CleaningServices />}
-                          onClick={() => setOpenCleanDialog(true)}
-                          disabled={queueCleaning}
-                          fullWidth
-                        >
-                          Purger l'historique des jobs
-                        </Button>
+                        <Box sx={{ display: 'flex', gap: 2 }}>
+                          <Button
+                            variant="outlined"
+                            color="primary"
+                            startIcon={forcingHealthCheck ? <CircularProgress size={20} color="inherit" /> : <CloudSync />}
+                            onClick={handleForceHealthCheck}
+                            disabled={forcingHealthCheck}
+                            sx={{ flex: 1 }}
+                          >
+                            Tenter remise en route
+                          </Button>
+                          <Button
+                            variant="outlined"
+                            color="secondary"
+                            startIcon={<CleaningServices />}
+                            onClick={() => setOpenCleanDialog(true)}
+                            disabled={queueCleaning}
+                            sx={{ flex: 1 }}
+                          >
+                            Purger l'historique
+                          </Button>
+                        </Box>
                       </Stack>
                     ) : (
                       <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
