@@ -20,15 +20,13 @@ export class CyanideFunctionalError extends Error {
 
 export class BB3ApiClient {
   private axiosInstance: AxiosInstance;
-  // REFACTOR SUGGESTION: Stocker lastRequestTime par clé d'API (Map<string, number>) afin de ne pas globaliser le pacing dynamique d'une clé spécifique sur l'ensemble de la rotation.
-  private lastRequestTime = 0;
   /** Quand actif, le pacing est ignoré pour toutes les requêtes (mode maintenance) */
   private maintenanceMode = false;
   private lastPacingBypassCheck = 0;
   private cachedPacingBypass = false;
+  private failureHandler: ((errorMsg: string) => void) | null = null;
   private static readonly BYPASS_CACHE_TTL = 5000; // 5 secondes
   private static readonly BASE_URL = 'https://web.cyanide-studio.com/ws/';
-  private static readonly MAX_RETRIES = 3;
   private static readonly TIMEOUT_MS = 60000; // 60 secondes (les serveurs Cyanide peuvent être lents)
 
   constructor() {
@@ -43,6 +41,13 @@ export class BB3ApiClient {
   }
 
   /**
+   * Enregistre un gestionnaire pour être notifié des pannes globales de l'API.
+   */
+  public setFailureHandler(handler: (errorMsg: string) => void): void {
+    this.failureHandler = handler;
+  }
+
+  /**
    * Active ou désactive le mode maintenance.
    * Quand actif, le Rate Pacing est ignoré sur TOUS les appels pour maximiser la vitesse
    * tout en respectant les quotas (getAvailableKey bloque si la limite est atteinte).
@@ -50,6 +55,40 @@ export class BB3ApiClient {
   public setMaintenanceMode(enabled: boolean): void {
     this.maintenanceMode = enabled;
     logger.info(`⚡ [BB3ApiClient] Mode maintenance : ${enabled ? 'ACTIVÉ (pacing désactivé)' : 'DÉSACTIVÉ (pacing normal)'}`);
+  }
+
+  /**
+   * Applique une attente de régulation (Rate Pacing) après qu'une requête a été envoyée avec succès.
+   */
+  private async applyPostRequestPacing(activeKey: string): Promise<void> {
+    let isBypassed = this.maintenanceMode;
+    if (!isBypassed) {
+      const nowBypass = Date.now();
+      if (nowBypass - this.lastPacingBypassCheck > BB3ApiClient.BYPASS_CACHE_TTL) {
+        try {
+          const bypass = await redisConnection.get('sneakyskink:bypass_pacing');
+          this.cachedPacingBypass = !!bypass;
+          this.lastPacingBypassCheck = nowBypass;
+        } catch (err: any) {
+          logger.warn(`⚠️ [BB3ApiClient] Erreur de lecture du bypass de pacing dans Redis: ${err.message}`);
+        }
+      }
+      isBypassed = this.cachedPacingBypass;
+    }
+
+    const pacingDelay = apiKeyManager.getDynamicPacingDelay(activeKey, isBypassed);
+
+    if (pacingDelay > 0) {
+      logger.debug(
+        `⏳ [BB3ApiClient] Rate pacing : attente de ${pacingDelay}ms après la requête (Bypass: ${isBypassed})...`
+      );
+      if (!isBypassed) {
+        ConsoleDashboard.setPacing(pacingDelay, pacingDelay);
+      } else {
+        ConsoleDashboard.setPacing(-1, -1);
+      }
+      await new Promise((resolve) => setTimeout(resolve, pacingDelay));
+    }
   }
 
   /**
@@ -104,51 +143,6 @@ export class BB3ApiClient {
           `🚀 [BB3ApiClient] Tentative ${attempts}/${maxAttempts} sur [${method}] avec la clé [${maskedKey}]`
         );
 
-        // 2.5. Régulation du rythme (Rate Pacing) — ignoré en mode maintenance ou si bypass temporaire dans Redis
-        let isBypassed = this.maintenanceMode;
-        if (!isBypassed) {
-          const nowBypass = Date.now();
-          if (nowBypass - this.lastPacingBypassCheck > BB3ApiClient.BYPASS_CACHE_TTL) {
-            try {
-              const bypass = await redisConnection.get('sneakyskink:bypass_pacing');
-              this.cachedPacingBypass = !!bypass;
-              this.lastPacingBypassCheck = nowBypass;
-            } catch (err: any) {
-              logger.warn(`⚠️ [BB3ApiClient] Erreur de lecture du bypass de pacing dans Redis: ${err.message}`);
-            }
-          }
-          isBypassed = this.cachedPacingBypass;
-        }
-        if (isBypassed) {
-          ConsoleDashboard.setPacing(-1, -1);
-        } else {
-          ConsoleDashboard.setPacing(0, 0);
-        }
-
-        // Délai de pacing : 50ms en cas de bypass, sinon calcul dynamique par clé
-        const pacingDelay = isBypassed ? 50 : apiKeyManager.getDynamicPacingDelay(activeKey);
-        const now = Date.now();
-        const lastRequestTime = isBypassed ? this.lastRequestTime : apiKeyManager.getLastRequestTime(activeKey);
-        const timeSinceLast = now - lastRequestTime;
-        
-        if (pacingDelay > 0 && timeSinceLast < pacingDelay) {
-          const waitTime = pacingDelay - timeSinceLast;
-          logger.debug(
-            `⏳ [BB3ApiClient] Rate pacing : attente de ${waitTime}ms avant l'appel suivant pour réguler le trafic...`
-          );
-          if (!isBypassed) {
-            ConsoleDashboard.setPacing(waitTime, waitTime);
-          }
-          await new Promise((resolve) => setTimeout(resolve, waitTime));
-        }
-        
-        const endNow = Date.now();
-        if (isBypassed) {
-          this.lastRequestTime = endNow;
-        } else {
-          apiKeyManager.setLastRequestTime(activeKey, endNow);
-        }
-
         // 3. Exécuter l'appel
         // Cyanide utilise le format d'URL : /ws/bb3/{method}/ ou /ws/cya/{method}/
         // La plupart des services BB3 sont sous /bb3/{method}/
@@ -180,6 +174,10 @@ export class BB3ApiClient {
           }
           // C'est une erreur fonctionnelle (ex: ressource non trouvée). La clé a fonctionné.
           apiKeyManager.reportSuccess(activeKey);
+          
+          // Appliquer le pacing d'attente dynamique APRÈS l'appel réussi
+          await this.applyPostRequestPacing(activeKey);
+
           throw new CyanideFunctionalError(`Cyanide API Functional Error: ${data.error}`);
         }
 
@@ -199,6 +197,10 @@ export class BB3ApiClient {
         // 5. Signaler le succès au KeyManager
         ActivityTracker.touch();
         apiKeyManager.reportSuccess(activeKey);
+        
+        // Appliquer le pacing d'attente dynamique APRÈS l'appel réussi
+        await this.applyPostRequestPacing(activeKey);
+
         return data as T;
 
       } catch (error: any) {
@@ -215,14 +217,11 @@ export class BB3ApiClient {
         }
 
         // 6. Analyser l'erreur pour appliquer la bonne stratégie de Cooldown
-        let isRateLimit = false;
-
         if (axios.isAxiosError(error)) {
           const axiosError = error as AxiosError;
           const status = axiosError.response?.status;
 
           if (status === 429) {
-            isRateLimit = true;
             // Lire l'en-tête Retry-After si présent
             const retryAfterHeader = axiosError.response?.headers['retry-after'];
             const retryAfterSeconds = retryAfterHeader ? parseInt(retryAfterHeader, 10) : undefined;
@@ -233,20 +232,25 @@ export class BB3ApiClient {
           }
         } else {
           // Erreur applicative ou quota retourné false (déjà géré mais on s'assure qu'un cooldown est actif)
-          // Si le message d'erreur contient 'false', on a déjà appelé reportRateLimit, sinon on appelle reportError
           if (!error.message?.includes('retourné false')) {
             apiKeyManager.reportError(activeKey);
           }
         }
 
-        // Si c'est notre dernière tentative, on propage l'erreur
+        // Si c'est notre dernière tentative, on propage l'erreur et on déclenche le failure handler
         if (attempts >= maxAttempts) {
           logger.error(
             `❌ [BB3ApiClient] Échec définitif après ${maxAttempts} tentatives sur [${method}].`
           );
-          throw new Error(
-            `Échec d'appel de la méthode [${method}] après ${maxAttempts} tentatives. Dernière erreur: ${error.message}`
-          );
+          const finalErrorMsg = `Échec d'appel de la méthode [${method}] après ${maxAttempts} tentatives. Dernière erreur: ${error.message}`;
+
+          if (this.failureHandler) {
+            Promise.resolve().then(() => this.failureHandler!(finalErrorMsg)).catch(err => {
+              logger.error(`❌ [BB3ApiClient] Erreur dans le failureHandler: ${err.message}`);
+            });
+          }
+
+          throw new Error(finalErrorMsg);
         }
 
         // 7. Délai de temporisation exponentiel avant la prochaine tentative (avec une autre clé)

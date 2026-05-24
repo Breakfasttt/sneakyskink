@@ -49,6 +49,7 @@ export class LeagueParser {
       logo,
       gamerCount,
       active: true,
+      rawResponse: raw as any,
     };
 
     return {
@@ -58,6 +59,7 @@ export class LeagueParser {
         name,
         logo,
         gamerCount,
+        rawResponse: raw as any,
       },
     };
   }
@@ -97,6 +99,7 @@ export class LeagueParser {
       league: {
         connect: { id: leagueId },
       },
+      rawResponse: raw as any,
     };
 
     const updateData: Prisma.CompetitionUpdateInput = {
@@ -109,6 +112,7 @@ export class LeagueParser {
       timeBonusDuration,
       teamsMax,
       teamsCount,
+      rawResponse: raw as any,
     };
 
     return {

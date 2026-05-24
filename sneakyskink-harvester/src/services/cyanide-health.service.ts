@@ -30,6 +30,13 @@ export class CyanideHealthService {
   public async initialize(): Promise<void> {
     logger.info('🔌 [CyanideHealth] Initialisation du service de surveillance...');
     
+    // Enregistrer le gestionnaire de panne dans le client API
+    bb3ApiClient.setFailureHandler((msg) => {
+      this.handleApiFailure(msg).catch(err => {
+        logger.error(`❌ [CyanideHealth] Échec du traitement de la panne API : ${err.message}`);
+      });
+    });
+
     // Lire le statut en cache
     const availableVal = await redisConnection.get(CyanideHealthService.REDIS_KEY);
     const isCurrentlyAvailable = availableVal === 'OK' || availableVal === 'true' || availableVal === null || availableVal === undefined;

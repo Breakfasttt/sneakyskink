@@ -154,21 +154,24 @@ export class ApiKeyManager {
    * Il assure un lissage fluide pour ne pas griller les quotas horaires et journaliers
    * restant avant leur réinitialisation respective.
    */
-  public getDynamicPacingDelay(key: string): number {
+  public getDynamicPacingDelay(key: string, ignoreDailyLimit = false): number {
     const status = this.keysStatus.get(key);
     if (!status) return 2500;
 
     const now = Date.now();
     this.checkAndResetQuotas(status, now);
 
-    // 1. Calcul du délai basé sur le quota restant de la journée
-    const remainingDayMs = status.dailyResetTime - now;
-    const remainingDayReqs = ApiKeyManager.DAILY_LIMIT - status.dailyRequests;
+    let dailyDelay = 0;
+    if (!ignoreDailyLimit) {
+      // 1. Calcul du délai basé sur le quota restant de la journée
+      const remainingDayMs = status.dailyResetTime - now;
+      const remainingDayReqs = ApiKeyManager.DAILY_LIMIT - status.dailyRequests;
 
-    if (remainingDayReqs <= 0 || remainingDayMs <= 0) {
-      return ApiKeyManager.DAY_MS; // Quota journalier épuisé
+      if (remainingDayReqs <= 0 || remainingDayMs <= 0) {
+        return ApiKeyManager.DAY_MS; // Quota journalier épuisé
+      }
+      dailyDelay = remainingDayMs / remainingDayReqs;
     }
-    const dailyDelay = remainingDayMs / remainingDayReqs;
 
     // 2. Calcul du délai basé sur le quota restant de l'heure
     const remainingHourMs = status.hourlyResetTime - now;
@@ -184,7 +187,10 @@ export class ApiKeyManager {
     // Le pacing dynamique optimal est le plus restrictif des deux calculs
     const dynamicDelay = Math.max(dailyDelay, hourlyDelay);
 
-    return Math.ceil(dynamicDelay);
+    // Si on ignore la limite journalière (bypass), on garantit un minimum de 50ms de délai de sécurité
+    const minDelay = ignoreDailyLimit ? 50 : 0;
+
+    return Math.max(minDelay, Math.ceil(dynamicDelay));
   }
 
   /**

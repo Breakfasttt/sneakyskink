@@ -240,6 +240,7 @@ export class MatchParser {
       awayStats,
       isForfeit,
       isPenalties,
+      rawResponse: root as any,
     };
 
     if (forfeitTeamId) {
@@ -266,6 +267,7 @@ export class MatchParser {
       isForfeit,
       isPenalties,
       forfeitTeam: forfeitTeamId ? { connect: { id: forfeitTeamId } } : { disconnect: true },
+      rawResponse: root as any,
     };
 
     return {

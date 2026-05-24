@@ -73,6 +73,7 @@ export class TeamParser {
       country,
       twitch,
       youtube,
+      rawResponse: raw as any,
     };
 
     const updateData: Prisma.CoachUpdateInput = {
@@ -81,6 +82,7 @@ export class TeamParser {
       country,
       twitch,
       youtube,
+      rawResponse: raw as any,
     };
 
     return {
@@ -127,6 +129,7 @@ export class TeamParser {
       coach: {
         connect: { id: coachId },
       },
+      rawResponse: raw as any,
     };
 
     const updateData: Prisma.TeamUpdateInput = {
@@ -140,6 +143,7 @@ export class TeamParser {
       popularity,
       rerolls,
       apothecary,
+      rawResponse: raw as any,
     };
 
     return {

@@ -20,6 +20,7 @@ model League {
   isPriority   Boolean       @default(false) @map("is_priority")
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt @map("last_update")
+  rawResponse  Json?         @map("raw_response")
   competitions Competition[]
   matches      Match[]
 
@@ -43,6 +44,7 @@ model Competition {
   teamsCount         Int?      @map("teams_count")
   leagueId           String    @map("league_id")
   league             League    @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  rawResponse        Json?     @map("raw_response")
   matches            Match[]
   historySynced      Boolean   @default(false) @map("history_synced")
   historyLastDate    DateTime? @map("history_last_date")
@@ -68,6 +70,7 @@ model Coach {
   country      String?
   twitch       String?
   youtube      String?
+  rawResponse  Json?    @map("raw_response")
   teams        Team[]
   homeMatches  Match[]  @relation("HomeCoach")
   awayMatches  Match[]  @relation("AwayCoach")
@@ -99,6 +102,7 @@ model Team {
   losses            Int      @default(0)
   score             Int      @default(0)
 
+  rawResponse       Json?    @map("raw_response")
   coachId           String   @map("coach_id")
   coach             Coach    @relation(fields: [coachId], references: [id])
   players           Player[]
@@ -189,6 +193,7 @@ model Match {
   forfeitTeam     Team?              @relation("ForfeitTeam", fields: [forfeitTeamId], references: [id])
   isPenalties     Boolean            @default(false) @map("is_penalties")
 
+  rawResponse     Json?              @map("raw_response")
   playerStats     PlayerMatchStats[]
   createdAt       DateTime           @default(now()) @map("created_at")
   updatedAt       DateTime           @updatedAt @map("last_update")
