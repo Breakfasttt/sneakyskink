@@ -1,4 +1,5 @@
 import { prisma } from '../lib/prisma.js';
+import { Prisma } from 'sneakyskink-bdd';
 import { ApiError } from '../middlewares/error.middleware.js';
 
 export class CompetitionsService {
@@ -61,6 +62,26 @@ export class CompetitionsService {
       }),
     ]);
 
+    const compIds = competitions.map(c => c.id);
+    const teamsCountMap = new Map<string, number>();
+
+    if (compIds.length > 0) {
+      const realTeamsCountRaw = await prisma.$queryRaw<{ competitionId: string; teamCount: number }[]>`
+        SELECT 
+          m.competition_id AS "competitionId", 
+          COUNT(DISTINCT team_id)::int AS "teamCount"
+        FROM (
+          SELECT competition_id, home_team_id AS team_id FROM matches WHERE competition_id IN (${Prisma.join(compIds)}) AND home_team_id IS NOT NULL
+          UNION
+          SELECT competition_id, away_team_id AS team_id FROM matches WHERE competition_id IN (${Prisma.join(compIds)}) AND away_team_id IS NOT NULL
+        ) AS m
+        GROUP BY m.competition_id
+      `;
+      realTeamsCountRaw.forEach(item => {
+        teamsCountMap.set(item.competitionId, item.teamCount);
+      });
+    }
+
     const data = competitions.map(comp => ({
       id: comp.id,
       name: comp.name,
@@ -71,7 +92,7 @@ export class CompetitionsService {
       turnDuration: comp.turnDuration,
       timeBonusDuration: comp.timeBonusDuration,
       teamsMax: comp.teamsMax,
-      teamsCount: comp.teamsCount,
+      teamsCount: comp.teamsCount || teamsCountMap.get(comp.id) || 0,
       leagueId: comp.leagueId,
       leagueName: comp.league.name,
       matchesCount: comp._count.matches,
@@ -119,6 +140,19 @@ export class CompetitionsService {
       throw new ApiError(404, `La compétition avec l'ID ${id} n'existe pas.`);
     }
 
+    let realTeamsCount = competition.teamsCount;
+    if (!realTeamsCount) {
+      const countRes = await prisma.$queryRaw<{ teamCount: number }[]>`
+        SELECT COUNT(DISTINCT team_id)::int AS "teamCount"
+        FROM (
+          SELECT home_team_id AS team_id FROM matches WHERE competition_id = ${id} AND home_team_id IS NOT NULL
+          UNION
+          SELECT away_team_id AS team_id FROM matches WHERE competition_id = ${id} AND away_team_id IS NOT NULL
+        ) AS m
+      `;
+      realTeamsCount = countRes[0]?.teamCount || 0;
+    }
+
     return {
       id: competition.id,
       name: competition.name,
@@ -129,7 +163,7 @@ export class CompetitionsService {
       turnDuration: competition.turnDuration,
       timeBonusDuration: competition.timeBonusDuration,
       teamsMax: competition.teamsMax,
-      teamsCount: competition.teamsCount,
+      teamsCount: realTeamsCount,
       leagueId: competition.leagueId,
       leagueName: competition.league.name,
       matchesCount: competition._count.matches,

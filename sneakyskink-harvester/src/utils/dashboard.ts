@@ -291,6 +291,14 @@ export class ConsoleDashboard {
     out += `Redis: ${formatStatus(this.statuses.redis)}  |  `;
     out += `Scheduler: ${formatStatus(this.statuses.scheduler)}  |  `;
     out += `Worker: ${formatStatus(this.statuses.worker)}\n`;
+    
+    const activeKeyStatus = this.keysStatus.find(k => k.isActive);
+    let resetStr = 'Non défini (En attente)';
+    if (activeKeyStatus && activeKeyStatus.dailyResetTime > 0) {
+      const date = new Date(activeKeyStatus.dailyResetTime);
+      resetStr = `${date.toLocaleDateString('fr-FR')} ${date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+    }
+    out += `                    Reset Quota Actif : \x1B[35m${resetStr}\x1B[0m\n`;
     out += separator;
 
     // 3. Quotas des clés API

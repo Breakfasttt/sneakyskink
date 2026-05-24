@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -38,7 +38,7 @@ const Competitions: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [statusFilter, setStatusFilter] = useState('InProgress');
   const [formatFilter, setFormatFilter] = useState('ALL');
   const [syncing, setSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
@@ -89,7 +89,7 @@ const Competitions: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    fetchCompetitions('', false, 'name', 'ALL', 'ALL', 0);
+    fetchCompetitions('', false, 'name', 'ALL', 'InProgress', 0);
   }, [fetchCompetitions]);
 
   const handleSearchChange = (val: string) => {
@@ -143,9 +143,11 @@ const Competitions: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'InProgress': return '#3B82F6';
-      case 'Played':
-      case 'Validated': return '#00E676';
+      case 'Finished': return '#00E676';
       case 'Scheduled': return '#F59E0B';
+      case 'Registration': return '#A855F7';
+      case 'Played':
+      case 'Validated': return '#10B981';
       default: return '#64748B';
     }
   };
@@ -153,10 +155,22 @@ const Competitions: React.FC = () => {
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'InProgress': return 'En cours';
+      case 'Finished': return 'Terminée';
+      case 'Scheduled': return 'Planifiée';
+      case 'Registration': return 'Inscriptions';
       case 'Played': return 'Jouée';
       case 'Validated': return 'Validée';
-      case 'Scheduled': return 'Planifiée';
       default: return status;
+    }
+  };
+
+  const getFormatLabel = (format: string) => {
+    switch (format) {
+      case 'RoundRobin': return 'Championnat';
+      case 'Knockout': return 'Élimination directe';
+      case 'Wissen': return 'Ronde suisse';
+      case 'Ladder': return 'Échelle';
+      default: return format;
     }
   };
 
@@ -216,7 +230,6 @@ const Competitions: React.FC = () => {
           { value: 'name', label: 'Nom' },
           { value: 'league', label: 'Ligue' },
           { value: 'status', label: 'Statut' },
-          { value: 'teams', label: 'Équipes' },
         ]}
         extraControls={
           <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
@@ -237,9 +250,9 @@ const Competitions: React.FC = () => {
               >
                 <MenuItem value="ALL" sx={{ fontSize: '0.8rem' }}>Tous les statuts</MenuItem>
                 <MenuItem value="InProgress" sx={{ fontSize: '0.8rem' }}>En cours</MenuItem>
+                <MenuItem value="Registration" sx={{ fontSize: '0.8rem' }}>Inscriptions</MenuItem>
                 <MenuItem value="Scheduled" sx={{ fontSize: '0.8rem' }}>Planifiée</MenuItem>
-                <MenuItem value="Validated" sx={{ fontSize: '0.8rem' }}>Validée</MenuItem>
-                <MenuItem value="Played" sx={{ fontSize: '0.8rem' }}>Jouée</MenuItem>
+                <MenuItem value="Finished" sx={{ fontSize: '0.8rem' }}>Terminée</MenuItem>
               </Select>
             </FormControl>
 
@@ -343,7 +356,6 @@ const Competitions: React.FC = () => {
                   <TableCell sx={{ color: '#94A3B8', fontWeight: 700, borderBottom: 'none', py: 2 }}>Ligue</TableCell>
                   <TableCell align="center" sx={{ color: '#94A3B8', fontWeight: 700, borderBottom: 'none', py: 2 }}>Format</TableCell>
                   <TableCell align="center" sx={{ color: '#94A3B8', fontWeight: 700, borderBottom: 'none', py: 2 }}>Statut</TableCell>
-                  <TableCell align="right" sx={{ color: '#94A3B8', fontWeight: 700, borderBottom: 'none', py: 2 }}>Équipes</TableCell>
                   <TableCell align="right" sx={{ color: '#94A3B8', fontWeight: 700, borderBottom: 'none', py: 2, width: 80, pr: 4 }}></TableCell>
                 </TableRow>
               </TableHead>
@@ -395,15 +407,7 @@ const Competitions: React.FC = () => {
                       </TableCell>
                       <TableCell align="center" sx={{ borderBottom: '1px solid rgba(148,163,184,0.06)', py: 2 }}>
                         <Typography variant="body2" sx={{ color: '#94A3B8', fontWeight: 500 }}>
-                          {comp.format === 'RoundRobin'
-                            ? 'Championnat'
-                            : comp.format === 'Knockout'
-                            ? 'Élimination directe'
-                            : comp.format === 'Wissen'
-                            ? 'Ronde suisse'
-                            : comp.format === 'Ladder'
-                            ? 'Échelle'
-                            : comp.format}
+                          {getFormatLabel(comp.format)}
                         </Typography>
                       </TableCell>
                       <TableCell align="center" sx={{ borderBottom: '1px solid rgba(148,163,184,0.06)', py: 2 }}>
@@ -419,11 +423,6 @@ const Competitions: React.FC = () => {
                             border: `1px solid ${alpha(statusColor, 0.15)}`,
                           }}
                         />
-                      </TableCell>
-                      <TableCell align="right" sx={{ borderBottom: '1px solid rgba(148,163,184,0.06)', py: 2 }}>
-                        <Typography variant="body2" sx={{ color: '#F8FAFC', fontWeight: 600 }}>
-                          {comp.teamsCount !== undefined ? `${comp.teamsCount}/${comp.teamsMax ?? '∞'}` : '-'}
-                        </Typography>
                       </TableCell>
                       <TableCell align="right" sx={{ borderBottom: '1px solid rgba(148,163,184,0.06)', py: 2, pr: 4 }}>
                         <IconButton
@@ -489,9 +488,7 @@ const Competitions: React.FC = () => {
                       />
                     </>
                   }
-                  description={
-                    comp.teamsCount !== undefined ? `${comp.teamsCount}/${comp.teamsMax ?? '∞'} équipes` : undefined
-                  }
+                  description={getFormatLabel(comp.format)}
                 />
               );
             })}

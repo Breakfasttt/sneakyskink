@@ -15,6 +15,7 @@ interface ApiKeyStatus {
   dailyResetTime: number;  // Timestamp (ms)
   cooldownUntil: number;   // Timestamp (ms)
   lastRequestTime: number; // Timestamp (ms)
+  heure0: number | null;   // Timestamp (ms) de la première requête après reset
 }
 
 export class ApiKeyManager {
@@ -40,7 +41,8 @@ export class ApiKeyManager {
         hourlyRequests: 0,
         dailyRequests: 0,
         hourlyResetTime: this.getNextHourlyReset(now),
-        dailyResetTime: this.getNextDailyReset(now),
+        dailyResetTime: 0,
+        heure0: null,
         cooldownUntil: 0,
         lastRequestTime: 0,
       });
@@ -78,7 +80,8 @@ export class ApiKeyManager {
             status.hourlyRequests = parsed.hourlyRequests ?? 0;
             status.dailyRequests = parsed.dailyRequests ?? 0;
             status.hourlyResetTime = parsed.hourlyResetTime ?? this.getNextHourlyReset(now);
-            status.dailyResetTime = parsed.dailyResetTime ?? this.getNextDailyReset(now);
+            status.heure0 = parsed.heure0 ?? null;
+            status.dailyResetTime = parsed.dailyResetTime ?? 0;
             status.cooldownUntil = parsed.cooldownUntil ?? 0;
             status.lastRequestTime = 0;
 
@@ -118,7 +121,8 @@ export class ApiKeyManager {
       status.hourlyRequests = 0;
       status.dailyRequests = 0;
       status.hourlyResetTime = this.getNextHourlyReset(now);
-      status.dailyResetTime = this.getNextDailyReset(now);
+      status.heure0 = null;
+      status.dailyResetTime = 0;
       status.cooldownUntil = 0;
       await this.persistStatus(status);
       this.updateDashboard(key);
@@ -137,6 +141,7 @@ export class ApiKeyManager {
         hourlyResetTime: status.hourlyResetTime,
         dailyResetTime: status.dailyResetTime,
         cooldownUntil: status.cooldownUntil,
+        heure0: status.heure0,
       });
       // Garder les quotas en cache pour 48 heures maximum
       await redisConnection.set(redisKey, payload, 'EX', 172800);
@@ -164,7 +169,7 @@ export class ApiKeyManager {
     let dailyDelay = 0;
     if (!ignoreDailyLimit) {
       // 1. Calcul du délai basé sur le quota restant de la journée
-      const remainingDayMs = status.dailyResetTime - now;
+      const remainingDayMs = status.heure0 ? (status.dailyResetTime - now) : ApiKeyManager.DAY_MS;
       const remainingDayReqs = ApiKeyManager.DAILY_LIMIT - status.dailyRequests;
 
       if (remainingDayReqs <= 0 || remainingDayMs <= 0) {
@@ -284,6 +289,13 @@ export class ApiKeyManager {
     const now = Date.now();
     this.checkAndResetQuotas(status, now);
 
+    // Initialiser l'Heure 0 si elle n'est pas encore définie
+    if (!status.heure0) {
+      status.heure0 = now;
+      status.dailyResetTime = now + ApiKeyManager.DAY_MS;
+      logger.info(`⏰ [ApiKeyManager] Heure 0 (reset/première requête) définie pour la clé [${this.mask(status.key)}] à ${new Date(status.heure0).toISOString()}. Reset journalier prévu à ${new Date(status.dailyResetTime).toISOString()}.`);
+    }
+
     status.hourlyRequests++;
     status.dailyRequests++;
 
@@ -314,6 +326,11 @@ export class ApiKeyManager {
     const cooldownDuration = retryAfterSeconds ? retryAfterSeconds * 1000 : ApiKeyManager.DEFAULT_COOLDOWN_MS;
     status.cooldownUntil = now + cooldownDuration;
     
+    if (!status.heure0) {
+      status.heure0 = now;
+      status.dailyResetTime = now + ApiKeyManager.DAY_MS;
+    }
+
     // Si la clé est signalée en dépassement alors que son quota horaire en mémoire
     // n'est pas encore atteint, c'est que le quota journalier (ou global) est épuisé.
     if (status.hourlyRequests < ApiKeyManager.HOURLY_LIMIT) {
@@ -344,6 +361,11 @@ export class ApiKeyManager {
     const now = Date.now();
     status.cooldownUntil = now + ApiKeyManager.DEFAULT_COOLDOWN_MS;
 
+    if (!status.heure0) {
+      status.heure0 = now;
+      status.dailyResetTime = now + ApiKeyManager.DAY_MS;
+    }
+
     // Persister et mettre à jour le Dashboard
     this.persistStatus(status);
     this.updateDashboard(key);
@@ -368,7 +390,7 @@ export class ApiKeyManager {
         dailyLimit: ApiKeyManager.DAILY_LIMIT,
         cooldownRemainingSeconds: Math.max(0, Math.ceil((status.cooldownUntil - now) / 1000)),
         hourlyResetMinutes: Math.max(0, Math.ceil((status.hourlyResetTime - now) / (60 * 1000))),
-        dailyResetHours: Math.max(0, Math.ceil((status.dailyResetTime - now) / (60 * 60 * 1000))),
+        dailyResetHours: status.heure0 ? Math.max(0, Math.ceil((status.dailyResetTime - now) / (60 * 60 * 1000))) : 24,
       };
     });
   }
@@ -407,11 +429,12 @@ export class ApiKeyManager {
       logger.info(`🔄 [ApiKeyManager] Quota horaire réinitialisé pour la clé [${this.mask(status.key)}].`);
     }
 
-    if (now >= status.dailyResetTime) {
+    if (status.heure0 && now >= status.dailyResetTime) {
       status.dailyRequests = 0;
-      status.dailyResetTime = this.getNextDailyReset(now);
+      status.heure0 = null;
+      status.dailyResetTime = 0;
       changed = true;
-      logger.info(`🔄 [ApiKeyManager] Quota journalier réinitialisé pour la clé [${this.mask(status.key)}].`);
+      logger.info(`🔄 [ApiKeyManager] Quota journalier réinitialisé pour la clé [${this.mask(status.key)}] (Fin de la période de 24h depuis l'Heure 0).`);
     }
 
     if (changed) {

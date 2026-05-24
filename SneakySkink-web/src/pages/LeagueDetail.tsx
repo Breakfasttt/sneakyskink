@@ -64,7 +64,7 @@ const LeagueDetail: React.FC = () => {
   const [copied, setCopied] = useState(false);
 
   const [compViewMode, setCompViewMode] = useState<'list' | 'grid'>('list');
-  const [compSortBy, setCompSortBy] = useState<'name' | 'teams' | 'status'>('name');
+  const [compSortBy, setCompSortBy] = useState<'name' | 'status'>('name');
 
   useEffect(() => {
     if (!id) return;
@@ -108,11 +108,6 @@ const LeagueDetail: React.FC = () => {
     return [...result].sort((a, b) => {
       if (compSortBy === 'name') {
         return a.name.localeCompare(b.name);
-      }
-      if (compSortBy === 'teams') {
-        const teamsA = a.teamsCount ?? 0;
-        const teamsB = b.teamsCount ?? 0;
-        return teamsB - teamsA;
       }
       if (compSortBy === 'status') {
         return a.status.localeCompare(b.status);
@@ -349,7 +344,6 @@ const LeagueDetail: React.FC = () => {
           onSortChange={setCompSortBy}
           sortOptions={[
             { value: 'name', label: 'Nom' },
-            { value: 'teams', label: 'Nombre d\'équipes' },
             { value: 'status', label: 'Statut' },
           ]}
           extraControls={
@@ -406,7 +400,6 @@ const LeagueDetail: React.FC = () => {
                     <TableCell sx={{ color: '#94A3B8', fontWeight: 700, borderBottom: 'none', py: 2, pl: 4 }}>Compétition</TableCell>
                     <TableCell sx={{ color: '#94A3B8', fontWeight: 700, borderBottom: 'none', py: 2 }}>Format</TableCell>
                     <TableCell align="right" sx={{ color: '#94A3B8', fontWeight: 700, borderBottom: 'none', py: 2 }}>Matchs</TableCell>
-                    <TableCell align="right" sx={{ color: '#94A3B8', fontWeight: 700, borderBottom: 'none', py: 2 }}>Équipes</TableCell>
                     <TableCell align="center" sx={{ color: '#94A3B8', fontWeight: 700, borderBottom: 'none', py: 2 }}>Statut</TableCell>
                     <TableCell align="right" sx={{ color: '#94A3B8', fontWeight: 700, borderBottom: 'none', py: 2, width: 80, pr: 4 }}></TableCell>
                   </TableRow>
@@ -440,9 +433,6 @@ const LeagueDetail: React.FC = () => {
                       </TableCell>
                       <TableCell align="right" sx={{ borderBottom: '1px solid rgba(148,163,184,0.06)', py: 2, color: '#F8FAFC', fontWeight: 600 }}>
                         {comp.matchesCount ?? 0}
-                      </TableCell>
-                      <TableCell align="right" sx={{ borderBottom: '1px solid rgba(148,163,184,0.06)', py: 2, color: '#F8FAFC', fontWeight: 600 }}>
-                        {comp.teamsMax ? `${comp.teamsCount ?? 0}/${comp.teamsMax}` : `${comp.teamsCount ?? 0}`}
                       </TableCell>
                       <TableCell align="center" sx={{ borderBottom: '1px solid rgba(148,163,184,0.06)', py: 2 }}>
                         <Chip
@@ -514,7 +504,7 @@ const LeagueDetail: React.FC = () => {
                   }
                   description={
                     <>
-                      {comp.teamsMax ? `${comp.teamsCount ?? 0}/${comp.teamsMax}` : `${comp.teamsCount ?? 0}`} équipes · {comp.matchesCount ?? 0} match{comp.matchesCount > 1 ? 's' : ''} · {comp.format === 'Knockout' ? 'Coupe' : 'Ligue'}
+                      {comp.matchesCount ?? 0} match{comp.matchesCount > 1 ? 's' : ''} · {comp.format === 'Knockout' ? 'Coupe' : 'Ligue'}
                     </>
                   }
                 />
